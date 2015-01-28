@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
 import retrofit.Callback;
@@ -54,29 +55,58 @@ public class ApiTVDB {
 	
 	@Root(name = "Series")
 	static class Series extends BaseType {
-		String SeriesName;
-		String Overview;
-		String Network;
-		String Status;
-		Date FirstAired;
-		String ContentRating;
-		double Rating;
-		int Airs_Day;
-		long Airs_Time;
-		int Runtime;
+		@Element(name = "SeriesName")
+		String name;
+
+		@Element(name = "Overview")
+		String overview;
+
+		@Element(name = "Network")
+		String network;
+
+		@Element(name = "Status")
+		String status;
+
+		@Element(name = "FirstAired")
+		Date firstAired;
+
+		@Element(name = "ContentRating")
+		String contentRating;
+
+		@Element(name = "Rating")
+		double rating;
+
+		int airsDay;
+
+		@Element(name = "Airs_Time")
+		long airsTime;
+
+		@Element(name = "Runtime")
+		int runtime;
+
+		@Element(name = "poster")
 		String poster;
+
+		@Element(name = "banner")
 		String banner;
+
+		@Element(name = "fanart")
 		String fanart;
+
+		@Element(name = "zap2it_id")
 		String zap2it_id;
+		
 		List<String> Genres;
+		
 		List<String> Actors;
 		
+		@ElementList(inline=true)
 		List<Episode> episodes;
 	}
 	
 	static class Episode extends BaseType {
 	}
-
+	
 	private static TVDB TVDB_CLIENT;
 	
 	public static TVDB client() {
@@ -106,28 +136,6 @@ public class ApiTVDB {
 			return connection;
 		}
 	}
-	
-	/*
-	private static class DelimitedListConverter implements JsonDeserializer<Boolean[]> {
-		@Override
-		public Boolean[] deserialize(JsonElement json, Type type, JsonDeserializationContext context)
-			throws JsonParseException {
-			final JsonObject jo = json.getAsJsonObject();
-			if (jo.has("1")) {
-				List<Boolean> res = new ArrayList<Boolean>();
-				String s;
-				for (int i = 1; i < 100; i++) {
-					s = Integer.toString(i);
-					if (!jo.has(s))
-						break;
-					res.add(jo.getAsJsonPrimitive(s).getAsBoolean());
-				}
-				return res.toArray(new Boolean[res.size()]);
-			}
-			return null;
-		}
-	}
-	*/
 }
 
 /*
