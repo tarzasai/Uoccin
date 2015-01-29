@@ -2,12 +2,18 @@ package net.ggelardi.uoccin;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
+import org.simpleframework.xml.convert.Convert;
+import org.simpleframework.xml.convert.Converter;
+import org.simpleframework.xml.stream.InputNode;
+import org.simpleframework.xml.stream.OutputNode;
 
 import retrofit.Callback;
 import retrofit.RequestInterceptor;
@@ -17,6 +23,7 @@ import retrofit.client.UrlConnectionClient;
 import retrofit.converter.SimpleXMLConverter;
 import retrofit.http.GET;
 import retrofit.http.Path;
+import android.text.TextUtils;
 
 public class ApiTVDB {
 	private static final String API_ENDPOINT = "http://thetvdb.com/api/A74D017DA5F2C3B0";
@@ -76,6 +83,8 @@ public class ApiTVDB {
 		@Element(name = "Rating")
 		double rating;
 
+		@Element(name = "Airs_DayOfWeek")
+		@Convert(WeekDay2IntConverter.class)
 		int airsDay;
 
 		@Element(name = "Airs_Time")
@@ -96,11 +105,15 @@ public class ApiTVDB {
 		@Element(name = "zap2it_id")
 		String zap2it_id;
 		
+		@Element(name = "Genre")
+		@Convert(PipedStringsConverter.class)
 		List<String> Genres;
-		
+
+		@Element(name = "Actors")
+		@Convert(PipedStringsConverter.class)
 		List<String> Actors;
 		
-		@ElementList(inline=true)
+		@ElementList(entry="Episode", inline=true)
 		List<Episode> episodes;
 	}
 	
@@ -134,6 +147,29 @@ public class ApiTVDB {
 			connection.setConnectTimeout(20 * 1000); // 20 sec
 			connection.setReadTimeout(60 * 1000); // 60 sec
 			return connection;
+		}
+	}
+	
+	static class PipedStringsConverter implements Converter<List<String>> {
+		@Override
+		public List<String> read(InputNode node) throws Exception {
+			return !node.isEmpty() ? Arrays.asList(node.getValue().split("\\|")) : new ArrayList<String>();
+		}
+		@Override
+		public void write(OutputNode node, List<String> value) throws Exception {
+			node.setValue("|" + TextUtils.join("|", value) + "|");
+		}
+	}
+	
+	static class WeekDay2IntConverter implements Converter<Integer> {
+		@Override
+		public Integer read(InputNode node) throws Exception {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		@Override
+		public void write(OutputNode node, Integer value) throws Exception {
+			// TODO Auto-generated method stub
 		}
 	}
 }
