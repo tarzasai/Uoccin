@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
@@ -84,7 +85,7 @@ public class ApiTVDB {
 		double rating;
 
 		@Element(name = "Airs_DayOfWeek")
-		@Convert(WeekDay2IntConverter.class)
+		@Convert(DayName2IntConverter.class)
 		int airsDay;
 
 		@Element(name = "Airs_Time")
@@ -161,15 +162,21 @@ public class ApiTVDB {
 		}
 	}
 	
-	static class WeekDay2IntConverter implements Converter<Integer> {
+	static class DayName2IntConverter implements Converter<Integer> {
+		private static final List<String> days = Arrays.asList("sunday", "monday", "tuesday", "wednesday", "thursday",
+			"friday", "saturday");
 		@Override
 		public Integer read(InputNode node) throws Exception {
-			// TODO Auto-generated method stub
-			return null;
+			return days.indexOf(node.isEmpty() ? "null" : node.getValue().toLowerCase(Locale.getDefault())) + 1;
 		}
 		@Override
 		public void write(OutputNode node, Integer value) throws Exception {
-			// TODO Auto-generated method stub
+			if (value < 0)
+				node.remove(); //node.setValue(""); ???
+			else {
+				String d = days.get(value-1);
+				node.setValue(d.substring(0, 0).toUpperCase(Locale.getDefault()) + d.substring(1));
+			}
 		}
 	}
 }
