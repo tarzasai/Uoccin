@@ -1,4 +1,4 @@
-package net.ggelardi.uoccin;
+package net.ggelardi.uoccin.serv;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -15,11 +15,9 @@ import android.util.Log;
 import com.squareup.picasso.Picasso;
 
 public class Commons {
-	// we better don't tell FF and other sites we are a phone, if we want to receive all images as supposed:
 	public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 5.1; rv:16.0) Gecko/20100101 Firefox/16.0";
 	
-	static final String idITDCCSS = "e/f1e550600ce349cc90271b3284bb22c3";
-	
+	/*
 	static class PK {
 		public static final String USERNAME = "Username";
 		public static final String REMOTEKEY = "RemoteKey";
@@ -42,6 +40,7 @@ public class Commons {
 		public static final String SERV_MSGS_TIME = "pk_serv_msgs_time";
 		public static final String SERV_MSGS_CURS = "pk_serv_msgs_cursor";
 	}
+	*/
 	
 	public static boolean isConnected(Context context) {
 		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

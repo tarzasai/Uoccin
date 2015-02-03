@@ -1,4 +1,4 @@
-package net.ggelardi.uoccin;
+package net.ggelardi.uoccin.serv;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -26,13 +26,10 @@ import retrofit.http.GET;
 import retrofit.http.Path;
 import android.text.TextUtils;
 
-public class ApiTVDB {
+public class SeriesAPI {
 	private static final String API_ENDPOINT = "http://thetvdb.com/api/A74D017DA5F2C3B0";
 	
 	public interface TVDB {
-		
-		@GET("/series/{tvdb_id}/all/{language}.xml")
-		void getSeriesFull(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
 		
 		@GET("/series/{tvdb_id}/{language}.xml")
 		void getSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
@@ -41,20 +38,23 @@ public class ApiTVDB {
 		void getEpisode(@Path("tvdb_id") int tvdb_id, @Path("season") int season, @Path("episode") int episode,
 			@Path("language") String language, Callback<Episode> callback);
 		
+		@GET("/series/{tvdb_id}/all/{language}.xml")
+		void getFullSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
+		
 	}
 	
-	public static class BaseType {
+	static class BaseType {
 		@Element(name = "IMDB_ID")
-		String imdb_id;
+		public String imdb_id;
 		
 		@Element(name = "Language")
-		String language;
+		public String language;
 		
 		@Element(name = "Rating")
 		public double rating;
 		
 		@Element(name = "lastupdated")
-		long lastupdated = System.currentTimeMillis();
+		public long lastupdated = System.currentTimeMillis();
 		
 		public long getAge() {
 			return System.currentTimeMillis() - lastupdated;
@@ -90,17 +90,20 @@ public class ApiTVDB {
 
 		@Element(name = "Airs_Time")
 		public long airsTime;
-
+		
 		@Element(name = "Runtime")
 		public int runtime;
-
+		
 		@Element(name = "poster")
+		@Convert(ImageUrlConverter.class)
 		public String poster;
-
+		
 		@Element(name = "banner")
+		@Convert(ImageUrlConverter.class)
 		public String banner;
-
+		
 		@Element(name = "fanart")
+		@Convert(ImageUrlConverter.class)
 		public String fanart;
 
 		@Element(name = "zap2it_id")
@@ -108,58 +111,39 @@ public class ApiTVDB {
 		
 		@Element(name = "Genre")
 		@Convert(PipedStringsConverter.class)
-		public List<String> Genres;
+		public List<String> genres;
 
 		@Element(name = "Actors")
 		@Convert(PipedStringsConverter.class)
-		public List<String> Actors;
+		public List<String> actors;
 		
 		@ElementList(entry="Episode", inline=true)
 		public List<Episode> episodes;
 	}
 	
-	/*
-	
-  <Episode>
-    <id>5050213</id>
-    <seriesid>248742</seriesid>
-    <seasonid>589267</seasonid>
-    <SeasonNumber>4</SeasonNumber>
-    <EpisodeNumber>13</EpisodeNumber>
-    <EpisodeName>M.I.A.</EpisodeName>
-    <Overview>Reese and Root’s hunt for Shaw takes them to a small town in upstate New York where it becomes apparent that not everything is as idyllic as it seems. Also, Fusco teams with a former POI to tackle the newest number.</Overview>
-    <FirstAired>2015-02-03</FirstAired>
-    <Writer>Lucas O'Connor</Writer>
-    <Director>Kevin Bray</Director>
-    <GuestStars></GuestStars>
-    <filename>episodes/248742/5050213.jpg</filename>
-    <thumb_width>400</thumb_width>
-    <thumb_height>225</thumb_height>
-    <EpImgFlag>2</EpImgFlag>
-  </Episode>
-	
-	*/
-
 	@Root(name = "Episode")
 	public static class Episode extends BaseType {
 		@Element(name = "seriesid")
 		public int tvdb_id;
 		
 		@Element(name = "seasonid")
-		public int season_id;
+		public int tvdb_season;
 		
 		@Element(name = "id")
-		public int episode_id;
+		public int tvdb_episode;
+		
+		/**
+		 * @return The tipical season/episode id string (es. "S02E11").
+		 */
+		public String signature() {
+			return String.format(Locale.getDefault(), "S%1$02dE%2$02d", season, episode);
+		}
 		
 		@Element(name = "SeasonNumber")
-		public int seasonNumber;
+		public int season;
 		
 		@Element(name = "EpisodeNumber")
-		public int episodeNumber;
-		
-		public String getEpisodeID() {
-			return String.format("S%1$02dE%2$02d", seasonNumber, episodeNumber);
-		}
+		public int episode;
 		
 		@Element(name = "Overview")
 		public String overview;
@@ -176,6 +160,10 @@ public class ApiTVDB {
 		@Element(name = "GuestStars")
 		@Convert(PipedStringsConverter.class)
 		public List<String> guestStars;
+		
+		@Element(name = "filename")
+		@Convert(ImageUrlConverter.class)
+		public String filename;
 	}
 	
 	private static TVDB TVDB_CLIENT;
@@ -202,17 +190,38 @@ public class ApiTVDB {
 		@Override
 		protected HttpURLConnection openConnection(Request request) throws IOException {
 			HttpURLConnection connection = super.openConnection(request);
-			connection.setConnectTimeout(20 * 1000); // 20 sec
+			connection.setConnectTimeout(30 * 1000); // 30 sec
 			connection.setReadTimeout(60 * 1000); // 60 sec
 			return connection;
 		}
 	}
 	
+	static class ImageUrlConverter implements Converter<String> {
+		private static String baseUrl = "http://thetvdb.com/banners/";
+		
+		@Override
+		public String read(InputNode node) throws Exception {
+			return !node.isEmpty() ? baseUrl + node.getValue() : "";
+		}
+		
+		@Override
+		public void write(OutputNode node, String value) throws Exception {
+			if (value == null)
+				node.remove();
+			else if (value.startsWith(baseUrl))
+				node.setValue(value.substring(baseUrl.length()));
+			else
+				node.setValue(value);
+		}
+	}
+	
 	static class PipedStringsConverter implements Converter<List<String>> {
+		
 		@Override
 		public List<String> read(InputNode node) throws Exception {
 			return !node.isEmpty() ? Arrays.asList(node.getValue().split("\\|")) : new ArrayList<String>();
 		}
+		
 		@Override
 		public void write(OutputNode node, List<String> value) throws Exception {
 			node.setValue("|" + TextUtils.join("|", value) + "|");
@@ -222,10 +231,12 @@ public class ApiTVDB {
 	static class DayName2IntConverter implements Converter<Integer> {
 		private static final List<String> days = Arrays.asList("sunday", "monday", "tuesday", "wednesday", "thursday",
 			"friday", "saturday");
+		
 		@Override
 		public Integer read(InputNode node) throws Exception {
 			return days.indexOf(node.isEmpty() ? "null" : node.getValue().toLowerCase(Locale.getDefault())) + 1;
 		}
+		
 		@Override
 		public void write(OutputNode node, Integer value) throws Exception {
 			if (value < 0)
@@ -285,7 +296,10 @@ http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/all/en.xml
   <Episode>
     ...episode data...
   </Episode>
-  ...
+  <Episode>
+    ...episode data...
+  </Episode>
+  ...more episodes...
 </Data>
 
 ========================================================================================================================
@@ -316,6 +330,5 @@ http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/default/4/13/en.xml
     <Language>en</Language>
   </Episode>
 </Data>
-
 
 */
