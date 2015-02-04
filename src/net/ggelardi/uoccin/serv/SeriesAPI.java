@@ -1,12 +1,12 @@
 package net.ggelardi.uoccin.serv;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import net.ggelardi.uoccin.serv.Commons.WaitingUCC;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
@@ -19,8 +19,6 @@ import org.simpleframework.xml.stream.OutputNode;
 import retrofit.Callback;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
-import retrofit.client.Request;
-import retrofit.client.UrlConnectionClient;
 import retrofit.converter.SimpleXMLConverter;
 import retrofit.http.GET;
 import retrofit.http.Path;
@@ -184,16 +182,6 @@ public class SeriesAPI {
 				}).setLogLevel(RestAdapter.LogLevel.NONE).setClient(new WaitingUCC()).build().create(TVDB.class);
 		}
 		return TVDB_CLIENT;
-	}
-	
-	static class WaitingUCC extends UrlConnectionClient {
-		@Override
-		protected HttpURLConnection openConnection(Request request) throws IOException {
-			HttpURLConnection connection = super.openConnection(request);
-			connection.setConnectTimeout(30 * 1000); // 30 sec
-			connection.setReadTimeout(60 * 1000); // 60 sec
-			return connection;
-		}
 	}
 	
 	static class ImageUrlConverter implements Converter<String> {

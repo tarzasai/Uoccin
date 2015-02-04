@@ -1,11 +1,15 @@
 package net.ggelardi.uoccin.serv;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import retrofit.RetrofitError;
+import retrofit.client.Request;
 import retrofit.client.Response;
+import retrofit.client.UrlConnectionClient;
 import retrofit.mime.TypedByteArray;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -112,5 +116,15 @@ public class Commons {
 		Log.v("RPC", msg);
 		Log.v("RPC", error.getUrl());
 		return msg;
+	}
+	
+	static class WaitingUCC extends UrlConnectionClient {
+		@Override
+		protected HttpURLConnection openConnection(Request request) throws IOException {
+			HttpURLConnection connection = super.openConnection(request);
+			connection.setConnectTimeout(30 * 1000); // 30 sec
+			connection.setReadTimeout(60 * 1000); // 60 sec
+			return connection;
+		}
 	}
 }
