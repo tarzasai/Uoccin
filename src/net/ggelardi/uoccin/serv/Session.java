@@ -1,0 +1,87 @@
+package net.ggelardi.uoccin.serv;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
+
+import com.squareup.picasso.Picasso;
+
+public class Session implements OnSharedPreferenceChangeListener {
+	
+	private static Context appContext;
+	private static Session singleton;
+	
+	public static Session getInstance(Context context) {
+		if (singleton == null)
+			singleton = new Session(context);
+		return singleton;
+	}
+	
+	private final SharedPreferences prefs;
+	private final UoccinDB dbhlp;
+	private SQLiteDatabase dbconn;
+	
+	public Session(Context context) {
+		appContext = context.getApplicationContext();
+		
+		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+		prefs.registerOnSharedPreferenceChangeListener(this);
+		
+		dbhlp = new UoccinDB(appContext);
+		
+	}
+	
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		//
+	}
+	
+	public SharedPreferences getPrefs() {
+		return prefs;
+	}
+	
+	public SQLiteDatabase getDB() {
+		if (dbconn == null)
+			dbconn = dbhlp.getWritableDatabase();
+		return dbconn;
+	}
+	
+	public static boolean isConnected() {
+		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo ni = cm.getActiveNetworkInfo();
+		return ni != null && ni.isConnectedOrConnecting();
+	}
+	
+	public static boolean isOnWIFI() {
+		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo ni = cm.getActiveNetworkInfo();
+		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
+	}
+	
+	public static Picasso picasso() {
+		// @formatter:off
+		/* DEBUG ONLY!!!
+	    Picasso.Builder builder = new Picasso.Builder(appContext);
+	    builder.downloader(new UrlConnectionDownloader(appContext) {
+	        @Override
+	        protected HttpURLConnection openConnection(Uri uri) throws IOException {
+	            HttpURLConnection connection = super.openConnection(uri);
+	            connection.setRequestProperty("User-Agent", USER_AGENT);
+	            return connection;
+	        }
+	    });
+	    builder.listener(new Picasso.Listener() {
+			@Override
+			public void onImageLoadFailed(Picasso picasso, Uri uri, Exception error) {
+				Log.v("picasso", error.getLocalizedMessage() + " -- " + uri.toString());
+			}});
+	    return builder.build();
+	    */
+		// @formatter:on
+		return Picasso.with(appContext);
+	}
+}

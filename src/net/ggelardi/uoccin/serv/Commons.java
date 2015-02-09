@@ -11,12 +11,7 @@ import retrofit.client.Request;
 import retrofit.client.Response;
 import retrofit.client.UrlConnectionClient;
 import retrofit.mime.TypedByteArray;
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.util.Log;
-
-import com.squareup.picasso.Picasso;
 
 public class Commons {
 	public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 5.1; rv:16.0) Gecko/20100101 Firefox/16.0";
@@ -46,41 +41,6 @@ public class Commons {
 	}
 	*/
 	
-	public static boolean isConnected(Context context) {
-		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo ni = cm.getActiveNetworkInfo();
-		return ni != null && ni.isConnectedOrConnecting();
-	}
-	
-	public static boolean isOnWIFI(Context context) {
-		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo ni = cm.getActiveNetworkInfo();
-		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
-	}
-	
-	public static Picasso picasso(Context ctx) {
-		/*
-		 * FOR DEBUG ONLY!
-		 * 
-	    Picasso.Builder builder = new Picasso.Builder(ctx);
-	    builder.downloader(new UrlConnectionDownloader(ctx) {
-	        @Override
-	        protected HttpURLConnection openConnection(Uri uri) throws IOException {
-	            HttpURLConnection connection = super.openConnection(uri);
-	            connection.setRequestProperty("User-Agent", USER_AGENT);
-	            return connection;
-	        }
-	    });
-	    builder.listener(new Picasso.Listener() {
-			@Override
-			public void onImageLoadFailed(Picasso picasso, Uri uri, Exception error) {
-				Log.v("picasso", error.getLocalizedMessage() + " -- " + uri.toString());
-			}});
-	    return builder.build();
-	    */
-	    return Picasso.with(ctx);
-	}
-	
 	public static long convertTime(long timestamp, String fromTimeZone, String toTimeZone) {
 		Calendar fromCal = new GregorianCalendar(TimeZone.getTimeZone(fromTimeZone));
 		fromCal.setTimeInMillis(timestamp);
@@ -100,14 +60,14 @@ public class Commons {
 		String msg;
 		Response r = error.getResponse();
 		if (r != null) {
-			
 			if (r.getBody() instanceof TypedByteArray) {
 				TypedByteArray b = (TypedByteArray) r.getBody();
 				msg = new String(b.getBytes());
 			} else
 				msg = r.getReason();
-		} else
+		} else {
 			msg = error.getLocalizedMessage();
+		}
 		if (msg == null && error.getCause() != null) {
 			msg = error.getCause().getLocalizedMessage();
 			if (msg == null)

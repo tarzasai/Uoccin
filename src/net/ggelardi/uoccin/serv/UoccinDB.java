@@ -41,7 +41,7 @@ public class UoccinDB extends SQLiteOpenHelper {
 	
 	private static final String CREATE_TABLE_TITLE = "CREATE TABLE title (" +
 		"id" + DT_INT + PK + " AUTOINCREMENT" + CS +
-		"type" + DT_STR + CC_NNU + " CHECK (type IN ('movie', 'show', 'episode'))" + CS +
+		"type" + DT_STR + CC_NNU + " CHECK (type IN ('movie', 'series', 'episode'))" + CS +
 		"name" + DT_STR + CC_NNU + CS +
 		"year" + DT_INT + CC_NNU + CS +
 		"plot" + DT_STR + CS +
@@ -54,16 +54,17 @@ public class UoccinDB extends SQLiteOpenHelper {
 		"banner" + DT_STR + CS +
 		"rating" + DT_INT + CS +
 		"runtime" + DT_INT + CS +
-		"updated" + DT_DAT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS +
+		"timestamp" + DT_DAT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS +
 		"watchlist" + DT_FLG + CS +
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG + CS +
 		")";
 	
 	private static final String CREATE_TABLE_SERIES = "CREATE TABLE series (" +
-		"id" + DT_INT + PK + CS +
+		"title_id" + DT_INT + " REFERENCES title(id) ON DELETE CASCADE" + CS +
 		"tvdb_id" + DT_INT + CC_NNU + CS +
 		"status" + DT_STR + CC_NNU + " CHECK (status IN ('continuing', 'ended'))" + CS +
+		"genres" + DT_STR + CS +
 		"network" + DT_STR + CS +
 		"airsDay" + DT_INT + CS +
 		"airsTime" + DT_STR + CS +
@@ -72,7 +73,7 @@ public class UoccinDB extends SQLiteOpenHelper {
 		")";
 	
 	private static final String CREATE_TABLE_EPISODES = "CREATE TABLE episodes (" +
-		"id" + DT_INT + PK + CS +
+		"title_id" + DT_INT + " REFERENCES title(id) ON DELETE CASCADE" + CS +
 		"tvdb_id" + DT_INT + CC_NNU + CS +
 		"season" + DT_INT + CC_NNU + CS +
 		"number" + DT_INT + CC_NNU + CS +
