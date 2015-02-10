@@ -12,7 +12,6 @@ import com.squareup.picasso.Picasso;
 
 public class Session implements OnSharedPreferenceChangeListener {
 	
-	private static Context appContext;
 	private static Session singleton;
 	
 	public static Session getInstance(Context context) {
@@ -21,6 +20,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return singleton;
 	}
 	
+	private final Context appContext;
 	private final SharedPreferences prefs;
 	private final UoccinDB dbhlp;
 	private SQLiteDatabase dbconn;
@@ -50,19 +50,19 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return dbconn;
 	}
 	
-	public static boolean isConnected() {
+	public boolean isConnected() {
 		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = cm.getActiveNetworkInfo();
 		return ni != null && ni.isConnectedOrConnecting();
 	}
 	
-	public static boolean isOnWIFI() {
+	public boolean isOnWIFI() {
 		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = cm.getActiveNetworkInfo();
 		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
 	}
 	
-	public static Picasso picasso() {
+	public Picasso picasso() {
 		// @formatter:off
 		/* DEBUG ONLY!!!
 	    Picasso.Builder builder = new Picasso.Builder(appContext);

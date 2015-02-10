@@ -21,32 +21,21 @@ public abstract class Title {
 		session = Session.getInstance(context);
 		dbconn = session.getDB();
 	}
-
-	public String name = "Unknown";
-	public String type = MOVIE;
-	public int year;
-	public String imdb_id;
-	public String language;
-	public String plot = "Unknown";
-	public List<String> genres = new ArrayList<String>();
-	public String director;
-	public List<String> actors = new ArrayList<String>();
-	public List<String> writers = new ArrayList<String>();
-	public String poster;
-	public String banner;
-	//
-	public long timestamp = 0;
-	public boolean watchlist = false;
-	public boolean collected = false;
-	public boolean watched = false;
 	
-	protected void read(Cursor cr) {
-		int ci;
-		name = cr.getString(cr.getColumnIndex("name"));
-		type = cr.getString(cr.getColumnIndex("type"));
-		year = cr.getInt(cr.getColumnIndex("year"));
+	public Title(Context context, Cursor cr) {
+		this(context);
+		
 		imdb_id = cr.getString(cr.getColumnIndex("imdb_id"));
-		language = cr.getString(cr.getColumnIndex("language"));
+		type = cr.getString(cr.getColumnIndex("type"));
+		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
+		
+		int ci = cr.getColumnIndex("rating");
+		if (!cr.isNull(ci))
+			rating = cr.getInt(ci);
+		
+		ci = cr.getColumnIndex("name");
+		if (!cr.isNull(ci))
+			name = cr.getString(ci);
 		
 		ci = cr.getColumnIndex("plot");
 		if (!cr.isNull(ci))
@@ -63,30 +52,60 @@ public abstract class Title {
 		ci = cr.getColumnIndex("writers");
 		if (!cr.isNull(ci))
 			writers = Arrays.asList(cr.getString(ci).split(","));
-
+		
 		ci = cr.getColumnIndex("poster");
 		if (!cr.isNull(ci))
 			poster = cr.getString(ci);
-
-		ci = cr.getColumnIndex("banner");
-		if (!cr.isNull(ci))
-			banner = cr.getString(ci);
-
+		
 		ci = cr.getColumnIndex("banner");
 		if (!cr.isNull(ci))
 			banner = cr.getString(ci);
 		
-		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
-		watchlist = cr.getInt(cr.getColumnIndex("watchlist")) == 1;
-		collected = cr.getInt(cr.getColumnIndex("collected")) == 1;
-		watched = cr.getInt(cr.getColumnIndex("watched")) == 1;
+		ci = cr.getColumnIndex("runtime");
+		if (!cr.isNull(ci))
+			runtime = cr.getInt(ci);
 	}
 	
-	public long getAge() {
-		return System.currentTimeMillis() - timestamp;
-	}
+	protected abstract void refresh();
+
+	public String imdb_id;
+	public String type;
+	public String name;
+	public String plot;
+	public String director;
+	public List<String> actors = new ArrayList<String>();
+	public List<String> writers = new ArrayList<String>();
+	public String poster;
+	public String banner;
+	public int runtime;
+	public long timestamp = System.currentTimeMillis();
+	public int rating; // user's
 	
 	public boolean isOld() {
-		return getAge()/(1000 * 60 * 60) > 24;
+		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24;
+	}
+	
+	//
+	
+	private List<TitleEvent> listeners = new ArrayList<Title.TitleEvent>();
+	
+	public interface TitleEvent {
+		public static String LOADING = "TitleEvent.LOADING";
+		public static String READY = "TitleEvent.READY";
+		
+		void changed(String state);
+	}
+	
+	public void addEventListener(TitleEvent listener) {
+		listeners.add(listener);
+	}
+	
+	public void removeEventListener(TitleEvent listener) {
+		listeners.remove(listener);
+	}
+	
+	protected void dispatch(String state) {
+		for (TitleEvent l: listeners)
+			l.changed(state);
 	}
 }
