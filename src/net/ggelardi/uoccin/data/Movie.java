@@ -16,7 +16,7 @@ public class Movie extends Title {
 	}
 	
 	public Movie(Context context, Cursor cr) {
-		super(context);
+		super(context, cr);
 		
 		language = cr.getString(cr.getColumnIndex("language"));
 		year = cr.getInt(cr.getColumnIndex("year"));
@@ -58,6 +58,12 @@ public class Movie extends Title {
 		
 		if (isOld() && session.isOnWIFI())
 			refresh();
+	}
+
+	public static Movie load(Context context, String imdb_id) {
+		String sql = "select * from titles t inner join movies m on (m.imdb_id = t.imdb_id) where t.imdb_id = ?";
+		Title res = Title.load(context, Movie.class, sql, imdb_id);
+		return res != null ? (Movie) res : null;
 	}
 	
 	public String language;

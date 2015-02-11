@@ -1,5 +1,6 @@
 package net.ggelardi.uoccin.data;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,13 +14,15 @@ public abstract class Title {
 	public static String MOVIE = "movie";
 	public static String SERIES = "series";
 	public static String EPISODE = "episode";
-	
+
+	protected final Context context;
 	protected final Session session;
 	protected final SQLiteDatabase dbconn;
 	
 	public Title(Context context) {
-		session = Session.getInstance(context);
-		dbconn = session.getDB();
+		this.context = context;
+		this.session = Session.getInstance(context);
+		this.dbconn = session.getDB();
 	}
 	
 	public Title(Context context, Cursor cr) {
@@ -64,6 +67,21 @@ public abstract class Title {
 		ci = cr.getColumnIndex("runtime");
 		if (!cr.isNull(ci))
 			runtime = cr.getInt(ci);
+	}
+	
+	protected static Title load(Context context, Class<?> type, String query, String imdb_id) {
+		Cursor cr = Session.getInstance(context).getDB().rawQuery(query, new String[] { imdb_id });
+		try {
+			if (cr.moveToFirst()) {
+				Constructor<?> ct = type.getConstructor(new Class[] { Context.class, Cursor.class });
+				return ((Title) ct.newInstance(new Object[] { context, cr }));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			cr.close();
+		}
+		return null;
 	}
 	
 	protected abstract void refresh();

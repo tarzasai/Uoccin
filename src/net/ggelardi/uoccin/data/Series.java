@@ -8,27 +8,6 @@ import android.content.Context;
 import android.database.Cursor;
 
 public class Series extends Title {
-
-	// @formatter:off
-	/*
-	public static Series load(Context context, int tvdb_id) {
-		Series res = null;
-		String query = "select * from titles t inner join series s on (s.title_id = t.id) where s.tvdb_id = ?";
-		String[] args = new String[] { Integer.toString(tvdb_id) };
-		Cursor cr = Session.getInstance(context).getDB().rawQuery(query, args);
-		try {
-			if (!cr.moveToFirst())
-				return null;
-			res = new Series(context, cr);
-		} finally {
-			cr.close();
-		}
-		if (res.isOld())
-			res.refresh();
-		return res;
-	}
-	*/
-	// @formatter:on
 	
 	public Series(Context context) {
 		super(context);
@@ -72,7 +51,13 @@ public class Series extends Title {
 		if (isOld() && session.isOnWIFI())
 			refresh();
 	}
-
+	
+	public static Series load(Context context, String imdb_id) {
+		String sql = "select * from titles t inner join series s on (s.imdb_id = t.imdb_id) where t.imdb_id = ?";
+		Title res = Title.load(context, Series.class, sql, imdb_id);
+		return res != null ? (Series) res : null;
+	}
+	
 	public String language;
 	public int year;
 	public String rated;

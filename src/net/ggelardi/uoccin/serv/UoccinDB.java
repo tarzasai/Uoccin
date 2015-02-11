@@ -57,7 +57,7 @@ public class UoccinDB extends SQLiteOpenHelper {
 		")";
 	
 	private static final String CREATE_TABLE_MOVIES = "CREATE TABLE movies (" +
-		"imdb_id" + DT_STR + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
+		"imdb_id" + DT_STR + " REFERENCES titles(imdb_id) ON DELETE CASCADE" + CS +
 		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
 		"year" + DT_INT + CC_NNU + CS +
 		"rated" + DT_STR + CS +
@@ -74,7 +74,7 @@ public class UoccinDB extends SQLiteOpenHelper {
 		")";
 	
 	private static final String CREATE_TABLE_SERIES = "CREATE TABLE series (" +
-		"imdb_id" + DT_STR + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
+		"imdb_id" + DT_STR + " REFERENCES titles(imdb_id) ON DELETE CASCADE" + CS +
 		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
 		"year" + DT_INT + CC_NNU + CS +
 		"rated" + DT_STR + CS +
@@ -89,10 +89,10 @@ public class UoccinDB extends SQLiteOpenHelper {
 		")";
 	
 	private static final String CREATE_TABLE_EPISODES = "CREATE TABLE episodes (" +
-		"imdb_id" + DT_STR + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
+		"imdb_id" + DT_STR + " REFERENCES titles(imdb_id) ON DELETE CASCADE" + CS +
 		"tvdb_id" + DT_INT + CC_NNU + CS +
-		"imdb_series" + DT_STR + CC_NNU + CS + // series imdb_id
-		"tvdb_series" + DT_INT + CC_NNU + CS + // series tvdb_id
+		"series_imdb_id" + DT_STR + CC_NNU + CS + // series imdb_id
+		"series_tvdb_id" + DT_INT + CC_NNU + CS + // series tvdb_id
 		"season" + DT_INT + CC_NNU + CS +
 		"episode" + DT_INT + CC_NNU + CS +
 		"firstAired" + DT_INT + CS +
