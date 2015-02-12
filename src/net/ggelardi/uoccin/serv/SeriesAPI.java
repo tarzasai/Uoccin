@@ -30,14 +30,14 @@ public class SeriesAPI {
 	public interface TVDB {
 		
 		@GET("/series/{tvdb_id}/{language}.xml")
-		void getSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
+		void getSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<TVDB_Series> callback);
 		
 		@GET("/series/{tvdb_id}/default/{season}/{episode}/{language}.xml")
 		void getEpisode(@Path("tvdb_id") int tvdb_id, @Path("season") int season, @Path("episode") int episode,
-			@Path("language") String language, Callback<Episode> callback);
+			@Path("language") String language, Callback<TVDB_Episode> callback);
 		
 		@GET("/series/{tvdb_id}/all/{language}.xml")
-		void getFullSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
+		void getFullSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<TVDB_Series> callback);
 		
 	}
 	
@@ -60,7 +60,7 @@ public class SeriesAPI {
 	}
 	
 	@Root(name = "Series")
-	public static class Series extends BaseType {
+	public static class TVDB_Series extends BaseType {
 		@Element(name = "id")
 		public int tvdb_id;
 		
@@ -87,7 +87,7 @@ public class SeriesAPI {
 		public int airsDay;
 
 		@Element(name = "Airs_Time")
-		public long airsTime;
+		public String airsTime;
 		
 		@Element(name = "Runtime")
 		public int runtime;
@@ -116,11 +116,11 @@ public class SeriesAPI {
 		public List<String> actors;
 		
 		@ElementList(entry="Episode", inline=true)
-		public List<Episode> episodes;
+		public List<TVDB_Episode> episodes;
 	}
 	
 	@Root(name = "Episode")
-	public static class Episode extends BaseType {
+	public static class TVDB_Episode extends BaseType {
 		@Element(name = "seriesid")
 		public int tvdb_id;
 		

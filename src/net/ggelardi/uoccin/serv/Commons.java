@@ -3,7 +3,9 @@ package net.ggelardi.uoccin.serv;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import retrofit.RetrofitError;
@@ -47,6 +49,22 @@ public class Commons {
 		Calendar toCal = new GregorianCalendar(TimeZone.getTimeZone(toTimeZone));
 		toCal.setTimeInMillis(fromCal.getTimeInMillis());
 		return toCal.getTimeInMillis();
+	}
+	
+	public static int getDatePart(Date date, int part) {
+		if (date == null)
+			return 0;
+		Calendar cal = Calendar.getInstance(Locale.getDefault());
+		cal.setTime(date);
+		return cal.get(part);
+	}
+	
+	public static int getDatePart(long time, int part) {
+		if (time <= 0)
+			return 0;
+		Calendar cal = Calendar.getInstance(Locale.getDefault());
+		cal.setTimeInMillis(time);
+		return cal.get(part);
 	}
 
 	public static int retrofitErrorCode(RetrofitError error) {

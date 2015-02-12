@@ -4,10 +4,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 public class Movie extends Title {
+	
+	public static Movie get(String imdb_id) {
+		Title res = titlesCache.get(imdb_id);
+		return res != null ? (Movie) res : null;
+	}
 	
 	public Movie(Context context) {
 		super(context);
@@ -31,6 +39,14 @@ public class Movie extends Title {
 		ci = cr.getColumnIndex("genres");
 		if (!cr.isNull(ci))
 			genres = Arrays.asList(cr.getString(ci).split(","));
+		
+		ci = cr.getColumnIndex("director");
+		if (!cr.isNull(ci))
+			director = cr.getString(ci);
+		
+		ci = cr.getColumnIndex("writers");
+		if (!cr.isNull(ci))
+			writers = Arrays.asList(cr.getString(ci).split(","));
 		
 		ci = cr.getColumnIndex("country");
 		if (!cr.isNull(ci))
@@ -58,18 +74,15 @@ public class Movie extends Title {
 		
 		if (isOld() && session.isOnWIFI())
 			refresh();
-	}
-
-	public static Movie load(Context context, String imdb_id) {
-		String sql = "select * from titles t inner join movies m on (m.imdb_id = t.imdb_id) where t.imdb_id = ?";
-		Title res = Title.load(context, Movie.class, sql, imdb_id);
-		return res != null ? (Movie) res : null;
+		
 	}
 	
 	public String language;
 	public int year;
 	public String rated;
 	public List<String> genres = new ArrayList<String>();
+	public String director;
+	public List<String> writers = new ArrayList<String>();
 	public String country;
 	public long released;
 	public String awards;
@@ -84,5 +97,31 @@ public class Movie extends Title {
 	protected void refresh() {
 		dispatch(TitleEvent.LOADING);
 		
+	}
+	
+	@Override
+	protected void update(SQLiteDatabase db) {
+		ContentValues cv = new ContentValues();
+		cv.put("language", language);
+		cv.put("year", year);
+		cv.put("rated", rated);
+		cv.put("genres", TextUtils.join(",", genres));
+		cv.put("director", director);
+		cv.put("writers", TextUtils.join(",", writers));
+		cv.put("country", country);
+		cv.put("released", released);
+		cv.put("awards", awards);
+		cv.put("metascore", metascore);
+		cv.put("imdbRating", imdbRating);
+		cv.put("imdbVotes", imdbVotes);
+		cv.put("watchlist", watchlist);
+		cv.put("collected", collected);
+		cv.put("watched", watched);
+		if (newTitle) {
+			cv.put("imdb_id", imdb_id);
+			db.insertOrThrow(MOVIE, null, cv);
+		} else {
+			db.update(MOVIE, cv, "imdb_id=?", new String[] { imdb_id });
+		}
 	}
 }

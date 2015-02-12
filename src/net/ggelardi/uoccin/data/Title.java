@@ -4,20 +4,46 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import net.ggelardi.uoccin.serv.Session;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 public abstract class Title {
 	public static String MOVIE = "movie";
 	public static String SERIES = "series";
 	public static String EPISODE = "episode";
-
+	
+	// cache
+	protected static Map<String, Title> titlesCache = new WeakHashMap<String, Title>();
+	
+	protected static Title get(Context context, Class<?> type, String imdb_id, String table) {
+		String sql = "select * from title t inner join " + table + " x on (x.imdb_id = t.imdb_id) where t.imdb_id = ?";
+		Cursor cur = Session.getInstance(context).getDB().rawQuery(sql, new String[] { imdb_id });
+		try {
+			if (cur.moveToFirst()) {
+				Constructor<?> con = type.getConstructor(new Class[] { Context.class, Cursor.class });
+				return ((Title) con.newInstance(new Object[] { context, cur }));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			cur.close();
+		}
+		return null;
+	}
+	
 	protected final Context context;
 	protected final Session session;
 	protected final SQLiteDatabase dbconn;
+
+	protected boolean newTitle = true;
+	protected boolean refreshed = false;
 	
 	public Title(Context context) {
 		this.context = context;
@@ -28,7 +54,13 @@ public abstract class Title {
 	public Title(Context context, Cursor cr) {
 		this(context);
 		
+		newTitle = false;
+		
 		imdb_id = cr.getString(cr.getColumnIndex("imdb_id"));
+		
+		// cache
+		titlesCache.put(imdb_id, this);
+		
 		type = cr.getString(cr.getColumnIndex("type"));
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
 		
@@ -44,17 +76,9 @@ public abstract class Title {
 		if (!cr.isNull(ci))
 			plot = cr.getString(ci);
 		
-		ci = cr.getColumnIndex("director");
-		if (!cr.isNull(ci))
-			director = cr.getString(ci);
-		
 		ci = cr.getColumnIndex("actors");
 		if (!cr.isNull(ci))
 			actors = Arrays.asList(cr.getString(ci).split(","));
-		
-		ci = cr.getColumnIndex("writers");
-		if (!cr.isNull(ci))
-			writers = Arrays.asList(cr.getString(ci).split(","));
 		
 		ci = cr.getColumnIndex("poster");
 		if (!cr.isNull(ci))
@@ -69,38 +93,54 @@ public abstract class Title {
 			runtime = cr.getInt(ci);
 	}
 	
-	protected static Title load(Context context, Class<?> type, String query, String imdb_id) {
-		Cursor cr = Session.getInstance(context).getDB().rawQuery(query, new String[] { imdb_id });
-		try {
-			if (cr.moveToFirst()) {
-				Constructor<?> ct = type.getConstructor(new Class[] { Context.class, Cursor.class });
-				return ((Title) ct.newInstance(new Object[] { context, cr }));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			cr.close();
+	protected abstract void refresh();
+	
+	protected void update(SQLiteDatabase db) {
+		ContentValues cv = new ContentValues();
+		cv.put("name", name);
+		cv.put("plot", plot);
+		cv.put("actors", TextUtils.join(",", actors));
+		cv.put("poster", poster);
+		cv.put("banner", banner);
+		cv.put("runtime", runtime);
+		cv.put("rating", rating);
+		if (newTitle) {
+			cv.put("imdb_id", imdb_id);
+			cv.put("type", type);
+			db.insertOrThrow("title", null, cv);
+		} else {
+			if (refreshed)
+				cv.put("timestamp", System.currentTimeMillis());
+			db.update("title", cv, "imdb_id=?", new String[] { imdb_id });
 		}
-		return null;
 	}
 	
-	protected abstract void refresh();
-
 	public String imdb_id;
 	public String type;
 	public String name;
 	public String plot;
-	public String director;
 	public List<String> actors = new ArrayList<String>();
-	public List<String> writers = new ArrayList<String>();
 	public String poster;
 	public String banner;
 	public int runtime;
-	public long timestamp = System.currentTimeMillis();
 	public int rating; // user's
+	public long timestamp = System.currentTimeMillis();
 	
 	public boolean isOld() {
-		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24;
+		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24; // TODO preferences
+	}
+	
+	public void save() {
+		SQLiteDatabase db = session.getDB();
+		db.beginTransaction();
+		try {
+			update(db);
+			db.setTransactionSuccessful();
+		} finally {
+			db.endTransaction();
+		}
+		newTitle = false;
+		refreshed = false;
 	}
 	
 	//
@@ -110,6 +150,7 @@ public abstract class Title {
 	public interface TitleEvent {
 		public static String LOADING = "TitleEvent.LOADING";
 		public static String READY = "TitleEvent.READY";
+		public static String ERROR = "TitleEvent.ERROR";
 		
 		void changed(String state);
 	}
