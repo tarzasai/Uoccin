@@ -46,6 +46,18 @@ public abstract class Title {
 		return title;
 	}
 	
+	protected static List<String> getIDs(Context context, String query, String ... args) {
+		List<String> lst = new ArrayList<String>();
+		Cursor cur = Session.getInstance(context).getDB().rawQuery(query, args);
+		try {
+			while (cur.moveToNext())
+				lst.add(cur.getString(0));
+		} finally {
+			cur.close();
+		}
+		return lst;
+	}
+	
 	protected final Context context;
 	protected final Session session;
 	

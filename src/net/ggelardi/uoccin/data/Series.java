@@ -22,6 +22,13 @@ public class Series extends Title {
 		return (Series) Title.get(context, Series.class, imdb_id, SERIES);
 	}
 	
+	public static List<Series> get(Context context, List<String> imdb_ids) {
+		List<Series> res = new ArrayList<Series>();
+		for (String sid: imdb_ids)
+			res.add(Series.get(context, sid));
+		return res;
+	}
+	
 	public Series(Context context, String imdb_id) {
 		super(context, imdb_id);
 		
@@ -154,63 +161,7 @@ public class Series extends Title {
 	}
 	
 	public List<Episode> getSeason(int season) {
-		List<String> lst = new ArrayList<String>();
 		String sql = "select imdb_id from episode where series_imdb_id = ? and season = ? order by episode";
-		Cursor cur = session.getDB().rawQuery(sql, new String[] { imdb_id, Integer.toString(season) });
-		try {
-			while (cur.moveToNext())
-				lst.add(cur.getString(0));
-			if (lst.isEmpty())
-				return null;
-		} finally {
-			cur.close();
-		}
-		List<Episode> res = new ArrayList<Episode>();
-		for (String eid: lst)
-			res.add(Episode.get(context, eid));
-		return res;
-	}
-	
-	public Episode getEpisode(int season, int episode) {
-		String eid = null;
-		String sql = "select imdb_id from episode where series_imdb_id = ? and season = ? and episode = ?";
-		Cursor cur = session.getDB().rawQuery(sql, new String[] { imdb_id, Integer.toString(season),
-			Integer.toString(episode) });
-		try {
-			if (!cur.moveToFirst())
-				return null;
-			eid = cur.getString(0);
-		} finally {
-			cur.close();
-		}
-		return Episode.get(context, eid);
-	}
-	
-	public Episode lastEpisode() {
-		String eid = null;
-		String sql = "select imdb_id from episode where series_imdb_id = ? and firstAired <= ? order by firstAired desc";
-		Cursor cur = session.getDB().rawQuery(sql, new String[] { imdb_id, Long.toString(System.currentTimeMillis()) });
-		try {
-			if (!cur.moveToFirst())
-				return null;
-			eid = cur.getString(0);
-		} finally {
-			cur.close();
-		}
-		return Episode.get(context, eid);
-	}
-	
-	public Episode nextEpisode() {
-		String eid = null;
-		String sql = "select imdb_id from episode where series_imdb_id = ? and firstAired >= ? order by firstAired";
-		Cursor cur = session.getDB().rawQuery(sql, new String[] { imdb_id, Long.toString(System.currentTimeMillis()) });
-		try {
-			if (!cur.moveToFirst())
-				return null;
-			eid = cur.getString(0);
-		} finally {
-			cur.close();
-		}
-		return Episode.get(context, eid);
+		return Episode.get(context, Title.getIDs(context, sql, imdb_id, Integer.toString(season)));
 	}
 }

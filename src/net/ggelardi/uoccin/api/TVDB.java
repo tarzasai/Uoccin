@@ -193,19 +193,19 @@ public class TVDB {
 	}
 	
 	static class ImageUrlConverter implements Converter<String> {
-		private static String baseUrl = "http://thetvdb.com/banners/";
+		private static String bannerUrl = "http://thetvdb.com/banners/";
 		
 		@Override
 		public String read(InputNode node) throws Exception {
-			return !node.isEmpty() ? baseUrl + node.getValue() : "";
+			return node.isEmpty() ? "" : bannerUrl + node.getValue();
 		}
 		
 		@Override
 		public void write(OutputNode node, String value) throws Exception {
 			if (value == null)
 				node.remove();
-			else if (value.startsWith(baseUrl))
-				node.setValue(value.substring(baseUrl.length()));
+			else if (value.startsWith(bannerUrl))
+				node.setValue(value.substring(bannerUrl.length()));
 			else
 				node.setValue(value);
 		}

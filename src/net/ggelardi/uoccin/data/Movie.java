@@ -15,6 +15,13 @@ public class Movie extends Title {
 		return (Movie) Title.get(context, Movie.class, imdb_id, MOVIE);
 	}
 	
+	public static List<Movie> get(Context context, List<String> imdb_ids) {
+		List<Movie> res = new ArrayList<Movie>();
+		for (String mid: imdb_ids)
+			res.add(Movie.get(context, mid));
+		return res;
+	}
+	
 	public Movie(Context context, String imdb_id) {
 		super(context, imdb_id);
 		

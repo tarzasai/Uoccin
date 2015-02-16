@@ -20,6 +20,13 @@ public class Episode extends Title {
 		return (Episode) Title.get(context, Episode.class, imdb_id, EPISODE);
 	}
 	
+	public static List<Episode> get(Context context, List<String> imdb_ids) {
+		List<Episode> res = new ArrayList<Episode>();
+		for (String eid: imdb_ids)
+			res.add(Episode.get(context, eid));
+		return res;
+	}
+	
 	public Episode(Context context, String imdb_id) {
 		super(context, imdb_id);
 		
@@ -123,5 +130,13 @@ public class Episode extends Title {
 	
 	public Series series() {
 		return Series.get(context, series_imdb_id);
+	}
+	
+	public String simpleEID() {
+		return String.format(Locale.getDefault(), "%dx%d", season, episode);
+	}
+	
+	public String standardEID() {
+		return String.format(Locale.getDefault(), "S%1$02dE%2$02d", season, episode);
 	}
 }

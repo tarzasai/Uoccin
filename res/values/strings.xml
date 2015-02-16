@@ -17,6 +17,8 @@
     
     <string name="empty_text"></string>
     <string name="hello_world">Hello world!</string>
+    <string name="unknown_title">Unknown title</string>
+    <string name="unknown_plot">Unknown plot</string>
     <string name="sample_title">Person of Interest</string>
     <string name="sample_episode">4x13 - M.I.A.</string>
     <string name="sample_plot">Reese and Root’s hunt for Shaw takes them to a small town in upstate New York where it becomes apparent that not everything is as idyllic as it seems. Also, Fusco teams with a former POI to tackle the newest number.</string>

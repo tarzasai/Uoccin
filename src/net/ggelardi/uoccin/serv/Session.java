@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 
 import com.squareup.picasso.Picasso;
 
@@ -83,5 +84,11 @@ public class Session implements OnSharedPreferenceChangeListener {
 	    */
 		// @formatter:on
 		return Picasso.with(appContext);
+	}
+	
+	public String defaultText(String value, int resId) {
+		if (TextUtils.isEmpty(value))
+			return appContext.getResources().getString(resId);
+		return value;
 	}
 }
