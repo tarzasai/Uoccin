@@ -96,7 +96,7 @@ public class Commons {
 		return msg;
 	}
 	
-	static class WaitingUCC extends UrlConnectionClient {
+	public static class WaitingUCC extends UrlConnectionClient {
 		@Override
 		protected HttpURLConnection openConnection(Request request) throws IOException {
 			HttpURLConnection connection = super.openConnection(request);

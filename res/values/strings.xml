@@ -2,7 +2,30 @@
 <resources>
 
     <string name="app_name">Uoccin</string>
-    <string name="hello_world">Hello world!</string>
+    
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    
+    <string name="action_search">Search</string>
     <string name="action_settings">Settings</string>
+    
+    <string name="drawer_dashboard">Dashboard</string>
+    <string name="drawer_calendar">Calendar</string>
+    <string name="drawer_series">My TV Shows</string>
+    <string name="drawer_movies">My Movies</string>
+    <string name="drawer_settings">Settings</string>
+    
+    <string name="empty_text"></string>
+    <string name="hello_world">Hello world!</string>
+    <string name="sample_title">Person of Interest</string>
+    <string name="sample_episode">4x13 - M.I.A.</string>
+    <string name="sample_plot">Reese and Root’s hunt for Shaw takes them to a small town in upstate New York where it becomes apparent that not everything is as idyllic as it seems. Also, Fusco teams with a former POI to tackle the newest number.</string>
+    <string name="sample_subs">it / en</string>
+    <string name="drawer_example">Example drawer item</string>
+    <string name="action_example">Example action</string>
+    
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
 
 </resources>

@@ -23,45 +23,40 @@ public abstract class Title {
 	protected static Map<String, Title> titlesCache = new WeakHashMap<String, Title>();
 	
 	protected static Title get(Context context, Class<?> type, String imdb_id, String table) {
-		String sql = "select * from title t inner join " + table + " x on (x.imdb_id = t.imdb_id) where t.imdb_id = ?";
-		Cursor cur = Session.getInstance(context).getDB().rawQuery(sql, new String[] { imdb_id });
-		try {
-			if (cur.moveToFirst()) {
-				Constructor<?> con = type.getConstructor(new Class[] { Context.class, Cursor.class });
-				return ((Title) con.newInstance(new Object[] { context, cur }));
+		Title title = titlesCache.get(imdb_id);
+		if (title == null) {
+			try {
+				Constructor<?> con = type.getConstructor(new Class[] { Context.class, String.class });
+				title = ((Title) con.newInstance(new Object[] { context, imdb_id }));
+				titlesCache.put(imdb_id, title);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			cur.close();
+			String sql = "select * from title t inner join " + table + " x on (x.imdb_id = t.imdb_id) where t.imdb_id = ?";
+			Cursor cur = Session.getInstance(context).getDB().rawQuery(sql, new String[] { imdb_id });
+			try {
+				if (cur.moveToFirst())
+					title.load(cur);
+			} finally {
+				cur.close();
+			}
 		}
-		return null;
+		if (title.isNew() || title.isOld())
+			title.refresh();
+		return title;
 	}
 	
 	protected final Context context;
 	protected final Session session;
-	protected final SQLiteDatabase dbconn;
-
-	protected boolean newTitle = true;
-	protected boolean refreshed = false;
 	
-	public Title(Context context) {
+	public Title(Context context, String imdb_id) {
 		this.context = context;
 		this.session = Session.getInstance(context);
-		this.dbconn = session.getDB();
+		this.imdb_id = imdb_id;
 	}
 	
-	public Title(Context context, Cursor cr) {
-		this(context);
-		
-		newTitle = false;
-		
+	protected void load(Cursor cr) {
 		imdb_id = cr.getString(cr.getColumnIndex("imdb_id"));
-		
-		// cache
-		titlesCache.put(imdb_id, this);
-		
-		type = cr.getString(cr.getColumnIndex("type"));
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
 		
 		int ci = cr.getColumnIndex("rating");
@@ -84,34 +79,29 @@ public abstract class Title {
 		if (!cr.isNull(ci))
 			poster = cr.getString(ci);
 		
-		ci = cr.getColumnIndex("banner");
-		if (!cr.isNull(ci))
-			banner = cr.getString(ci);
-		
 		ci = cr.getColumnIndex("runtime");
 		if (!cr.isNull(ci))
 			runtime = cr.getInt(ci);
 	}
 	
-	protected abstract void refresh();
-	
-	protected void update(SQLiteDatabase db) {
+	protected void save(boolean isnew) {
+		timestamp = System.currentTimeMillis();
+		
 		ContentValues cv = new ContentValues();
 		cv.put("name", name);
 		cv.put("plot", plot);
 		cv.put("actors", TextUtils.join(",", actors));
 		cv.put("poster", poster);
-		cv.put("banner", banner);
 		cv.put("runtime", runtime);
 		cv.put("rating", rating);
-		if (newTitle) {
+		cv.put("timestamp", timestamp);
+		
+		if (isnew) {
 			cv.put("imdb_id", imdb_id);
 			cv.put("type", type);
-			db.insertOrThrow("title", null, cv);
+			session.getDB().insertOrThrow("title", null, cv);
 		} else {
-			if (refreshed)
-				cv.put("timestamp", System.currentTimeMillis());
-			db.update("title", cv, "imdb_id=?", new String[] { imdb_id });
+			session.getDB().update("title", cv, "imdb_id=?", new String[] { imdb_id });
 		}
 	}
 	
@@ -121,26 +111,29 @@ public abstract class Title {
 	public String plot;
 	public List<String> actors = new ArrayList<String>();
 	public String poster;
-	public String banner;
 	public int runtime;
 	public int rating; // user's
-	public long timestamp = System.currentTimeMillis();
+	public long timestamp = 0;
+	
+	public boolean isNew() {
+		return timestamp <= 0;
+	}
 	
 	public boolean isOld() {
 		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24; // TODO preferences
 	}
 	
+	public abstract void refresh();
+	
 	public void save() {
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			update(db);
+			save(isNew());
 			db.setTransactionSuccessful();
 		} finally {
 			db.endTransaction();
 		}
-		newTitle = false;
-		refreshed = false;
 	}
 	
 	//

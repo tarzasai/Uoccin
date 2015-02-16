@@ -22,7 +22,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	private final Context appContext;
 	private final SharedPreferences prefs;
-	private final UoccinDB dbhlp;
+	private final Storage dbhlp;
 	private SQLiteDatabase dbconn;
 	
 	public Session(Context context) {
@@ -31,7 +31,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 		prefs.registerOnSharedPreferenceChangeListener(this);
 		
-		dbhlp = new UoccinDB(appContext);
+		dbhlp = new Storage(appContext);
 		
 	}
 	
