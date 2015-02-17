@@ -40,6 +40,7 @@ public class Movie extends Title {
 	public int metascore;
 	public Double imdbRating;
 	public int imdbVotes;
+	public List<String> subtitles = new ArrayList<String>();
 	public boolean watchlist = false;
 	public boolean collected = false;
 	public boolean watched = false;
@@ -83,6 +84,9 @@ public class Movie extends Title {
 		ci = cr.getColumnIndex("imdbVotes");
 		if (!cr.isNull(ci))
 			imdbVotes = cr.getInt(ci);
+		ci = cr.getColumnIndex("subtitles");
+		if (!cr.isNull(ci))
+			subtitles = Arrays.asList(cr.getString(ci).split(","));
 	}
 	
 	@Override
@@ -102,6 +106,7 @@ public class Movie extends Title {
 		cv.put("metascore", metascore);
 		cv.put("imdbRating", imdbRating);
 		cv.put("imdbVotes", imdbVotes);
+		cv.put("subtitles", TextUtils.join(",", subtitles));
 		cv.put("watchlist", watchlist);
 		cv.put("collected", collected);
 		cv.put("watched", watched);
@@ -118,5 +123,9 @@ public class Movie extends Title {
 	public void refresh() {
 		dispatch(TitleEvent.LOADING);
 		
+	}
+	
+	public boolean hasSubtitles() {
+		return !subtitles.isEmpty();
 	}
 }

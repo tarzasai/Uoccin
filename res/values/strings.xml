@@ -6,6 +6,12 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     
+    <string name="dashboard_nothing">WTF? Nothing to watch today&#8230;</string>
+    <string name="dashboard_calendar">Airing today</string>
+    <string name="dashboard_premieres">Premieres</string>
+    <string name="dashboard_availeps">Available episodes</string>
+    <string name="dashboard_availmvs">Available movies</string>
+    
     <string name="action_search">Search</string>
     <string name="action_settings">Settings</string>
     

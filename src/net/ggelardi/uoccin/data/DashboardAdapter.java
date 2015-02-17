@@ -41,7 +41,7 @@ public class DashboardAdapter extends BaseAdapter {
 		List<String> ids;
 		// calendar
 		String query = "select e.imdb_id from episode e join series s on (e.series_imdb_id = s.imdb_id) " +
-			"join title t on (s.imdb_id = t.imdb_id) where date(firstAired) = ? and s.watchlist = 1 " +
+			"join title t on (s.imdb_id = t.imdb_id) where date(e.firstAired) = ? and s.watchlist = 1 " +
 			"order by t.name, e.season, e.episode";
 		ids = check(Title.getIDs(context, query, today));
 		if (!ids.isEmpty()) {
@@ -51,7 +51,7 @@ public class DashboardAdapter extends BaseAdapter {
 		}
 		// premieres
 		query = "select s.imdb_id from episode e join series s on (e.series_imdb_id = s.imdb_id) " +
-			"join title t on (s.imdb_id = t.imdb_id) where date(firstAired) = ? and s.watchlist = 0 and " +
+			"join title t on (s.imdb_id = t.imdb_id) where date(e.firstAired) = ? and s.watchlist = 0 and " +
 			"e.season = 1 and e.episode = 1 order by t.name";
 		ids = check(Title.getIDs(context, query, today));
 		if (!ids.isEmpty()) {
@@ -120,10 +120,10 @@ public class DashboardAdapter extends BaseAdapter {
 			vh = new ViewHolder();
 			switch (getItemViewType(position)) {
 				case HDR_CAL:
-					break;
 				case HDR_PRE:
-					break;
 				case HDR_CSE:
+					view = inflater.inflate(R.layout.header_dashboard, parent, false);
+					vh.txt_header = (TextView) view.getRootView();
 					break;
 				case HDR_CMV:
 					break;
@@ -134,6 +134,7 @@ public class DashboardAdapter extends BaseAdapter {
 					vh.txt_ep_head = (TextView) view.findViewById(R.id.txt_ep_head);
 					vh.txt_ep_name = (TextView) view.findViewById(R.id.txt_ep_name);
 					vh.txt_ep_plot = (TextView) view.findViewById(R.id.txt_ep_plot);
+					vh.txt_ep_flgs = (TextView) view.findViewById(R.id.txt_ep_flgs);
 					vh.img_ep_coll = (ImageView) view.findViewById(R.id.img_ep_coll);
 					vh.img_ep_seen = (ImageView) view.findViewById(R.id.img_ep_seen);
 					vh.img_ep_subs = (ImageView) view.findViewById(R.id.img_ep_subs);
@@ -149,12 +150,20 @@ public class DashboardAdapter extends BaseAdapter {
 		DashboardItem itm = getItem(position);
 		switch (itm.kind) {
 			case HDR_CAL:
+				vh.txt_header.setText(R.string.dashboard_calendar);
+				vh.txt_header.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_calendar, 0, 0, 0);
 				break;
 			case HDR_PRE:
+				vh.txt_header.setText(R.string.dashboard_premieres);
+				vh.txt_header.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_premiere, 0, 0, 0);
 				break;
 			case HDR_CSE:
+				vh.txt_header.setText(R.string.dashboard_availeps);
+				vh.txt_header.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_tv, 0, 0, 0);
 				break;
 			case HDR_CMV:
+				vh.txt_header.setText(R.string.dashboard_availmvs);
+				vh.txt_header.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_movie, 0, 0, 0);
 				break;
 			case ITM_SER:
 				break;
@@ -163,9 +172,10 @@ public class DashboardAdapter extends BaseAdapter {
 				vh.txt_ep_head.setText(ep.series().name);
 				vh.txt_ep_name.setText(ep.simpleEID() + " - " + session.defaultText(ep.name, R.string.unknown_title));
 				vh.txt_ep_plot.setText(session.defaultText(ep.plot, R.string.unknown_plot));
+				vh.txt_ep_flgs.setVisibility(ep.collected || ep.watched || ep.hasSubtitles() ? View.VISIBLE : View.GONE);
 				vh.img_ep_coll.setVisibility(ep.collected ? View.VISIBLE : View.GONE);
 				vh.img_ep_seen.setVisibility(ep.watched ? View.VISIBLE : View.GONE);
-				vh.img_ep_subs.setVisibility(/*ep.watched ? View.VISIBLE :*/ View.GONE);
+				vh.img_ep_subs.setVisibility(ep.hasSubtitles() ? View.VISIBLE : View.GONE);
 				if (!TextUtils.isEmpty(ep.poster))
 					session.picasso().load(ep.poster).placeholder(R.drawable.ic_action_image).fit().into(vh.img_ep_scrn);
 				else if (!TextUtils.isEmpty(ep.series().fanart))
@@ -200,12 +210,15 @@ public class DashboardAdapter extends BaseAdapter {
 	}
 	
 	static class ViewHolder {
+		// headers
+		public TextView txt_header;
 		// movies
 		// series
 		// episodes
 		public TextView txt_ep_head;
 		public TextView txt_ep_name;
 		public TextView txt_ep_plot;
+		public TextView txt_ep_flgs;
 		public ImageView img_ep_coll;
 		public ImageView img_ep_seen;
 		public ImageView img_ep_subs;

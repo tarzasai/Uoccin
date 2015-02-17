@@ -50,7 +50,7 @@ public class Storage extends SQLiteOpenHelper {
 		"poster" + DT_STR + CS + // url
 		"runtime" + DT_INT + CS + // minutes
 		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS +
-		"rating" + DT_INT + CS +
+		"rating" + DT_INT +
 		")";
 	
 	private static final String CREATE_TABLE_MOVIES = "CREATE TABLE movie (" +
@@ -67,9 +67,10 @@ public class Storage extends SQLiteOpenHelper {
 		"metascore" + DT_INT + CS +
 		"imdbRating" + DT_DBL + CS +
 		"imdbVotes" + DT_INT + CS +
+		"subtitles" + DT_STR + CS +
 		"watchlist" + DT_FLG + CS +
 		"collected" + DT_FLG + CS +
-		"watched" + DT_FLG + CS +
+		"watched" + DT_FLG +
 		")";
 	
 	private static final String CREATE_TABLE_SERIES = "CREATE TABLE series (" +
@@ -85,7 +86,7 @@ public class Storage extends SQLiteOpenHelper {
 		"airsDay" + DT_INT + CS +
 		"airsTime" + DT_STR + CS +
 		"fanart" + DT_STR + CS + // url
-		"watchlist" + DT_FLG + CS +
+		"watchlist" + DT_FLG +
 		")";
 	
 	private static final String CREATE_TABLE_EPISODES = "CREATE TABLE episode (" +
@@ -98,7 +99,8 @@ public class Storage extends SQLiteOpenHelper {
 		"director" + DT_STR + CS +
 		"writers" + DT_STR + CS + // comma delimited
 		"firstAired" + DT_INT + CS +
+		"subtitles" + DT_STR + CS +
 		"collected" + DT_FLG + CS +
-		"watched" + DT_FLG + CS +
+		"watched" + DT_FLG +
 		")";
 }

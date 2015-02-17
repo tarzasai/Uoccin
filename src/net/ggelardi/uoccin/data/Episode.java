@@ -41,6 +41,7 @@ public class Episode extends Title {
 	public String director;
 	public List<String> writers = new ArrayList<String>();
 	public long firstAired;
+	public List<String> subtitles = new ArrayList<String>();
 	public boolean collected = false;
 	public boolean watched = false;
 
@@ -64,6 +65,9 @@ public class Episode extends Title {
 		ci = cr.getColumnIndex("firstAired");
 		if (!cr.isNull(ci))
 			firstAired = cr.getLong(ci);
+		ci = cr.getColumnIndex("subtitles");
+		if (!cr.isNull(ci))
+			subtitles = Arrays.asList(cr.getString(ci).split(","));
 	}
 	
 	@Override
@@ -79,6 +83,7 @@ public class Episode extends Title {
 		cv.put("director", director);
 		cv.put("writers", TextUtils.join(",", writers));
 		cv.put("firstAired", firstAired);
+		cv.put("subtitles", TextUtils.join(",", subtitles));
 		cv.put("collected", collected);
 		cv.put("watched", watched);
 		
@@ -138,5 +143,9 @@ public class Episode extends Title {
 	
 	public String standardEID() {
 		return String.format(Locale.getDefault(), "S%1$02dE%2$02d", season, episode);
+	}
+	
+	public boolean hasSubtitles() {
+		return !subtitles.isEmpty();
 	}
 }
