@@ -54,7 +54,7 @@ public class Storage extends SQLiteOpenHelper {
 		")";
 	
 	private static final String CREATE_TABLE_MOVIES = "CREATE TABLE movie (" +
-		"imdb_id" + DT_STR + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
+		"imdb_id" + DT_STR + PK + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
 		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
 		"year" + DT_INT + CC_NNU + CS +
 		"rated" + DT_STR + CS +
@@ -74,7 +74,7 @@ public class Storage extends SQLiteOpenHelper {
 		")";
 	
 	private static final String CREATE_TABLE_SERIES = "CREATE TABLE series (" +
-		"imdb_id" + DT_STR + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
+		"imdb_id" + DT_STR + PK + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
 		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
 		"year" + DT_INT + CC_NNU + CS +
 		"rated" + DT_STR + CS +
@@ -90,7 +90,7 @@ public class Storage extends SQLiteOpenHelper {
 		")";
 	
 	private static final String CREATE_TABLE_EPISODES = "CREATE TABLE episode (" +
-		"imdb_id" + DT_STR + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
+		"imdb_id" + DT_STR + PK + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
 		"tvdb_id" + DT_INT + CC_NNU + CS +
 		"series_imdb_id" + DT_STR + CC_NNU + CS + // series imdb_id
 		"series_tvdb_id" + DT_INT + CC_NNU + CS + // series tvdb_id
@@ -103,4 +103,11 @@ public class Storage extends SQLiteOpenHelper {
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG +
 		")";
+	
+	/*
+	private static final String[] INDEXES = {
+		"CREATE INDEX indexname ON tablename(columnname)",
+		""
+	};
+	*/
 }

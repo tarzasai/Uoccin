@@ -6,12 +6,6 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     
-    <string name="dashboard_nothing">WTF? Nothing to watch today&#8230;</string>
-    <string name="dashboard_calendar">Airing today</string>
-    <string name="dashboard_premieres">Premieres</string>
-    <string name="dashboard_availeps">Available episodes</string>
-    <string name="dashboard_availmvs">Available movies</string>
-    
     <string name="action_search">Search</string>
     <string name="action_settings">Settings</string>
     
@@ -21,8 +15,24 @@
     <string name="drawer_movies">My Movies</string>
     <string name="drawer_settings">Settings</string>
     
+    <string name="dashboard_nothing">WTF? Nothing to watch today&#8230;</string>
+    <string name="dashboard_calendar">Airing today</string>
+    <string name="dashboard_premieres">Premieres</string>
+    <string name="dashboard_availeps">Available episodes</string>
+    <string name="dashboard_availmvs">Available movies</string>
+    
+    <string name="search_title">Search titles</string>
+    <string name="search_hint">Search text</string>
+    <string name="search_type">Search for:</string>
+    <string name="search_series">Series</string>
+    <string name="search_movies">Movies</string>
+    <string name="search_no_text">Please provide some text to look for.</string>
+    
     <string name="empty_text"></string>
     <string name="hello_world">Hello world!</string>
+    <string name="dlg_btn_ok">OK</string>
+    <string name="dlg_btn_cancel">Cancel</string>
+    <string name="dlg_btn_retry">Try again</string>
     <string name="unknown_title">Unknown title</string>
     <string name="unknown_plot">Unknown plot</string>
     <string name="sample_title">Person of Interest</string>

@@ -1,12 +1,23 @@
 package net.ggelardi.uoccin;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.WindowManager.LayoutParams;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity implements DrawerFragment.NavigationDrawerCallbacks,
 		OnFragmentListener {
@@ -31,6 +42,18 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		
 		// Set up the drawer.
 		mDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
+		
+		// ???
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setHomeButtonEnabled(true);
+	}
+	
+	@Override
+	public void onBackPressed() {
+		if (mDrawerFragment.isDrawerOpen())
+			mDrawerFragment.closeDrawer();
+		else
+			super.onBackPressed();
 	}
 	
 	@Override
@@ -68,18 +91,53 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		return super.onCreateOptionsMenu(menu);
 	}
 	
+	@SuppressLint("InflateParams")
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		
-		// noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
+		if (id == R.id.action_search) {
+			LayoutInflater inflater = getLayoutInflater();
+			final View view = inflater.inflate(R.layout.dialog_search, null);
+			final EditText edt = (EditText) view.findViewById(R.id.edt_search_text);
+			final RadioGroup grp = (RadioGroup) view.findViewById(R.id.grp_search_type);
+			final AlertDialog dlg = new AlertDialog.Builder(this).setTitle(R.string.search_title).setIcon(
+				R.drawable.ic_action_search).setPositiveButton(R.string.dlg_btn_ok, null).setNegativeButton(
+				R.string.dlg_btn_cancel, null).setView(view).create();
+			edt.setTextIsSelectable(true);
+			dlg.getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+			dlg.setOnShowListener(new DialogInterface.OnShowListener() {
+			    @Override
+			    public void onShow(DialogInterface dialog) {
+			        Button btn = dlg.getButton(AlertDialog.BUTTON_POSITIVE);
+			        btn.setOnClickListener(new View.OnClickListener() {
+			            @Override
+			            public void onClick(View view) {
+			                if (TextUtils.isEmpty(edt.getText().toString())) {
+			                	Toast.makeText(dlg.getContext(), R.string.search_no_text, Toast.LENGTH_SHORT).show();
+			                	return;
+			                }
+			            	
+			                if (grp.getCheckedRadioButtonId() == R.id.rbt_search_series)
+			            		searchSeries(edt.getText().toString());
+			            	else
+			            		searchSeries(edt.getText().toString());
+			            	
+			                //Dismiss once everything is OK.
+			                dlg.dismiss();
+			            }
+			        });
+			    }
+			});
+			dlg.show();
 			return true;
 		}
-		
+		if (id == R.id.action_settings) {
+			Toast.makeText(this, "Settings action.", Toast.LENGTH_SHORT).show();
+			return true;
+		}
 		return super.onOptionsItemSelected(item);
 	}
 	
@@ -120,5 +178,13 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setTitle(mStoredTitle);
+	}
+	
+	private void searchSeries(String text) {
+		
+	}
+	
+	private void searchMovies(String text) {
+		
 	}
 }
