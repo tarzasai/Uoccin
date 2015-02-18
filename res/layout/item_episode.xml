@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="4"
-                android:text="@string/sample_plot" />
+                android:text="@string/sample_plot2" />
 
         </LinearLayout>
 
