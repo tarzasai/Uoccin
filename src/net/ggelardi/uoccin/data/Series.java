@@ -19,7 +19,11 @@ import android.text.TextUtils;
 public class Series extends Title {
 	
 	public static Series get(Context context, String imdb_id) {
-		return (Series) Title.get(context, Series.class, imdb_id, SERIES);
+		return (Series) Title.get(context, Series.class, imdb_id, SERIES, null);
+	}
+	
+	public static Series get(Context context, TVDB.Series source) {
+		return (Series) Title.get(context, Series.class, source.imdb_id, SERIES, source);
 	}
 	
 	public static List<Series> get(Context context, List<String> imdb_ids) {
@@ -27,12 +31,6 @@ public class Series extends Title {
 		for (String sid: imdb_ids)
 			res.add(Series.get(context, sid));
 		return res;
-	}
-	
-	public Series(Context context, String imdb_id) {
-		super(context, imdb_id);
-		
-		type = SERIES;
 	}
 	
 	public String language;
@@ -47,6 +45,79 @@ public class Series extends Title {
 	public String airsTime;
 	public String fanart;
 	public boolean watchlist = false;
+	
+	public Series(Context context, String imdb_id) {
+		super(context, imdb_id);
+		
+		type = SERIES;
+	}
+	
+	private void updateFromTVDB(TVDB.Series data) {
+		// title
+		if (data.overview != null && !data.overview.trim().equals("") && !plot.equals(data.overview)) {
+			plot = data.overview;
+			modified = true;
+		}
+		if (data.actors != null && !data.actors.isEmpty() && !Commons.sameSimStrLsts(actors, data.actors)) {
+			actors = new ArrayList<String>(data.actors);
+			modified = true;
+		}
+		if (data.poster != null && !data.poster.trim().equals("") && !poster.equals(data.poster)) {
+			poster = data.poster;
+			modified = true;
+		}
+		if (data.fanart != null && !data.fanart.trim().equals("") && !fanart.equals(data.fanart)) {
+			fanart = data.fanart;
+			modified = true;
+		}
+		if (data.runtime > 0 && runtime != data.runtime) {
+			runtime = data.runtime;
+			modified = true;
+		}
+		// series
+		tvdb_id = data.tvdb_id;
+		if (data.language != null && !data.language.trim().equals("") && !language.equals(data.language)) {
+			language = data.language;
+			modified = true;
+		}
+		if (data.firstAired != null && year != Commons.getDatePart(data.firstAired, Calendar.YEAR)) {
+			year = Commons.getDatePart(data.firstAired, Calendar.YEAR);
+			modified = true;
+		}
+		if (data.contentRating != null && !data.contentRating.trim().equals("") && !rated.equals(data.contentRating)) {
+			rated = data.contentRating;
+			modified = true;
+		}
+		if (data.genres != null && !data.genres.isEmpty() && !Commons.sameSimStrLsts(genres, data.genres)) {
+			genres = new ArrayList<String>(data.genres);
+			modified = true;
+		}
+		if (data.status != null && !data.status.trim().equals("") && !status.equals(data.status)) {
+			status = data.status;
+			modified = true;
+		}
+		if (data.network != null && !data.network.trim().equals("") && !network.equals(data.network)) {
+			network = data.network;
+			modified = true;
+		}
+		if (data.firstAired != null && firstAired != data.firstAired.getTime()) {
+			firstAired = data.firstAired.getTime();
+			modified = true;
+		}
+		if (data.airsDay > 0 && airsDay != data.airsDay) {
+			airsDay = data.airsDay;
+			modified = true;
+		}
+		if (data.airsTime != null && !data.airsTime.trim().equals("") && !airsTime.equals(data.airsTime)) {
+			airsTime = data.airsTime;
+			modified = true;
+		}
+	}
+
+	@Override
+	protected void load(Object source) {
+		updateFromTVDB((TVDB.Series) source);
+	}
 	
 	@Override
 	protected void load(Cursor cr) {
@@ -113,6 +184,7 @@ public class Series extends Title {
 			@Override
 			public void success(TVDB.Series result, Response response) {
 				updateFromTVDB(result);
+				save();
 				dispatch(TitleEvent.READY);
 			}
 			@Override
@@ -123,41 +195,6 @@ public class Series extends Title {
 			}
 		};
 		TVDB.getInstance().getSeries(tvdb_id, Locale.getDefault().getLanguage(), callback);
-	}
-	
-	protected void updateFromTVDB(TVDB.Series data) {
-		// title
-		if (data.overview != null && !data.overview.trim().equals(""))
-			plot = data.overview;
-		if (data.actors != null && !data.actors.isEmpty())
-			actors = new ArrayList<String>(data.actors);
-		if (data.poster != null && !data.poster.trim().equals(""))
-			poster = data.poster;
-		if (data.fanart != null && !data.fanart.trim().equals(""))
-			fanart = data.fanart;
-		if (data.runtime > 0)
-			runtime = data.runtime;
-		// series
-		tvdb_id = data.tvdb_id;
-		if (data.language != null && !data.language.trim().equals(""))
-			language = data.language;
-		if (data.firstAired != null)
-			year = Commons.getDatePart(data.firstAired, Calendar.YEAR);
-		if (data.contentRating != null && !data.contentRating.trim().equals(""))
-			rated = data.contentRating;
-		if (data.genres != null && !data.genres.isEmpty())
-			genres = new ArrayList<String>(data.genres);
-		if (data.status != null && !data.status.trim().equals(""))
-			status = data.status;
-		if (data.network != null && !data.network.trim().equals(""))
-			network = data.network;
-		if (data.firstAired != null)
-			firstAired = data.firstAired.getTime();
-		if (data.airsDay > 0)
-			airsDay = data.airsDay;
-		if (data.airsTime != null && !data.airsTime.trim().equals(""))
-			airsTime = data.airsTime;
-		save();
 	}
 	
 	public List<Episode> getSeason(int season) {

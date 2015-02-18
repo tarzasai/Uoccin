@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import net.ggelardi.uoccin.api.OMDB;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -12,7 +13,11 @@ import android.text.TextUtils;
 public class Movie extends Title {
 
 	public static Movie get(Context context, String imdb_id) {
-		return (Movie) Title.get(context, Movie.class, imdb_id, MOVIE);
+		return (Movie) Title.get(context, Movie.class, imdb_id, MOVIE, null);
+	}
+
+	public static Movie get(Context context, OMDB.Movie source) {
+		return (Movie) Title.get(context, Movie.class, source.imdb_id, MOVIE, source);
 	}
 	
 	public static List<Movie> get(Context context, List<String> imdb_ids) {
@@ -20,12 +25,6 @@ public class Movie extends Title {
 		for (String mid: imdb_ids)
 			res.add(Movie.get(context, mid));
 		return res;
-	}
-	
-	public Movie(Context context, String imdb_id) {
-		super(context, imdb_id);
-		
-		type = MOVIE;
 	}
 	
 	public String language;
@@ -44,6 +43,21 @@ public class Movie extends Title {
 	public boolean watchlist = false;
 	public boolean collected = false;
 	public boolean watched = false;
+	
+	public Movie(Context context, String imdb_id) {
+		super(context, imdb_id);
+		
+		type = MOVIE;
+	}
+	
+	private void updateFromOMDB(OMDB.Movie data) {
+		
+	}
+
+	@Override
+	protected void load(Object source) {
+		updateFromOMDB((OMDB.Movie) source);
+	}
 	
 	@Override
 	protected void load(Cursor cr) {

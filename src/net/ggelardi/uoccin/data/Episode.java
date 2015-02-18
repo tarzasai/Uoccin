@@ -17,7 +17,11 @@ import android.text.TextUtils;
 public class Episode extends Title {
 
 	public static Episode get(Context context, String imdb_id) {
-		return (Episode) Title.get(context, Episode.class, imdb_id, EPISODE);
+		return (Episode) Title.get(context, Episode.class, imdb_id, EPISODE, null);
+	}
+
+	public static Episode get(Context context, TVDB.Episode source) {
+		return (Episode) Title.get(context, Episode.class, source.imdb_id, EPISODE, source);
 	}
 	
 	public static List<Episode> get(Context context, List<String> imdb_ids) {
@@ -25,12 +29,6 @@ public class Episode extends Title {
 		for (String eid: imdb_ids)
 			res.add(Episode.get(context, eid));
 		return res;
-	}
-	
-	public Episode(Context context, String imdb_id) {
-		super(context, imdb_id);
-		
-		type = EPISODE;
 	}
 	
 	public String series_imdb_id;
@@ -44,6 +42,17 @@ public class Episode extends Title {
 	public List<String> subtitles = new ArrayList<String>();
 	public boolean collected = false;
 	public boolean watched = false;
+	
+	public Episode(Context context, String imdb_id) {
+		super(context, imdb_id);
+		
+		type = EPISODE;
+	}
+	
+	@Override
+	protected void load(Object source) {
+		updateFromTVDB((TVDB.Episode) source);
+	}
 
 	@Override
 	protected void load(Cursor cr) {
@@ -102,6 +111,7 @@ public class Episode extends Title {
 			@Override
 			public void success(TVDB.Episode result, Response response) {
 				updateFromTVDB(result);
+				save();
 				dispatch(TitleEvent.READY);
 			}
 			@Override
@@ -130,7 +140,6 @@ public class Episode extends Title {
 			writers = new ArrayList<String>(data.writers);
 		if (data.firstAired != null)
 			firstAired = data.firstAired.getTime();
-		save();
 	}
 	
 	public Series series() {

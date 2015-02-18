@@ -15,20 +15,19 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 public abstract class Title {
-	public static String MOVIE = "movie";
-	public static String SERIES = "series";
-	public static String EPISODE = "episode";
+	protected static final String MOVIE = "movie";
+	protected static final String SERIES = "series";
+	protected static final String EPISODE = "episode";
 	
-	// cache
-	protected static Map<String, Title> titlesCache = new WeakHashMap<String, Title>();
+	protected static Map<String, Title> cache = new WeakHashMap<String, Title>();
 	
-	protected static Title get(Context context, Class<?> type, String imdb_id, String table) {
-		Title title = titlesCache.get(imdb_id);
+	protected static Title get(Context context, Class<?> type, String imdb_id, String table, Object source) {
+		Title title = cache.get(imdb_id);
 		if (title == null) {
 			try {
 				Constructor<?> con = type.getConstructor(new Class[] { Context.class, String.class });
 				title = ((Title) con.newInstance(new Object[] { context, imdb_id }));
-				titlesCache.put(imdb_id, title);
+				cache.put(imdb_id, title);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -41,7 +40,11 @@ public abstract class Title {
 				cur.close();
 			}
 		}
-		if (title.isNew() || title.isOld())
+		if (source != null) {
+			title.load(source);
+			if (title.modified && !title.isNew())
+				title.save();
+		} else if (title.isNew() || title.isOld())
 			title.refresh();
 		return title;
 	}
@@ -60,12 +63,27 @@ public abstract class Title {
 	
 	protected final Context context;
 	protected final Session session;
+	protected final List<TitleEvent> listeners;
+	
+	public String imdb_id;
+	public String type;
+	public String name;
+	public String plot;
+	public List<String> actors = new ArrayList<String>();
+	public String poster;
+	public int runtime;
+	public int rating; // user's
+	public long timestamp = 0;
+	public boolean modified = false;
 	
 	public Title(Context context, String imdb_id) {
 		this.context = context;
 		this.session = Session.getInstance(context);
+		this.listeners = new ArrayList<Title.TitleEvent>();
 		this.imdb_id = imdb_id;
 	}
+	
+	protected abstract void load(Object source);
 	
 	protected void load(Cursor cr) {
 		imdb_id = cr.getString(cr.getColumnIndex("imdb_id"));
@@ -117,15 +135,10 @@ public abstract class Title {
 		}
 	}
 	
-	public String imdb_id;
-	public String type;
-	public String name;
-	public String plot;
-	public List<String> actors = new ArrayList<String>();
-	public String poster;
-	public int runtime;
-	public int rating; // user's
-	public long timestamp = 0;
+	protected void dispatch(String state) {
+		for (TitleEvent l: listeners)
+			l.changed(state);
+	}
 	
 	public boolean isNew() {
 		return timestamp <= 0;
@@ -135,30 +148,19 @@ public abstract class Title {
 		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24; // TODO preferences
 	}
 	
-	public abstract void refresh();
-	
-	public void save() {
+	public final void save() {
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
 			save(isNew());
 			db.setTransactionSuccessful();
+			modified = false;
 		} finally {
 			db.endTransaction();
 		}
 	}
 	
-	//
-	
-	private List<TitleEvent> listeners = new ArrayList<Title.TitleEvent>();
-	
-	public interface TitleEvent {
-		public static String LOADING = "TitleEvent.LOADING";
-		public static String READY = "TitleEvent.READY";
-		public static String ERROR = "TitleEvent.ERROR";
-		
-		void changed(String state);
-	}
+	public abstract void refresh();
 	
 	public void addEventListener(TitleEvent listener) {
 		listeners.add(listener);
@@ -168,8 +170,11 @@ public abstract class Title {
 		listeners.remove(listener);
 	}
 	
-	protected void dispatch(String state) {
-		for (TitleEvent l: listeners)
-			l.changed(state);
+	public interface TitleEvent {
+		public static String LOADING = "TitleEvent.LOADING";
+		public static String READY = "TitleEvent.READY";
+		public static String ERROR = "TitleEvent.ERROR";
+		
+		void changed(String state);
 	}
 }

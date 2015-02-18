@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -13,6 +14,7 @@ import retrofit.client.Request;
 import retrofit.client.Response;
 import retrofit.client.UrlConnectionClient;
 import retrofit.mime.TypedByteArray;
+import android.text.TextUtils;
 import android.util.Log;
 
 public class Commons {
@@ -65,6 +67,12 @@ public class Commons {
 		Calendar cal = Calendar.getInstance(Locale.getDefault());
 		cal.setTimeInMillis(time);
 		return cal.get(part);
+	}
+	
+	public static boolean sameSimStrLsts(List<String> list1, List<String> list2) {
+		if (list1.size() != list2.size())
+			return false;
+		return TextUtils.join(",", list1).equals(TextUtils.join(",", list2));
 	}
 
 	public static int retrofitErrorCode(RetrofitError error) {
