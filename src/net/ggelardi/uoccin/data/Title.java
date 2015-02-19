@@ -87,6 +87,10 @@ public abstract class Title {
 		this.imdb_id = imdb_id;
 	}
 	
+	protected String logTag() {
+		return this.getClass().getSimpleName();
+	}
+	
 	protected abstract void load(Object source);
 	
 	protected void load(Cursor cr) {

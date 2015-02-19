@@ -33,6 +33,17 @@ public class Series extends Title {
 		return res;
 	}
 	
+	/**
+	 * BEWARE!!! SYNCHRONOUS RPC
+	 */
+	public static List<Series> find(Context context, String text) {
+		List<Series> res = new ArrayList<Series>();
+		List<TVDB.Series> lst = TVDB.getInstance().findSeries(text, Locale.getDefault().getLanguage());
+		for (TVDB.Series series: lst)
+			res.add(Series.get(context, series));
+		return res;
+	}
+	
 	public String language;
 	public int year;
 	public String rated;
@@ -53,6 +64,10 @@ public class Series extends Title {
 	
 	private void updateFromTVDB(TVDB.Series data) {
 		// title
+		if (data.name != null && !data.name.trim().equals("") && !name.equals(data.name)) {
+			name = data.name;
+			modified = true;
+		}
 		if (data.overview != null && !data.overview.trim().equals("") && !plot.equals(data.overview)) {
 			plot = data.overview;
 			modified = true;
@@ -200,7 +215,10 @@ public class Series extends Title {
 				dispatch(TitleEvent.ERROR);
 			}
 		};
-		TVDB.getInstance().getSeries(tvdb_id, Locale.getDefault().getLanguage(), callback);
+		if (tvdb_id > 0)
+			TVDB.getInstance().getSeries(tvdb_id, Locale.getDefault().getLanguage(), callback);
+		else
+			TVDB.getInstance().getSeriesByImdb(imdb_id, Locale.getDefault().getLanguage(), callback);
 	}
 	
 	public List<Episode> getSeason(int season) {

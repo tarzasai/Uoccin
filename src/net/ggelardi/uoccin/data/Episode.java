@@ -14,6 +14,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.text.TextUtils;
+import android.util.Log;
 
 public class Episode extends Title {
 
@@ -142,6 +143,10 @@ public class Episode extends Title {
 	
 	@Override
 	public void refresh() {
+		if (tvdb_id <= 0 || season <= 0 || episode <= 0) {
+			Log.v(logTag(), "Missing tvdb_id/season/episode, cannot update...");
+			return;
+		}
 		dispatch(TitleEvent.LOADING);
 		Callback<TVDB.Episode> callback = new Callback<TVDB.Episode>() {
 			@Override

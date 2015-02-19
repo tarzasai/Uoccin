@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.ggelardi.uoccin.api.OMDB;
+import net.ggelardi.uoccin.serv.Commons;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -24,6 +28,21 @@ public class Movie extends Title {
 		List<Movie> res = new ArrayList<Movie>();
 		for (String mid: imdb_ids)
 			res.add(Movie.get(context, mid));
+		return res;
+	}
+	
+	/**
+	 * BEWARE!!! SYNCHRONOUS RPC
+	 */
+	public static List<Movie> find(Context context, String text) {
+		List<Movie> res = new ArrayList<Movie>();
+		OMDB.Search lst = OMDB.getInstance().findMovie(text);
+		for (OMDB.Movie movie: lst.results) {
+			Movie itm = Movie.get(context, movie.imdb_id);
+			itm.name = movie.title;
+			//itm.year = movie.year;
+			res.add(itm);
+		}
 		return res;
 	}
 	
@@ -48,7 +67,76 @@ public class Movie extends Title {
 	}
 	
 	private void updateFromOMDB(OMDB.Movie data) {
-		
+		// title
+		if (data.title != null && !data.title.trim().equals("") && !name.equals(data.title)) {
+			name = data.title;
+			modified = true;
+		}
+		if (data.plot != null && !data.plot.trim().equals("") && !plot.equals(data.plot)) {
+			plot = data.plot;
+			modified = true;
+		}
+		if (data.actors != null && !data.actors.isEmpty() && !Commons.sameSimStrLsts(actors, data.actors)) {
+			actors = new ArrayList<String>(data.actors);
+			modified = true;
+		}
+		if (data.poster != null && !data.poster.trim().equals("") && !poster.equals(data.poster)) {
+			poster = data.poster;
+			modified = true;
+		}
+		if (data.runtime > 0 && runtime != data.runtime) {
+			runtime = data.runtime;
+			modified = true;
+		}
+		// movie
+		if (data.language != null && !data.language.trim().equals("") && !language.equals(data.language)) {
+			language = data.language;
+			modified = true;
+		}
+		if (data.year > 0 && year != data.year) {
+			year = data.year;
+			modified = true;
+		}
+		if (data.rated != null && !data.rated.trim().equals("") && !rated.equals(data.rated)) {
+			rated = data.rated;
+			modified = true;
+		}
+		if (data.genres != null && !data.genres.isEmpty() && !Commons.sameSimStrLsts(genres, data.genres)) {
+			genres = new ArrayList<String>(data.genres);
+			modified = true;
+		}
+		if (data.director != null && !data.director.trim().equals("") && !director.equals(data.director)) {
+			director = data.director;
+			modified = true;
+		}
+		if (data.writers != null && !data.writers.isEmpty() && !Commons.sameSimStrLsts(writers, data.writers)) {
+			writers = new ArrayList<String>(data.writers);
+			modified = true;
+		}
+		if (data.country != null && !data.country.trim().equals("") && !country.equals(data.country)) {
+			country = data.country;
+			modified = true;
+		}
+		if (data.released != null && released != data.released.getTime()) {
+			released = data.released.getTime();
+			modified = true;
+		}
+		if (data.awards != null && !data.awards.trim().equals("") && !awards.equals(data.awards)) {
+			awards = data.awards;
+			modified = true;
+		}
+		if (data.metascore > 0 && metascore != data.metascore) {
+			metascore = data.metascore;
+			modified = true;
+		}
+		if (data.imdbRating > 0 && imdbRating != data.imdbRating) {
+			imdbRating = data.imdbRating;
+			modified = true;
+		}
+		if (data.imdbVotes > 0 && imdbVotes != data.imdbVotes) {
+			imdbVotes = data.imdbVotes;
+			modified = true;
+		}
 	}
 
 	@Override
@@ -140,7 +228,21 @@ public class Movie extends Title {
 	@Override
 	public void refresh() {
 		dispatch(TitleEvent.LOADING);
-		
+		Callback<OMDB.Movie> callback = new Callback<OMDB.Movie>() {
+			@Override
+			public void success(OMDB.Movie result, Response response) {
+				updateFromOMDB(result);
+				commit();
+				dispatch(TitleEvent.READY);
+			}
+			@Override
+			public void failure(RetrofitError error) {
+				// TODO Auto-generated method stub
+				
+				dispatch(TitleEvent.ERROR);
+			}
+		};
+		OMDB.getInstance().getMovie(imdb_id, callback);
 	}
 	
 	public boolean hasSubtitles() {

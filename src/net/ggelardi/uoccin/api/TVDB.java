@@ -32,20 +32,33 @@ public class TVDB {
 	private static API apiInstance;
 	
 	public interface API {
-		
+		/*
+		 * http://thetvdb.com/api/GetSeries.php?seriesname=interest&language=en
+		 */
+		@GET("/GetSeries.php")
+		List<Series> findSeries(@Query("seriesname") String text, @Query("language") String language);
+		/*
+		 * http://thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=tt1839578&language=en
+		 */
+		@GET("/GetSeriesByRemoteID.php")
+		void getSeriesByImdb(@Query("imdbid") String imdb_id, @Query("language") String language,
+			Callback<Series> callback);
+		/*
+		 * http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/en.xml
+		 */
 		@GET("/" + apiKey + "/series/{tvdb_id}/{language}.xml")
 		void getSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
-		
+		/*
+		 * http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/all/en.xml
+		 */
+		@GET("/" + apiKey + "/series/{tvdb_id}/all/{language}.xml")
+		void getFullSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
+		/*
+		 * http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/default/4/13/en.xml
+		 */
 		@GET("/" + apiKey + "/series/{tvdb_id}/default/{season}/{episode}/{language}.xml")
 		void getEpisode(@Path("tvdb_id") int tvdb_id, @Path("season") int season, @Path("episode") int episode,
 			@Path("language") String language, Callback<Episode> callback);
-		
-		@GET("/" + apiKey + "/series/{tvdb_id}/all/{language}.xml")
-		void getFullSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
-		
-		@GET("/GetSeries.php")
-		void findSeries(@Query("seriesname") String text, @Query("language") String language, Callback<List<Series>> callback);
-		
 	}
 	
 	public static API getInstance() {

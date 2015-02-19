@@ -14,6 +14,7 @@ import retrofit.converter.GsonConverter;
 import retrofit.http.GET;
 import retrofit.http.Query;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
@@ -27,17 +28,25 @@ public class OMDB {
 	private static API apiInstance;
 	
 	public interface API {
-		
+		/*
+		 * http://www.omdbapi.com/?s=terminator&type=movie&r=json
+		 */
+		@GET("/?type=movie&r=json")
+		Search findMovie(@Query("s") String text);
+		/*
+		 * http://www.omdbapi.com/?i=tt0088247&type=movie&plot=full&r=json
+		 */
 		@GET("/?plot=full&r=json")
 		void getMovie(@Query("i") String imdb_id, Callback<Movie> callback);
-		
-		// ricerche?
-		
 	}
 	
 	public static API getInstance() {
 		if (apiInstance == null) {
-			GsonBuilder gb = new GsonBuilder().registerTypeAdapter(List.class, new CommaStringsAdapter());
+			// converters
+			GsonBuilder gb = new GsonBuilder();
+			gb.registerTypeAdapter(List.class, new CommaStringsAdapter());
+			gb.registerTypeAdapter(Integer.class, new MinutesStringAdapter());
+			// retrofit client
 			apiInstance = new RestAdapter.Builder().setEndpoint(apiEndpoint).
 				setConverter(new GsonConverter(gb.create())).
 				setRequestInterceptor(new RequestInterceptor() {
@@ -58,7 +67,7 @@ public class OMDB {
 		public String title;
 		
 		@SerializedName("Year")
-		public String year;
+		public int year;
 		
 		@SerializedName("Plot")
 		public String plot;
@@ -88,13 +97,13 @@ public class OMDB {
 		public int metascore;
 		
 		@SerializedName("imdbRating")
-		public double rating;
+		public double imdbRating;
 		
 		@SerializedName("imdbVotes")
-		public int votes;
+		public int imdbVotes;
 		
 		@SerializedName("Runtime")
-		public String runtime;
+		public int runtime;
 		
 		@SerializedName("Language")
 		public String language;
@@ -110,6 +119,11 @@ public class OMDB {
 		public long getAge() {
 			return System.currentTimeMillis() - lastupdated;
 		}
+	}
+	
+	public static class Search {
+		@SerializedName("Search")
+		public List<Movie> results;
 	}
 	
 	static class CommaStringsAdapter extends TypeAdapter<List<String>> {
@@ -128,6 +142,31 @@ public class OMDB {
 				writer.nullValue();
 			else
 				writer.value(TextUtils.join(", ", value));
+		}
+	}
+	
+	static class MinutesStringAdapter extends TypeAdapter<Integer> {
+		@Override
+		public Integer read(JsonReader reader) throws IOException {
+			int value = 0;
+			if (reader.peek() != JsonToken.NULL) {
+				String text = reader.nextString();
+				if (text.endsWith(" min"))
+					try {
+					value = Integer.parseInt(text.split("\\s")[0]);
+					} catch (Exception err) {
+						Log.e("MinutesStringAdapter", "read() error", err);
+					}
+			} else
+				reader.nextNull();
+			return value;
+		}
+		@Override
+		public void write(JsonWriter writer, Integer value) throws IOException {
+			if (value == null)
+				writer.nullValue();
+			else
+				writer.value(Integer.toString(value) + " min");
 		}
 	}
 }
