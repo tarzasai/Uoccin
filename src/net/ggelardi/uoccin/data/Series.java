@@ -44,7 +44,6 @@ public class Series extends Title {
 	public int airsDay;
 	public String airsTime;
 	public String fanart;
-	public boolean watchlist = false;
 	
 	public Series(Context context, String imdb_id) {
 		super(context, imdb_id);
@@ -178,13 +177,20 @@ public class Series extends Title {
 	}
 	
 	@Override
+	protected void delete() {
+		session.getDB().delete(SERIES, "imdb_id=?", new String[] { imdb_id });
+		
+		super.delete();
+	}
+	
+	@Override
 	public void refresh() {
 		dispatch(TitleEvent.LOADING);
 		Callback<TVDB.Series> callback = new Callback<TVDB.Series>() {
 			@Override
 			public void success(TVDB.Series result, Response response) {
 				updateFromTVDB(result);
-				save();
+				commit();
 				dispatch(TitleEvent.READY);
 			}
 			@Override

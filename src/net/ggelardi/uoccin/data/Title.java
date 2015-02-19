@@ -43,7 +43,7 @@ public abstract class Title {
 		if (source != null) {
 			title.load(source);
 			if (title.modified && !title.isNew())
-				title.save();
+				title.commit();
 		} else if (title.isNew() || title.isOld())
 			title.refresh();
 		return title;
@@ -64,6 +64,10 @@ public abstract class Title {
 	protected final Context context;
 	protected final Session session;
 	protected final List<TitleEvent> listeners;
+
+	protected boolean watchlist = false;
+	protected boolean collected = false;
+	protected boolean watched = false;
 	
 	public String imdb_id;
 	public String type;
@@ -135,32 +139,14 @@ public abstract class Title {
 		}
 	}
 	
+	protected void delete() {
+		session.getDB().delete("title", "imdb_id=?", new String[] { imdb_id });
+	}
+	
 	protected void dispatch(String state) {
 		for (TitleEvent l: listeners)
 			l.changed(state);
 	}
-	
-	public boolean isNew() {
-		return timestamp <= 0;
-	}
-	
-	public boolean isOld() {
-		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24; // TODO preferences
-	}
-	
-	public final void save() {
-		SQLiteDatabase db = session.getDB();
-		db.beginTransaction();
-		try {
-			save(isNew());
-			db.setTransactionSuccessful();
-			modified = false;
-		} finally {
-			db.endTransaction();
-		}
-	}
-	
-	public abstract void refresh();
 	
 	public void addEventListener(TitleEvent listener) {
 		listeners.add(listener);
@@ -169,6 +155,64 @@ public abstract class Title {
 	public void removeEventListener(TitleEvent listener) {
 		listeners.remove(listener);
 	}
+	
+	public boolean isNew() {
+		return timestamp <= 0;
+	}
+	
+	public boolean inWatchlist() {
+		return watchlist;
+	}
+	
+	public boolean inCollection() {
+		return collected;
+	}
+	
+	public boolean isWatched() {
+		return watched;
+	}
+	
+	public void setWatchlist(boolean value) {
+		if (value != watchlist) {
+			watchlist = value;
+			commit();
+		}
+	}
+	
+	public void setCollected(boolean value) {
+		if (value != collected) {
+			collected = value;
+			commit();
+		}
+	}
+	
+	public void setWatched(boolean value) {
+		if (value != watched) {
+			watched = value;
+			commit();
+		}
+	}
+	
+	public boolean isOld() {
+		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24; // TODO preferences
+	}
+	
+	public final void commit() {
+		SQLiteDatabase db = session.getDB();
+		db.beginTransaction();
+		try {
+			if (watchlist || collected || watched)
+				save(isNew());
+			else
+				delete();
+			db.setTransactionSuccessful();
+			modified = false;
+		} finally {
+			db.endTransaction();
+		}
+	}
+	
+	public abstract void refresh();
 	
 	public interface TitleEvent {
 		public static String LOADING = "TitleEvent.LOADING";

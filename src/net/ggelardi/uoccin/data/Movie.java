@@ -40,9 +40,6 @@ public class Movie extends Title {
 	public Double imdbRating;
 	public int imdbVotes;
 	public List<String> subtitles = new ArrayList<String>();
-	public boolean watchlist = false;
-	public boolean collected = false;
-	public boolean watched = false;
 	
 	public Movie(Context context, String imdb_id) {
 		super(context, imdb_id);
@@ -131,6 +128,13 @@ public class Movie extends Title {
 		} else {
 			session.getDB().update(MOVIE, cv, "imdb_id=?", new String[] { imdb_id });
 		}
+	}
+	
+	@Override
+	protected void delete() {
+		session.getDB().delete(MOVIE, "imdb_id=?", new String[] { imdb_id });
+		
+		super.delete();
 	}
 	
 	@Override

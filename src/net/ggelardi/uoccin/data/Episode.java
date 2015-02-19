@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 
 import net.ggelardi.uoccin.api.TVDB;
+import net.ggelardi.uoccin.serv.Commons;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -40,13 +41,41 @@ public class Episode extends Title {
 	public List<String> writers = new ArrayList<String>();
 	public long firstAired;
 	public List<String> subtitles = new ArrayList<String>();
-	public boolean collected = false;
-	public boolean watched = false;
 	
 	public Episode(Context context, String imdb_id) {
 		super(context, imdb_id);
 		
 		type = EPISODE;
+	}
+	
+	protected void updateFromTVDB(TVDB.Episode data) {
+		// title
+		if (data.overview != null && !data.overview.trim().equals("") && !plot.equals(data.overview)) {
+			plot = data.overview;
+			modified = true;
+		}
+		if (data.guestStars != null && !data.guestStars.isEmpty() && !Commons.sameSimStrLsts(actors, data.guestStars)) {
+			actors = new ArrayList<String>(data.guestStars);
+			modified = true;
+		}
+		if (data.poster != null && !data.poster.trim().equals("") && !poster.equals(data.poster)) {
+			poster = data.poster;
+			modified = true;
+		}
+		// episode
+		tvdb_id = data.tvdb_id;
+		if (data.director != null && !data.director.trim().equals("") && !director.equals(data.director)) {
+			director = data.director;
+			modified = true;
+		}
+		if (data.writers != null && !data.writers.isEmpty() && !Commons.sameSimStrLsts(writers, data.writers)) {
+			writers = new ArrayList<String>(data.writers);
+			modified = true;
+		}
+		if (data.firstAired != null && firstAired != data.firstAired.getTime()) {
+			firstAired = data.firstAired.getTime();
+			modified = true;
+		}
 	}
 	
 	@Override
@@ -105,13 +134,20 @@ public class Episode extends Title {
 	}
 	
 	@Override
+	protected void delete() {
+		session.getDB().delete(EPISODE, "imdb_id = ?", new String[] { imdb_id });
+		
+		super.delete();
+	}
+	
+	@Override
 	public void refresh() {
 		dispatch(TitleEvent.LOADING);
 		Callback<TVDB.Episode> callback = new Callback<TVDB.Episode>() {
 			@Override
 			public void success(TVDB.Episode result, Response response) {
 				updateFromTVDB(result);
-				save();
+				commit();
 				dispatch(TitleEvent.READY);
 			}
 			@Override
@@ -122,24 +158,6 @@ public class Episode extends Title {
 			}
 		};
 		TVDB.getInstance().getEpisode(series_tvdb_id, season, episode, Locale.getDefault().getLanguage(), callback);
-	}
-	
-	protected void updateFromTVDB(TVDB.Episode data) {
-		// title
-		if (data.overview != null && !data.overview.trim().equals(""))
-			plot = data.overview;
-		if (data.guestStars != null && !data.guestStars.isEmpty())
-			actors = new ArrayList<String>(data.guestStars);
-		if (data.poster != null && !data.poster.trim().equals(""))
-			poster = data.poster;
-		// episode
-		tvdb_id = data.tvdb_id;
-		if (data.director != null && !data.director.trim().equals(""))
-			director = data.director;
-		if (data.writers != null && !data.writers.isEmpty())
-			writers = new ArrayList<String>(data.writers);
-		if (data.firstAired != null)
-			firstAired = data.firstAired.getTime();
 	}
 	
 	public Series series() {
