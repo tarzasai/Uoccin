@@ -1,6 +1,7 @@
 package net.ggelardi.uoccin;
 
 import net.ggelardi.uoccin.data.DashboardAdapter;
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,6 +59,13 @@ public class DashboardFragment extends BaseFragment implements AbsListView.OnIte
 		mListView.setOnItemClickListener(this);
 		
 		return view;
+	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+
+		mListener.onFragmentAttached(getResources().getString(R.string.drawer_dashboard));
 	}
 	
 	@Override

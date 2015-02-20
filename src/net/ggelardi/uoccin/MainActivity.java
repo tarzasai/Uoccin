@@ -180,6 +180,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	}
 	
 	private void searchMovies(String text) {
-		
+		SearchMoviesFragment f = SearchMoviesFragment.newInstance(text);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
 	}
 }

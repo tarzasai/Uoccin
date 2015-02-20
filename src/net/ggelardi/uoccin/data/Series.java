@@ -200,19 +200,19 @@ public class Series extends Title {
 	
 	@Override
 	public void refresh() {
-		dispatch(TitleEvent.LOADING);
+		dispatch(OnTitleEventListener.LOADING);
 		Callback<TVDB.Series> callback = new Callback<TVDB.Series>() {
 			@Override
 			public void success(TVDB.Series result, Response response) {
 				updateFromTVDB(result);
 				commit();
-				dispatch(TitleEvent.READY);
+				dispatch(OnTitleEventListener.READY);
 			}
 			@Override
 			public void failure(RetrofitError error) {
 				// TODO Auto-generated method stub
 				
-				dispatch(TitleEvent.ERROR);
+				dispatch(OnTitleEventListener.ERROR);
 			}
 		};
 		if (tvdb_id > 0)

@@ -147,19 +147,19 @@ public class Episode extends Title {
 			Log.v(logTag(), "Missing tvdb_id/season/episode, cannot update...");
 			return;
 		}
-		dispatch(TitleEvent.LOADING);
+		dispatch(OnTitleEventListener.LOADING);
 		Callback<TVDB.Episode> callback = new Callback<TVDB.Episode>() {
 			@Override
 			public void success(TVDB.Episode result, Response response) {
 				updateFromTVDB(result);
 				commit();
-				dispatch(TitleEvent.READY);
+				dispatch(OnTitleEventListener.READY);
 			}
 			@Override
 			public void failure(RetrofitError error) {
 				// TODO Auto-generated method stub
 
-				dispatch(TitleEvent.ERROR);
+				dispatch(OnTitleEventListener.ERROR);
 			}
 		};
 		TVDB.getInstance().getEpisode(series_tvdb_id, season, episode, Locale.getDefault().getLanguage(), callback);

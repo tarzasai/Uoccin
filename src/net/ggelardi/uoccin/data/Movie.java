@@ -227,19 +227,19 @@ public class Movie extends Title {
 	
 	@Override
 	public void refresh() {
-		dispatch(TitleEvent.LOADING);
+		dispatch(OnTitleEventListener.LOADING);
 		Callback<OMDB.Movie> callback = new Callback<OMDB.Movie>() {
 			@Override
 			public void success(OMDB.Movie result, Response response) {
 				updateFromOMDB(result);
 				commit();
-				dispatch(TitleEvent.READY);
+				dispatch(OnTitleEventListener.READY);
 			}
 			@Override
 			public void failure(RetrofitError error) {
 				// TODO Auto-generated method stub
 				
-				dispatch(TitleEvent.ERROR);
+				dispatch(OnTitleEventListener.ERROR);
 			}
 		};
 		OMDB.getInstance().getMovie(imdb_id, callback);

@@ -3,8 +3,9 @@ package net.ggelardi.uoccin.data;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import net.ggelardi.uoccin.serv.Session;
@@ -19,9 +20,35 @@ public abstract class Title {
 	protected static final String SERIES = "series";
 	protected static final String EPISODE = "episode";
 	
-	protected static Map<String, Title> cache = new WeakHashMap<String, Title>();
+	protected static Set<Title> cache = Collections.newSetFromMap(new WeakHashMap<Title, Boolean>());
+	
+	private static synchronized Title getFromCache(Context context, Class<?> type, String imdb_id, String table) {
+		for (Title t: cache)
+			if (t.imdb_id.equals(imdb_id))
+				return t;
+		Title title = null;
+		try {
+			Constructor<?> con = type.getConstructor(new Class[] { Context.class, String.class });
+			title = ((Title) con.newInstance(new Object[] { context, imdb_id }));
+			cache.add(title);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String sql = "select * from title t inner join " + table + " x on (x.imdb_id = t.imdb_id) where t.imdb_id = ?";
+		Cursor cur = Session.getInstance(context).getDB().rawQuery(sql, new String[] { imdb_id });
+		try {
+			if (cur.moveToFirst())
+				title.load(cur);
+		} finally {
+			cur.close();
+		}
+		return title;
+	}
+	
+	//protected static Map<String, Title> cache = new WeakHashMap<String, Title>();
 	
 	protected static Title get(Context context, Class<?> type, String imdb_id, String table, Object source) {
+		/*
 		Title title = cache.get(imdb_id);
 		if (title == null) {
 			try {
@@ -40,6 +67,8 @@ public abstract class Title {
 				cur.close();
 			}
 		}
+		*/
+		Title title = getFromCache(context, type, imdb_id, table);
 		if (source != null) {
 			title.load(source);
 			if (title.modified && !title.isNew())
@@ -63,7 +92,7 @@ public abstract class Title {
 	
 	protected final Context context;
 	protected final Session session;
-	protected final List<TitleEvent> listeners;
+	protected final List<OnTitleEventListener> listeners;
 
 	protected boolean watchlist = false;
 	protected boolean collected = false;
@@ -83,7 +112,7 @@ public abstract class Title {
 	public Title(Context context, String imdb_id) {
 		this.context = context;
 		this.session = Session.getInstance(context);
-		this.listeners = new ArrayList<Title.TitleEvent>();
+		this.listeners = new ArrayList<Title.OnTitleEventListener>();
 		this.imdb_id = imdb_id;
 	}
 	
@@ -148,15 +177,15 @@ public abstract class Title {
 	}
 	
 	protected void dispatch(String state) {
-		for (TitleEvent l: listeners)
+		for (OnTitleEventListener l: listeners)
 			l.changed(state);
 	}
 	
-	public void addEventListener(TitleEvent listener) {
+	public void addEventListener(OnTitleEventListener listener) {
 		listeners.add(listener);
 	}
 	
-	public void removeEventListener(TitleEvent listener) {
+	public void removeEventListener(OnTitleEventListener listener) {
 		listeners.remove(listener);
 	}
 	
@@ -218,7 +247,7 @@ public abstract class Title {
 	
 	public abstract void refresh();
 	
-	public interface TitleEvent {
+	public interface OnTitleEventListener {
 		public static String LOADING = "TitleEvent.LOADING";
 		public static String READY = "TitleEvent.READY";
 		public static String ERROR = "TitleEvent.ERROR";

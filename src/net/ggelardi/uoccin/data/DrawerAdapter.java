@@ -24,8 +24,8 @@ public class DrawerAdapter extends BaseAdapter {
 		
 		items.add(new DrawerItem(R.string.drawer_dashboard, R.drawable.ic_action_dashboard));
 		items.add(new DrawerItem(R.string.drawer_calendar, R.drawable.ic_action_calendar));
-		items.add(new DrawerItem(R.string.drawer_series, R.drawable.ic_action_tv));
-		items.add(new DrawerItem(R.string.drawer_movies, R.drawable.ic_action_movie));
+		items.add(new DrawerItem(R.string.drawer_favseries, R.drawable.ic_action_tv));
+		items.add(new DrawerItem(R.string.drawer_favmovies, R.drawable.ic_action_movie));
 		items.add(new DrawerItem(R.string.drawer_settings, R.drawable.ic_action_settings));
 	}
 	

@@ -56,7 +56,6 @@ public abstract class BaseFragment extends Fragment {
 		
 		try {
 			mListener = (OnFragmentListener) activity;
-			mListener.onFragmentAttached(getResources().getString(R.string.drawer_dashboard));
 		} catch (ClassCastException e) {
 			throw new ClassCastException(activity.toString() + " must implement OnFragmentInteractionListener");
 		}
