@@ -6,7 +6,6 @@ import java.util.List;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,16 +16,13 @@ import android.widget.TextView;
 
 public class MoviesAdapter extends BaseAdapter {
 	
-	private final Context context;
 	private final Session session;
 	private final LayoutInflater inflater;
 	private List<Movie> items;
-	private SearchTask finder;
 	
 	public MoviesAdapter(Context context) {
 		super();
 		
-		this.context = context;
 		session = Session.getInstance(context);
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		items = new ArrayList<Movie>();
@@ -72,8 +68,9 @@ public class MoviesAdapter extends BaseAdapter {
 		return view;
 	}
 	
-	public void search(String text) {
-		finder = (SearchTask) new SearchTask().execute(text);
+	public void setTitles(List<Movie> titles) {
+		items = titles;
+    	notifyDataSetChanged();
 	}
 	
 	static class ViewHolder {
@@ -82,21 +79,5 @@ public class MoviesAdapter extends BaseAdapter {
 		public TextView txt_mov_plot;
 		public TextView txt_mov_actors;
 		public TextView txt_mov_genres;
-	}
-	
-	private class SearchTask extends AsyncTask<String, Void, List<Movie>> {
-        @Override
-        protected void onPreExecute() {
-        	// ???
-		}
-		@Override
-		protected List<Movie> doInBackground(String... params) {
-			return Movie.find(context, params[0]);
-		}
-        @Override
-        protected void onPostExecute(List<Movie> result) {
-        	items = result;
-        	notifyDataSetChanged();
-        }
 	}
 }

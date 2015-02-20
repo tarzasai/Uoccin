@@ -74,7 +74,7 @@ public class TVDB {
 						//request.addHeader("Authorization", authData);
 						//request.addQueryParam("locale", session.getPrefs().getString(PK.LOCALE, "en"));
 					}
-				}).setLogLevel(RestAdapter.LogLevel.NONE).setClient(new WaitingUCC()).build().create(API.class);
+				}).setLogLevel(RestAdapter.LogLevel.BASIC).setClient(new WaitingUCC()).build().create(API.class);
 		}
 		return apiInstance;
 	}
@@ -155,7 +155,7 @@ public class TVDB {
 		@Convert(PipedStringsConverter.class)
 		public List<String> actors;
 		
-		@ElementList(entry="Episode", inline=true)
+		@ElementList(entry = "Episode", inline = true)
 		public List<Episode> episodes;
 	}
 	
@@ -207,12 +207,10 @@ public class TVDB {
 	
 	static class ImageUrlConverter implements Converter<String> {
 		private static String bannerUrl = "http://thetvdb.com/banners/";
-		
 		@Override
 		public String read(InputNode node) throws Exception {
 			return node.isEmpty() ? "" : bannerUrl + node.getValue();
 		}
-		
 		@Override
 		public void write(OutputNode node, String value) throws Exception {
 			if (value == null)
@@ -225,12 +223,10 @@ public class TVDB {
 	}
 	
 	static class PipedStringsConverter implements Converter<List<String>> {
-		
 		@Override
 		public List<String> read(InputNode node) throws Exception {
 			return !node.isEmpty() ? Arrays.asList(node.getValue().split("\\|")) : new ArrayList<String>();
 		}
-		
 		@Override
 		public void write(OutputNode node, List<String> value) throws Exception {
 			node.setValue(TextUtils.join("|", value));
@@ -240,12 +236,10 @@ public class TVDB {
 	static class DayName2IntConverter implements Converter<Integer> {
 		private static final List<String> days = Arrays.asList("sunday", "monday", "tuesday", "wednesday", "thursday",
 			"friday", "saturday");
-		
 		@Override
 		public Integer read(InputNode node) throws Exception {
 			return days.indexOf(node.isEmpty() ? "null" : node.getValue().toLowerCase(Locale.getDefault())) + 1;
 		}
-		
 		@Override
 		public void write(OutputNode node, Integer value) throws Exception {
 			if (value < 0)

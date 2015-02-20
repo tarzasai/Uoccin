@@ -36,8 +36,8 @@ public class Movie extends Title {
 	 */
 	public static List<Movie> find(Context context, String text) {
 		List<Movie> res = new ArrayList<Movie>();
-		OMDB.Search lst = OMDB.getInstance().findMovie(text);
-		for (OMDB.Movie movie: lst.results) {
+		OMDB.Movies lst = OMDB.getInstance().findMovie(text);
+		for (OMDB.Movie movie: lst.movies) {
 			Movie itm = Movie.get(context, movie.imdb_id);
 			itm.name = movie.title;
 			//itm.year = movie.year;
@@ -227,19 +227,21 @@ public class Movie extends Title {
 	
 	@Override
 	public void refresh() {
-		dispatch(OnTitleEventListener.LOADING);
+		super.refresh();
+		
+		dispatch(OnTitleEventListener.LOADING, null);
 		Callback<OMDB.Movie> callback = new Callback<OMDB.Movie>() {
 			@Override
 			public void success(OMDB.Movie result, Response response) {
 				updateFromOMDB(result);
 				commit();
-				dispatch(OnTitleEventListener.READY);
+				dispatch(OnTitleEventListener.READY, null);
 			}
 			@Override
 			public void failure(RetrofitError error) {
 				// TODO Auto-generated method stub
 				
-				dispatch(OnTitleEventListener.ERROR);
+				dispatch(OnTitleEventListener.ERROR, error);
 			}
 		};
 		OMDB.getInstance().getMovie(imdb_id, callback);

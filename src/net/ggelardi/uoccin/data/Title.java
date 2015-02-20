@@ -1,5 +1,6 @@
 package net.ggelardi.uoccin.data;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.util.Log;
 
 public abstract class Title {
 	protected static final String MOVIE = "movie";
@@ -89,10 +91,11 @@ public abstract class Title {
 		}
 		return lst;
 	}
+
+	private static WeakReference<OnTitleEventListener> listener;
 	
 	protected final Context context;
 	protected final Session session;
-	protected final List<OnTitleEventListener> listeners;
 
 	protected boolean watchlist = false;
 	protected boolean collected = false;
@@ -112,8 +115,13 @@ public abstract class Title {
 	public Title(Context context, String imdb_id) {
 		this.context = context;
 		this.session = Session.getInstance(context);
-		this.listeners = new ArrayList<Title.OnTitleEventListener>();
 		this.imdb_id = imdb_id;
+	}
+	
+	protected void dispatch(String state, Throwable error) {
+		OnTitleEventListener l = listener.get();
+		if (l != null)
+			l.changed(state, error);
 	}
 	
 	protected String logTag() {
@@ -176,19 +184,6 @@ public abstract class Title {
 		session.getDB().delete("title", "imdb_id=?", new String[] { imdb_id });
 	}
 	
-	protected void dispatch(String state) {
-		for (OnTitleEventListener l: listeners)
-			l.changed(state);
-	}
-	
-	public void addEventListener(OnTitleEventListener listener) {
-		listeners.add(listener);
-	}
-	
-	public void removeEventListener(OnTitleEventListener listener) {
-		listeners.remove(listener);
-	}
-	
 	public boolean isNew() {
 		return timestamp <= 0;
 	}
@@ -230,6 +225,10 @@ public abstract class Title {
 		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24; // TODO preferences
 	}
 	
+	public void refresh() {
+		Log.v(logTag(), "Refreshing title " + imdb_id);
+	}
+	
 	public final void commit() {
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
@@ -245,13 +244,15 @@ public abstract class Title {
 		}
 	}
 	
-	public abstract void refresh();
+	public static void setOnTitleEventListener(OnTitleEventListener newListener) {
+		listener = new WeakReference<OnTitleEventListener>(newListener);
+	}
 	
 	public interface OnTitleEventListener {
 		public static String LOADING = "TitleEvent.LOADING";
 		public static String READY = "TitleEvent.READY";
 		public static String ERROR = "TitleEvent.ERROR";
 		
-		void changed(String state);
+		void changed(String state, Throwable error);
 	}
 }
