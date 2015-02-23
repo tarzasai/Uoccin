@@ -1,7 +1,12 @@
 package net.ggelardi.uoccin.api;
 
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Locale;
 
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.WaitingUCC;
@@ -13,22 +18,27 @@ import org.simpleframework.xml.Root;
 import retrofit.Callback;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
-import retrofit.converter.SimpleXMLConverter;
+import retrofit.converter.ConversionException;
+import retrofit.converter.Converter;
 import retrofit.http.GET;
 import retrofit.http.Path;
 import retrofit.http.Query;
+import retrofit.mime.TypedInput;
+import retrofit.mime.TypedOutput;
 
 public class TVDB {
 	private static final String apiUrl = "http://thetvdb.com/api";
 	private static final String apiKey = "A74D017DA5F2C3B0";
 	private static API apiInstance;
 	
+	public static String preferredLanguage = Locale.getDefault().getLanguage();
+	
 	public interface API {
 		/*
 		 * http://thetvdb.com/api/GetSeries.php?seriesname=interest&language=en
 		 */
 		@GET("/GetSeries.php")
-		Data findSeries(@Query("seriesname") String text, @Query("language") String language);
+		String findSeries(@Query("seriesname") String text, @Query("language") String language);
 		/*
 		 * http://thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=tt1839578&language=en
 		 */
@@ -61,7 +71,8 @@ public class TVDB {
 	public static API getInstance() {
 		if (apiInstance == null) {
 			apiInstance = new RestAdapter.Builder().setEndpoint(apiUrl).
-				setConverter(new SimpleXMLConverter()).
+				//setConverter(new SimpleXMLConverter()).
+				setConverter(new StringConverter()).
 				setRequestInterceptor(new RequestInterceptor() {
 					@Override
 					public void intercept(RequestFacade request) {
@@ -74,19 +85,21 @@ public class TVDB {
 	
 	@Root(name = "Data")
 	public static class Data {
+		/*
 		@Element(name = "Series", required = false)
 		private Series s1;
+		*/
 		
 		@ElementList(name = "Series", inline = true, required = false)
-		private List<Series> s2;
+		private List<TVDBSeries> s2;
 		
-		public List<Series> series() {
-			List<Series> res = s2;
-			if (res == null || res.isEmpty()) {
+		public List<TVDBSeries> series() {
+			List<TVDBSeries> res = s2;
+			/*if (res == null || res.isEmpty()) {
 				res = new ArrayList<Series>();
 				if (s1 != null)
 					res.add(s1);
-			}
+			}*/
 			return res;
 		}
 		
@@ -123,20 +136,21 @@ public class TVDB {
 		private long lastupdated;
 	}
 	
-	public static class Series extends BaseType {
+	@Root
+	public static class TVDBSeries extends BaseType {
 		@Element(name = "SeriesName")
 		public String name;
 
-		@Element(name = "Overview")
+		@Element(name = "Overview", required = false)
 		public String overview;
 
-		@Element(name = "Network")
+		@Element(name = "Network", required = false)
 		public String network;
 
-		@Element(name = "Status")
+		@Element(name = "Status", required = false)
 		public String status;
 
-		@Element(name = "FirstAired")
+		@Element(name = "FirstAired", required = false)
 		public String firstAired;
 
 		@Element(name = "ContentRating", required = false)
@@ -160,10 +174,10 @@ public class TVDB {
 		@Element(required = false)
 		public String fanart;
 		
-		@Element(name = "Genre")
+		@Element(name = "Genre", required = false)
 		public String genres;
 
-		@Element(name = "Actors")
+		@Element(name = "Actors", required = false)
 		public String actors;
 
 		@Element(required = false)
@@ -200,6 +214,35 @@ public class TVDB {
 		
 		@Element(name = "seasonid")
 		public int tvdb_season;
+	}
+	
+	static class StringConverter implements Converter {
+		@Override
+		public Object fromBody(TypedInput typedInput, Type arg1) throws ConversionException {
+			String text = null;
+	        try {
+	            text = fromStream(typedInput.in());
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	        return text;
+		}
+		@Override
+		public TypedOutput toBody(Object arg0) {
+			return null;
+		}
+		// Custom method to convert stream from request to string
+	    public static String fromStream(InputStream in) throws IOException {
+	        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+	        StringBuilder out = new StringBuilder();
+	        String newLine = System.getProperty("line.separator");
+	        String line;
+	        while ((line = reader.readLine()) != null) {
+	            out.append(line);
+	            out.append(newLine);
+	        }
+	        return out.toString();
+	    }
 	}
 	
 	//@formatter:off

@@ -1,5 +1,8 @@
 package net.ggelardi.uoccin.serv;
 
+import java.util.Locale;
+
+import net.ggelardi.uoccin.serv.Commons.PK;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -61,6 +64,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = cm.getActiveNetworkInfo();
 		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
+	}
+	
+	public String language() {
+		return prefs.getString(PK.LOCALE, Locale.getDefault().getLanguage());
 	}
 	
 	public Picasso picasso() {

@@ -1,7 +1,9 @@
 package net.ggelardi.uoccin.serv;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
+import java.text.DateFormatSymbols;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -14,6 +16,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+
 import retrofit.RetrofitError;
 import retrofit.client.Request;
 import retrofit.client.Response;
@@ -25,12 +34,14 @@ import android.util.Log;
 public class Commons {
 	public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 5.1; rv:16.0) Gecko/20100101 Firefox/16.0";
 	
-	/*
+	public static final String[] weekdays = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
+	
 	static class PK {
+		public static final String LOCALE = "pk_locale";
+		/*
 		public static final String USERNAME = "Username";
 		public static final String REMOTEKEY = "RemoteKey";
 		public static final String STARTUP = "pk_startup";
-		public static final String LOCALE = "pk_locale";
 		public static final String PROF_INFO = "pk_prof_info";
 		public static final String PROF_LIST = "pk_prof_list";
 		public static final String FEED_UPD = "pk_feed_upd";
@@ -47,36 +58,7 @@ public class Commons {
 		//
 		public static final String SERV_MSGS_TIME = "pk_serv_msgs_time";
 		public static final String SERV_MSGS_CURS = "pk_serv_msgs_cursor";
-	}
-	*/
-	
-	public static class DateStuff {
-		private static Map<String, SimpleDateFormat> locs = new HashMap<>();
-		private static Map<String, SimpleDateFormat> engs = new HashMap<>();
-		private static final List<String> engdays = Arrays.asList("sunday", "monday", "tuesday", "wednesday",
-				"thursday", "friday", "saturday");
-		
-		public static synchronized SimpleDateFormat locale(String format) {
-			SimpleDateFormat sdf = locs.get(format);
-			if (sdf == null) {
-				sdf = new SimpleDateFormat(format, Locale.getDefault());
-				locs.put(format, sdf);
-			}
-			return sdf;
-		}
-		
-		public static synchronized SimpleDateFormat english(String format) {
-			SimpleDateFormat sdf = engs.get(format);
-			if (sdf == null) {
-				sdf = new SimpleDateFormat(format, Locale.ENGLISH);
-				engs.put(format, sdf);
-			}
-			return sdf;
-		}
-		
-		public static int day2int(String dayname) {
-			return TextUtils.isEmpty(dayname) ? 0 : engdays.indexOf(dayname.toLowerCase(Locale.getDefault())) + 1;
-		}
+		*/
 	}
 	
 	public static long convertTZ(long timestamp, String fromTimeZone, String toTimeZone) {
@@ -171,6 +153,62 @@ public class Commons {
 			connection.setConnectTimeout(30 * 1000); // 30 sec
 			connection.setReadTimeout(60 * 1000); // 60 sec
 			return connection;
+		}
+	}
+	
+	public static class DateStuff {
+		private static Map<String, SimpleDateFormat> locs = new HashMap<>();
+		private static Map<String, SimpleDateFormat> engs = new HashMap<>();
+		private static final List<String> engdays = Arrays.asList("sunday", "monday", "tuesday", "wednesday",
+				"thursday", "friday", "saturday");
+		
+		public static synchronized SimpleDateFormat locale(String format) {
+			SimpleDateFormat sdf = locs.get(format);
+			if (sdf == null) {
+				sdf = new SimpleDateFormat(format, Locale.getDefault());
+				locs.put(format, sdf);
+			}
+			return sdf;
+		}
+		
+		public static synchronized SimpleDateFormat english(String format) {
+			SimpleDateFormat sdf = engs.get(format);
+			if (sdf == null) {
+				sdf = new SimpleDateFormat(format, Locale.ENGLISH);
+				engs.put(format, sdf);
+			}
+			return sdf;
+		}
+		
+		public static int day2int(String dayname) {
+			return TextUtils.isEmpty(dayname) ? 0 : engdays.indexOf(dayname.toLowerCase(Locale.getDefault())) + 1;
+		}
+	}
+	
+	public static class XML {
+		
+		public static Document str2xml(String text) {
+			try {
+				DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+				DocumentBuilder bld = fac.newDocumentBuilder();
+				InputSource is = new InputSource(new StringReader(text));
+				Document doc = bld.parse(is);
+				doc.getDocumentElement().normalize();
+				return doc;
+			} catch (Exception err) {
+				Log.e("Commons.XML", "str2xml", err);
+				return null;
+			}
+		}
+		
+		public static String nodeText(Element node, String ... names) {
+			for (String name: names)
+				try {
+					return node.getElementsByTagName(name).item(0).getTextContent();
+				} catch (Exception err) {
+					//Log.e("Commons.XML", "nodeText(" + name + ")", err); // debug only.
+				}
+			return "";
 		}
 	}
 }

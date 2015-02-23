@@ -12,6 +12,11 @@ import java.util.WeakHashMap;
 import net.ggelardi.uoccin.api.TVDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Session;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -41,7 +46,6 @@ public class Series {
 	public String plot;
 	public String poster;
 	public List<String> genres = new ArrayList<String>();
-	public String language;
 	public List<String> actors = new ArrayList<String>();
 	public String imdb_id;
 	public String status;
@@ -51,6 +55,7 @@ public class Series {
 	public String airsTime;
 	public int runtime;
 	public String rated;
+	public String banner;
 	public String fanart;
 	public long timestamp = 0;
 	public boolean modified = false;
@@ -58,6 +63,7 @@ public class Series {
 	public Series(Context context, String tvdb_id) {
 		this.session = Session.getInstance(context);
 		this.tvdb_id = tvdb_id;
+		this.poster = "http://thetvdb.com/banners/posters/" + tvdb_id + "-1.jpg";
 	}
 	
 	private static void dispatch(String state, Throwable error) {
@@ -93,9 +99,10 @@ public class Series {
 		return res;
 	}
 	
-	public static Series get(Context context, TVDB.Series source) {
-		Series res = Series.getInstance(context, source.tvdb_id);
-		res.load(source);
+	public static Series get(Context context, Element xml) {
+		String tvdb_id = xml.getElementsByTagName("id").item(0).getTextContent();
+		Series res = Series.getInstance(context, tvdb_id);
+		res.load(xml);
 		if (res.modified && !res.isNew())
 			res.commit();
 		return res;
@@ -126,11 +133,30 @@ public class Series {
 	
 	public static List<Series> find(Context context, String text) {
 		List<Series> res = new ArrayList<Series>();
-		TVDB.Data lst = TVDB.getInstance().findSeries(text, Locale.getDefault().getLanguage());
-		if (!lst.series().isEmpty())
-			for (TVDB.Series series: lst.series())
-				res.add(Series.get(context, series));
-		else
+		String response;
+		try {
+			response = TVDB.getInstance().findSeries(text, TVDB.preferredLanguage);
+		} catch (Exception err) {
+			Log.e(LOGTAG, "find", err);
+			dispatch(OnTitleListener.ERROR, null);
+			return res;
+		}
+		Document doc = Commons.XML.str2xml(response);
+		if (doc != null) {
+			List<String> ids = new ArrayList<String>();
+			NodeList lst = doc.getElementsByTagName("Series");
+			Series series;
+			for (int i = 0; i < lst.getLength(); i++) {
+				// for non-english requests the search API can returns the translated version (if exists) AND the
+				// english version of each series...
+				series = Series.get(context, (Element)lst.item(i));
+				if (!ids.contains(series.tvdb_id)) {
+					res.add(series);
+					ids.add(series.tvdb_id);
+				}
+			}
+		}
+		if (res.isEmpty())
 			dispatch(OnTitleListener.NOTFOUND, null);
 		return res;
 	}
@@ -139,93 +165,112 @@ public class Series {
 		listeners.add(aListener);
 	}
 	
-	private void updateFromTVDB(TVDB.Series data) {
-		if (!TextUtils.isEmpty(data.name) && (TextUtils.isEmpty(name) || !name.equals(data.name))) {
-			name = data.name;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.overview) && (TextUtils.isEmpty(plot) || !plot.equals(data.overview))) {
-			plot = data.overview;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.poster) && (TextUtils.isEmpty(poster) || !poster.equals(data.poster))) {
-			poster = data.poster;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.genres)) {
-			List<String> chk = Arrays.asList(data.genres.split("|"));
-			if (!Commons.sameStringLists(genres, chk)) {
-				genres = new ArrayList<String>(chk);
+	protected void load(Element xml) {
+		String chk;
+		String lang = Commons.XML.nodeText(xml, "language", "Language");
+		if (!TextUtils.isEmpty(lang)) {
+			chk = Commons.XML.nodeText(xml, "SeriesName");
+			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) ||
+				(!name.equals(chk) && lang.equals(TVDB.preferredLanguage)))) {
+				name = chk;
+				modified = true;
+			}
+			chk = Commons.XML.nodeText(xml, "Overview");
+			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(plot) ||
+				(!plot.equals(chk) && lang.equals(TVDB.preferredLanguage)))) {
+				plot = chk;
 				modified = true;
 			}
 		}
-		if (!TextUtils.isEmpty(data.language) && (TextUtils.isEmpty(language) || !language.equals(data.language))) {
-			language = data.language;
-			modified = true;
-		} else if (!TextUtils.isEmpty(data.Language) && (TextUtils.isEmpty(language) || !language.equals(data.Language))) {
-			language = data.Language;
+		chk = Commons.XML.nodeText(xml, "poster");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
+			poster = "http://thetvdb.com/banners/" + chk;
 			modified = true;
 		}
-		if (!TextUtils.isEmpty(data.actors)) {
-			List<String> chk = Arrays.asList(data.actors.split("|"));
-			if (!Commons.sameStringLists(actors, chk)) {
-				actors = new ArrayList<String>(chk);
+		chk = Commons.XML.nodeText(xml, "banner");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(banner) || !banner.equals(chk))) {
+			banner = "http://thetvdb.com/banners/" + chk;
+			modified = true;
+		}
+		chk = Commons.XML.nodeText(xml, "fanart");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(fanart) || !fanart.equals(chk))) {
+			fanart = "http://thetvdb.com/banners/" + chk;
+			modified = true;
+		}
+		chk = Commons.XML.nodeText(xml, "Genre");
+		if (!TextUtils.isEmpty(chk)) {
+			List<String> lst = Arrays.asList(chk.split("|"));
+			if (!Commons.sameStringLists(genres, lst)) {
+				genres = new ArrayList<String>(lst);
 				modified = true;
 			}
 		}
-		if (!TextUtils.isEmpty(data.imdb_id) && (TextUtils.isEmpty(imdb_id) || !imdb_id.equals(data.imdb_id))) {
-			imdb_id = data.imdb_id;
+		chk = Commons.XML.nodeText(xml, "Actors");
+		if (!TextUtils.isEmpty(chk)) {
+			List<String> lst = Arrays.asList(chk.split("|"));
+			if (!Commons.sameStringLists(actors, lst)) {
+				actors = new ArrayList<String>(lst);
+				modified = true;
+			}
+		}
+		chk = Commons.XML.nodeText(xml, "IMDB_ID");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(imdb_id) || !imdb_id.equals(chk))) {
+			imdb_id = chk;
 			modified = true;
 		}
-		if (!TextUtils.isEmpty(data.status) && (TextUtils.isEmpty(status) || !status.equals(data.status))) {
-			status = data.status;
+		chk = Commons.XML.nodeText(xml, "Status");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(status) || !status.equals(chk))) {
+			status = chk;
 			modified = true;
 		}
-		if (!TextUtils.isEmpty(data.network) && (TextUtils.isEmpty(network) || !network.equals(data.network))) {
-			network = data.network;
+		chk = Commons.XML.nodeText(xml, "Network");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(network) || !network.equals(chk))) {
+			network = chk;
 			modified = true;
 		}
-		if (!TextUtils.isEmpty(data.firstAired)) {
-			long chk;
+		chk = Commons.XML.nodeText(xml, "FirstAired");
+		if (!TextUtils.isEmpty(chk)) {
 			try {
-				chk = Commons.DateStuff.english("yyyy-MM-dd").parse(data.firstAired).getTime();
+				long t = Commons.DateStuff.english("yyyy-MM-dd").parse(chk).getTime();
+				if (t > 0) {
+					firstAired = t;
+					year = Commons.getDatePart(firstAired, Calendar.YEAR);
+					modified = true;
+				}
 			} catch (Exception err) {
-				Log.e("updateFromTVDB", data.firstAired, err);
-				chk = 0;
+				Log.e(LOGTAG, chk, err);
 			}
-			if (chk > 0) {
-				firstAired = chk;
-				year = Commons.getDatePart(firstAired, Calendar.YEAR);
+		}
+		chk = Commons.XML.nodeText(xml, "Airs_DayOfWeek");
+		if (!TextUtils.isEmpty(chk)) {
+			int d = Commons.DateStuff.day2int(chk);
+			if (d > 0) {
+				airsDay = d;
 				modified = true;
 			}
 		}
-		if (!TextUtils.isEmpty(data.airsDay)) {
-			int chk = Commons.DateStuff.day2int(data.airsDay);
-			if (chk > 0) {
-				airsDay = chk;
-				modified = true;
+		chk = Commons.XML.nodeText(xml, "Airs_Time");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(airsTime) || !airsTime.equals(chk))) {
+			airsTime = chk;
+			modified = true;
+		}
+		chk = Commons.XML.nodeText(xml, "Runtime");
+		if (!TextUtils.isEmpty(chk)) {
+			try {
+				int r = Integer.parseInt(chk);
+				if (r > 0 && r != runtime) {
+					runtime = r;
+					modified = true;
+				}
+			} catch (Exception err) {
+				Log.e(LOGTAG, chk, err);
 			}
 		}
-		if (!TextUtils.isEmpty(data.airsTime) && (TextUtils.isEmpty(airsTime) || !airsTime.equals(data.airsTime))) {
-			airsTime = data.airsTime;
+		chk = Commons.XML.nodeText(xml, "ContentRating");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(rated) || !rated.equals(chk))) {
+			rated = chk;
 			modified = true;
 		}
-		if (data.runtime > 0 && runtime != data.runtime) {
-			runtime = data.runtime;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.contentRating) && (TextUtils.isEmpty(rated) || !rated.equals(data.contentRating))) {
-			rated = data.contentRating;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.fanart) && (TextUtils.isEmpty(fanart) || !fanart.equals(data.fanart))) {
-			fanart = data.fanart;
-			modified = true;
-		}
-	}
-
-	protected void load(Object source) {
-		updateFromTVDB((TVDB.Series) source);
 	}
 	
 	protected void load(Cursor cr) {
@@ -246,7 +291,6 @@ public class Series {
 		ci = cr.getColumnIndex("genres");
 		if (!cr.isNull(ci))
 			genres = Arrays.asList(cr.getString(ci).split(","));
-		language = cr.getString(cr.getColumnIndex("language"));
 		ci = cr.getColumnIndex("actors");
 		if (!cr.isNull(ci))
 			actors = Arrays.asList(cr.getString(ci).split(","));
@@ -294,7 +338,6 @@ public class Series {
 		cv.put("plot", plot);
 		cv.put("poster", poster);
 		cv.put("genres", TextUtils.join(",", genres));
-		cv.put("language", language);
 		cv.put("actors", TextUtils.join(",", actors));
 		cv.put("imdb_id", imdb_id);
 		cv.put("status", status);
@@ -328,7 +371,7 @@ public class Series {
 		Callback<TVDB.Data> callback = new Callback<TVDB.Data>() {
 			@Override
 			public void success(TVDB.Data result, Response response) {
-				updateFromTVDB(result.series().get(0));
+				//updateFromTVDB(result.series().get(0));
 				commit();
 				dispatch(OnTitleListener.READY, null);
 			}
@@ -368,6 +411,18 @@ public class Series {
 	
 	public boolean isOld() {
 		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24; // TODO preferences
+	}
+	
+	public String infoLine() {
+		String res = year > 0 ? Integer.toString(year) : "N/A";
+		if (!TextUtils.isEmpty(network))
+			res += " - " + network;
+		if (airsDay > 0) {
+			res += " - " + Commons.weekdays[airsDay];
+			if (!TextUtils.isEmpty(airsTime))
+				res += " " + airsTime;
+		}
+		return res;
 	}
 	
 	public boolean inWatchlist() {

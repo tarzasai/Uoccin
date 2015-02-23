@@ -49,8 +49,8 @@ public class SeriesAdapter extends BaseAdapter {
 		ViewHolder vh;
 		View view = convertView;
 		if (view == null) {
-			view = inflater.inflate(R.layout.item_movie, parent, false);
 			vh = new ViewHolder();
+			view = inflater.inflate(R.layout.item_series, parent, false);
 			vh.img_ser_poster = (ImageView) view.findViewById(R.id.img_ser_poster);
 			vh.txt_ser_name = (TextView) view.findViewById(R.id.txt_ser_name);
 			vh.txt_ser_info = (TextView) view.findViewById(R.id.txt_ser_info);
@@ -64,10 +64,20 @@ public class SeriesAdapter extends BaseAdapter {
 		Series ser = getItem(position);
 		session.picasso().load(ser.poster).placeholder(R.drawable.ic_action_image).fit().into(vh.img_ser_poster);
 		vh.txt_ser_name.setText(ser.name);
-		vh.txt_ser_info.setText(Integer.toString(ser.year) + " " + ser.network);
+		vh.txt_ser_info.setText(ser.infoLine());
 		vh.txt_ser_plot.setText(ser.plot);
-		vh.txt_ser_actors.setText(TextUtils.join(", ", ser.actors));
-		vh.txt_ser_genres.setText(TextUtils.join(", ", ser.genres).toLowerCase(Locale.getDefault()));
+		if (ser.actors.isEmpty())
+			vh.txt_ser_actors.setVisibility(View.GONE);
+		else {
+			vh.txt_ser_actors.setVisibility(View.VISIBLE);
+			vh.txt_ser_actors.setText(TextUtils.join(", ", ser.actors));
+		}
+		if (ser.genres.isEmpty())
+			vh.txt_ser_genres.setVisibility(View.GONE);
+		else {
+			vh.txt_ser_genres.setVisibility(View.VISIBLE);
+			vh.txt_ser_genres.setText(TextUtils.join(", ", ser.genres).toLowerCase(Locale.getDefault()));
+		}
 		return view;
 	}
 	

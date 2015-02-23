@@ -73,7 +73,6 @@ public class Storage extends SQLiteOpenHelper {
 		"plot" + DT_STR + CS +
 		"poster" + DT_STR + CS + // url
 		"genres" + DT_STR + CS + // comma delimited
-		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
 		"actors" + DT_STR + CS + // comma delimited
 		"imdb_id" + DT_STR + CS +
 		"status" + DT_STR + CC_NNU + " CHECK (status IN ('continuing', 'ended'))" + CS +
@@ -83,6 +82,7 @@ public class Storage extends SQLiteOpenHelper {
 		"airsTime" + DT_STR + CS +
 		"runtime" + DT_INT + CS + // minutes
 		"rated" + DT_STR + CS +
+		"banner" + DT_STR + CS + // url
 		"fanart" + DT_STR + CS + // url
 		"rating" + DT_INT + CS +
 		"watchlist" + DT_FLG + CS +
