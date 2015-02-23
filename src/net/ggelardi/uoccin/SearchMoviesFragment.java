@@ -4,8 +4,7 @@ import java.util.List;
 
 import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.data.MoviesAdapter;
-import net.ggelardi.uoccin.data.Title;
-import net.ggelardi.uoccin.data.Title.OnTitleEventListener;
+import net.ggelardi.uoccin.data.OnTitleListener;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,11 +43,13 @@ public class SearchMoviesFragment extends BaseFragment implements AbsListView.On
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_search, container, false);
+		
+		getActivity().setTitle(getString(R.string.drawer_fndmovies));
 
 		mListView = (AbsListView) view.findViewById(android.R.id.list);
-		((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 		
 		mListView.setOnItemClickListener(this);
+		((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 		
 		return view;
 	}
@@ -56,8 +57,32 @@ public class SearchMoviesFragment extends BaseFragment implements AbsListView.On
 	@Override
 	public void onResume() {
 		super.onResume();
-
-		Title.setOnTitleEventListener(null);
+		
+		Movie.addOnTitleEventListener(new OnTitleListener() {
+			@Override
+			public void changed(final String state, final Throwable error) {
+				Log.v(logTag(), state);
+				final Activity context = getActivity();
+				if (context != null)
+					context.runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							if (state.equals(OnTitleListener.NOTFOUND)) {
+								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_LONG).show();
+								//mAdapter.notifyDataSetChanged();
+							} else if (state.equals(OnTitleListener.LOADING)) {
+								
+							} else if (state.equals(OnTitleListener.ERROR)) {
+								Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+								//mAdapter.notifyDataSetChanged();
+							} else if (state.equals(OnTitleListener.READY)) {
+								mAdapter.notifyDataSetChanged();
+							}
+						}
+					});
+			}
+		});
+		
 		finder = (SearchTask) new SearchTask().execute(mSearchText);
 	}
 	
@@ -76,18 +101,13 @@ public class SearchMoviesFragment extends BaseFragment implements AbsListView.On
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+
+		//setHasOptionsMenu(true);
 		
 		if (savedInstanceState == null)
 			return;
 
 		mSearchText = savedInstanceState.getString("text", null);
-	}
-	
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-
-		mListener.onFragmentAttached(getResources().getString(R.string.drawer_fndmovies));
 	}
 
 	@Override
@@ -107,18 +127,10 @@ public class SearchMoviesFragment extends BaseFragment implements AbsListView.On
 		}
         @Override
         protected void onPostExecute(List<Movie> result) {
-        	mAdapter.setTitles(result);
-    		Title.setOnTitleEventListener(new OnTitleEventListener() {
-    			@Override
-    			public void changed(String state, Throwable error) {
-    				Log.v(logTag(), state);
-    				
-    				if (state.equals(OnTitleEventListener.READY))
-    					mAdapter.notifyDataSetChanged();
-    				else if (state.equals(OnTitleEventListener.ERROR))
-    					Toast.makeText(getActivity(), error.getMessage(), Toast.LENGTH_SHORT).show();
-    			}
-    		});
+        	if (!result.isEmpty())
+        		mAdapter.setTitles(result);
+        	else
+        		getActivity().getFragmentManager().popBackStack();
         }
 	}
 }

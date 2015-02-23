@@ -1,22 +1,15 @@
 package net.ggelardi.uoccin.api;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.WaitingUCC;
 
 import org.simpleframework.xml.Attribute;
+import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
-import org.simpleframework.xml.convert.Convert;
-import org.simpleframework.xml.convert.Converter;
-import org.simpleframework.xml.stream.InputNode;
-import org.simpleframework.xml.stream.OutputNode;
 
 import retrofit.Callback;
 import retrofit.RequestInterceptor;
@@ -24,8 +17,6 @@ import retrofit.RestAdapter;
 import retrofit.converter.SimpleXMLConverter;
 import retrofit.http.GET;
 import retrofit.http.Query;
-import android.text.TextUtils;
-import android.util.Log;
 
 public class OMDB {
 	private static final String apiEndpoint = "http://www.omdbapi.com/";
@@ -36,26 +27,20 @@ public class OMDB {
 		 * http://www.omdbapi.com/?s=terminator&type=movie&r=xml
 		 */
 		@GET("/?type=movie&r=xml")
-		Movies findMovie(@Query("s") String text);
+		Data findMovie(@Query("s") String text);
 		/*
 		 * http://www.omdbapi.com/?i=tt0088247&type=movie&plot=full&r=xml
 		 */
 		@GET("/?plot=full&r=xml")
-		void getMovie(@Query("i") String imdb_id, Callback<Movie> callback);
+		void getMovie(@Query("i") String imdb_id, Callback<Data> callback);
 	}
 	
 	public static API getInstance() {
 		if (apiInstance == null) {
-			/*
-			// converters
-			GsonBuilder gb = new GsonBuilder();
-			gb.registerTypeAdapter(List.class, new CommaStringsAdapter());
-			gb.registerTypeAdapter(Date.class, new StringDateAdapter());
-			gb.registerTypeAdapter(Integer.class, new MinutesStringAdapter());
-			*/
-			// retrofit client
+			//Strategy strategy = new AnnotationStrategy();
+			//Serializer serializer = new Persister(strategy);
 			apiInstance = new RestAdapter.Builder().setEndpoint(apiEndpoint).
-				//setConverter(new GsonConverter(gb.create())).
+				//setConverter(new SimpleXMLConverter(serializer)).
 				setConverter(new SimpleXMLConverter()).
 				setRequestInterceptor(new RequestInterceptor() {
 					@Override
@@ -66,99 +51,94 @@ public class OMDB {
 		}
 		return apiInstance;
 	}
+
+	@Root(name = "root")
+	public static class Data {
+		@Attribute
+		public boolean response;
+		@Element(required = false)
+		public String error;
+		
+		@ElementList(entry = "movie", inline = true, required = false)
+		private List<Movie> ml1;
+		
+		@ElementList(entry = "Movie", inline = true, required = false)
+		private List<Movie> ml2;
+		
+		public List<Movie> movies() {
+			return ml1 != null && !ml1.isEmpty() ? ml1 :
+				(ml2 != null && !ml2.isEmpty() ? ml2 : new ArrayList<Movie>());
+		}
+	}
 	
-	@Root(name = "movie")
 	public static class Movie {
-		//@SerializedName("imdbID")
-		@Attribute(name = "imdbID")
-		public String imdb_id;
+		@Attribute
+		public String imdbID;
 		
-		//@SerializedName("Title")
-		@Attribute(name = "Title")
+		@Attribute(required = false)
 		public String title;
+		@Attribute(required = false)
+		public String Title;
+
+		@Attribute(required = false)
+		public String year;
+		@Attribute(required = false)
+		public String Year;
 		
-		//@SerializedName("Year")
-		@Attribute(name = "Year")
-		public int year;
+		@Attribute(required = false)
+		public String type;
+		@Attribute(required = false)
+		public String Type;
 		
-		//@SerializedName("Plot")
-		@Attribute(name = "Plot")
+		@Attribute(required = false)
 		public String plot;
 		
-		//@SerializedName("Director")
-		@Attribute(name = "Director")
+		@Attribute(required = false)
 		public String director;
 		
-		//@SerializedName("Actors")
-		@Attribute(name = "Actors")
-		@Convert(CommaStringsConverter.class)
-		public List<String> actors;
+		@Attribute(required = false)
+		public String writer;
 		
-		//@SerializedName("Writer")
-		@Attribute(name = "Writer")
-		@Convert(CommaStringsConverter.class)
-		public List<String> writers;
+		@Attribute(required = false)
+		public String actors;
 		
-		//@SerializedName("Genre")
-		@Attribute(name = "Genre")
-		@Convert(CommaStringsConverter.class)
-		public List<String> genres;
+		@Attribute(required = false)
+		public String genre;
 		
-		//@SerializedName("Released")
-		@Attribute(name = "Released")
-		@Convert(DateStringConverter.class)
-		public Date released;
+		@Attribute(required = false)
+		public String released;
 		
-		//@SerializedName("Rated")
-		@Attribute(name = "Rated")
+		@Attribute(required = false)
 		public String rated;
 		
-		//@SerializedName("Awards")
-		@Attribute(name = "Awards")
+		@Attribute(required = false)
 		public String awards;
 		
-		//@SerializedName("Metascore")
-		@Attribute(name = "Metascore")
-		public int metascore;
+		@Attribute(required = false)
+		public String metascore;
 		
-		//@SerializedName("imdbRating")
-		@Attribute(name = "imdbRating")
-		public double imdbRating;
+		@Attribute(required = false)
+		public String imdbRating;
 		
-		//@SerializedName("imdbVotes")
-		@Attribute(name = "imdbVotes")
-		public int imdbVotes;
+		@Attribute(required = false)
+		public String imdbVotes;
 		
-		//@SerializedName("Runtime")
-		@Attribute(name = "Runtime")
-		@Convert(MinutesStringConverter.class)
-		public int runtime;
+		@Attribute(required = false)
+		public String runtime;
 		
-		//@SerializedName("Language")
-		@Attribute(name = "Language")
+		@Attribute(required = false)
 		public String language;
 		
-		//@SerializedName("Country")
-		@Attribute(name = "Country")
+		@Attribute(required = false)
 		public String country;
 		
-		//@SerializedName("Poster")
-		@Attribute(name = "Poster")
+		@Attribute(required = false)
 		public String poster;
 	}
 	
-	@Root(name = "root")
-	public class Movies {
-		@ElementList(entry = "Movie", inline = true)
-		public List<Movie> movies;
-	}
-	
+	//@formatter:off
 	/*
-	public static class Search {
-		@SerializedName("Search")
-		public List<Movie> results;
-	}
-	*/
+	// I tried converters but I wasn't able to use them...
 	
 	static class CommaStringsConverter implements Converter<List<String>> {
 		@Override
@@ -173,7 +153,7 @@ public class OMDB {
 				node.setValue(TextUtils.join(", ", value));
 		}
 	}
-	
+
 	static class MinutesStringConverter implements Converter<Integer> {
 		@Override
 		public Integer read(InputNode node) throws Exception {
@@ -195,9 +175,9 @@ public class OMDB {
 			node.setValue(Integer.toString(value) + " min");
 		}
 	}
-	
+
 	static class DateStringConverter implements Converter<Date> {
-		private final SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+		private final SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
 		@Override
 		public Date read(InputNode node) throws Exception {
 			if (!node.isEmpty() && !node.getValue().equals("N/A"))
@@ -218,88 +198,26 @@ public class OMDB {
 		}
 	}
 	
-	/*
-	
-	static class CommaStringsAdapter extends TypeAdapter<List<String>> {
-		@Override
-		public List<String> read(JsonReader reader) throws IOException {
-			String value = "";
-			if (reader.peek() != JsonToken.NULL)
-				value = reader.nextString();
-			else
-				reader.nextNull();
-			return Arrays.asList(value.split(","));
-		}
-		@Override
-		public void write(JsonWriter writer, List<String> value) throws IOException {
-			if (value == null)
-				writer.nullValue();
-			else
-				writer.value(TextUtils.join(", ", value));
-		}
-	}
-	
-	static class MinutesStringAdapter extends TypeAdapter<Integer> {
-		@Override
-		public Integer read(JsonReader reader) throws IOException {
-			if (reader.peek() != JsonToken.NULL) {
-				String text = reader.nextString();
-				try {
-					if (text.equals("N/A"))
-						return 0;
-					if (text.endsWith(" min"))
-						return Integer.parseInt(text.split("\\s")[0]);
-					return Integer.parseInt(text);
-				} catch (Exception err) {
-					Log.e("MinutesStringAdapter", text, err);
-					err.printStackTrace();
-				}
-			} else
-				reader.nextNull();
-			return null;
-		}
-		@Override
-		public void write(JsonWriter writer, Integer value) throws IOException {
-			if (value == null)
-				writer.nullValue();
-			else
-				writer.value(Integer.toString(value) + " min");
-		}
-	}
-	
-	static class StringDateAdapter extends TypeAdapter<Date> {
-		private final SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
-		@Override
-		public Date read(JsonReader reader) throws IOException {
-			if (reader.peek() != JsonToken.NULL) {
-				String text = reader.nextString();
-				if (text.equals("N/A"))
-					return null;
-				try {
-					return df.parse(text);
-				} catch (Exception err) {
-					Log.e("StringDateAdapter", text, err);
-					err.printStackTrace();
-				}
-			} else
-				reader.nextNull();
-			return null;
-		}
-		@Override
-		public void write(JsonWriter writer, Date value) throws IOException {
-			if (value == null)
-				writer.nullValue();
-			else
-				writer.value(df.format(value));
-		}
-	}
-	
 	*/
+	//@formatter:on
 }
 
+//@formatter:off
 /*
 
-<?xml version="1.0" encoding="UTF-8"?>
+<root response="True">
+	<Movie Title="Terminator 2: Judgment Day" Year="1991" imdbID="tt0103064" Type="movie"/>
+	<Movie Title="The Terminator" Year="1984" imdbID="tt0088247" Type="movie"/>
+	<Movie Title="Terminator 3: Rise of the Machines" Year="2003" imdbID="tt0181852" Type="movie"/>
+	<Movie Title="Terminator Salvation" Year="2009" imdbID="tt0438488" Type="movie"/>
+	<Movie Title="Lady Terminator" Year="1989" imdbID="tt0095483" Type="movie"/>
+	<Movie Title="Ninja Terminator" Year="1985" imdbID="tt0199849" Type="movie"/>
+	<Movie Title="Alien Terminator" Year="1995" imdbID="tt0112320" Type="movie"/>
+	<Movie Title="The Making of 'Terminator 2: Judgment Day'" Year="1991" imdbID="tt0271049" Type="movie"/>
+	<Movie Title="Russian Terminator" Year="1989" imdbID="tt0100531" Type="movie"/>
+	<Movie Title="The Making of 'Terminator'" Year="1984" imdbID="tt0267719" Type="movie"/>
+</root>
+
 <root response="True">
 	<movie
 		title="The Terminator"
@@ -323,26 +241,5 @@ public class OMDB {
 		type="movie"/>
 </root>
 
-{
-	imdbID: "tt0816692",
-	Title: "Interstellar",
-	Year: "2014",
-	Plot: "A team of explorers travel through a wormhole in an attempt to ensure humanity's survival.",
-	Genre: "Adventure, Sci-Fi",
-	Writer: "Jonathan Nolan, Christopher Nolan",
-	Director: "Christopher Nolan",
-	Actors: "Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow",
-	Rated: "PG-13",
-	Runtime: "169 min",
-	Language: "English",
-	Poster: "http://ia.media-imdb.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg"
-	
-	Country: "USA, UK",
-	Released: "07 Nov 2014",
-	Awards: "Nominated for 1 Golden Globe. Another 13 wins & 38 nominations.",
-	Metascore: "74",
-	imdbRating: "8.9",
-	imdbVotes: "396,137",
-}
-
 */
+//@formatter:on

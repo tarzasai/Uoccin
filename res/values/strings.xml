@@ -29,6 +29,7 @@
     <string name="search_series">Series</string>
     <string name="search_movies">Movies</string>
     <string name="search_no_text">Please provide some text to look for.</string>
+    <string name="search_not_found">Title not found.</string>
     
     <string name="empty_text"></string>
     <string name="hello_world">Hello world!</string>
@@ -39,6 +40,7 @@
     <string name="unknown_plot">Unknown plot</string>
     
     <string name="sample_title">Person of Interest</string>
+    <string name="sample_info">2003 Italy</string>
     <string name="sample_episode">4x13 - M.I.A.</string>
     <string name="sample_plot1">Person of Interest is an American crime drama television series broadcasting on CBS. It is based on a screenplay developed by Jonathan Nolan. The series revolves around a former CIA officer (Jim Caviezel) recruited by a mysterious billionaire (Michael Emerson) to prevent violent crimes in New York City.</string>
     <string name="sample_plot2">Reese and Root’s hunt for Shaw takes them to a small town in upstate New York where it becomes apparent that not everything is as idyllic as it seems. Also, Fusco teams with a former POI to tackle the newest number.</string>

@@ -2,11 +2,16 @@ package net.ggelardi.uoccin.serv;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import retrofit.RetrofitError;
@@ -45,7 +50,36 @@ public class Commons {
 	}
 	*/
 	
-	public static long convertTime(long timestamp, String fromTimeZone, String toTimeZone) {
+	public static class DateStuff {
+		private static Map<String, SimpleDateFormat> locs = new HashMap<>();
+		private static Map<String, SimpleDateFormat> engs = new HashMap<>();
+		private static final List<String> engdays = Arrays.asList("sunday", "monday", "tuesday", "wednesday",
+				"thursday", "friday", "saturday");
+		
+		public static synchronized SimpleDateFormat locale(String format) {
+			SimpleDateFormat sdf = locs.get(format);
+			if (sdf == null) {
+				sdf = new SimpleDateFormat(format, Locale.getDefault());
+				locs.put(format, sdf);
+			}
+			return sdf;
+		}
+		
+		public static synchronized SimpleDateFormat english(String format) {
+			SimpleDateFormat sdf = engs.get(format);
+			if (sdf == null) {
+				sdf = new SimpleDateFormat(format, Locale.ENGLISH);
+				engs.put(format, sdf);
+			}
+			return sdf;
+		}
+		
+		public static int day2int(String dayname) {
+			return TextUtils.isEmpty(dayname) ? 0 : engdays.indexOf(dayname.toLowerCase(Locale.getDefault())) + 1;
+		}
+	}
+	
+	public static long convertTZ(long timestamp, String fromTimeZone, String toTimeZone) {
 		Calendar fromCal = new GregorianCalendar(TimeZone.getTimeZone(fromTimeZone));
 		fromCal.setTimeInMillis(timestamp);
 		Calendar toCal = new GregorianCalendar(TimeZone.getTimeZone(toTimeZone));
@@ -69,10 +103,36 @@ public class Commons {
 		return cal.get(part);
 	}
 	
-	public static boolean sameSimStrLsts(List<String> list1, List<String> list2) {
+	public static boolean sameStringLists(List<String> list1, List<String> list2) {
 		if (list1.size() != list2.size())
 			return false;
 		return TextUtils.join(",", list1).equals(TextUtils.join(",", list2));
+	}
+	
+	public static int str2int(String s, int defVal) {
+		if (s.equals("N/A"))
+			return defVal;
+		try {
+			s = s.trim();
+			s = s.contains(" ") ? s.split(" ")[0] : s;
+			return NumberFormat.getInstance(Locale.ENGLISH).parse(s).intValue();
+		} catch (Exception err) {
+			Log.e("str2int", s, err);
+			return defVal;
+		}
+	}
+	
+	public static double str2num(String s, double defVal) {
+		if (s.equals("N/A"))
+			return defVal;
+		try {
+			s = s.trim();
+			s = s.contains(" ") ? s.split(" ")[0] : s;
+			return Double.parseDouble(s);
+		} catch (Exception err) {
+			Log.e("str2num", s, err);
+			return defVal;
+		}
 	}
 
 	public static int retrofitErrorCode(RetrofitError error) {

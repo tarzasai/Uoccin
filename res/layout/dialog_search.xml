@@ -48,6 +48,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/search_movies"
                 android:textStyle="bold" />
+
         </RadioGroup>
     </LinearLayout>
 

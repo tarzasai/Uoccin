@@ -75,6 +75,5 @@ public abstract class BaseFragment extends Fragment {
 	}
 	
 	public interface OnFragmentListener {
-		public void onFragmentAttached(String title);
 	}
 }

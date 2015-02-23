@@ -129,8 +129,9 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	}
 	
 	@Override
-	public void onFragmentAttached(String title) {
+	public void setTitle(CharSequence title) {
 		mStoredTitle = title;
+		getSupportActionBar().setTitle(mStoredTitle);
 	}
 	
 	private void restoreActionBar() {
@@ -139,7 +140,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setTitle(mStoredTitle);
 	}
-
+	
 	@SuppressLint("InflateParams")
 	private void searchDialog() {
 		LayoutInflater inflater = getLayoutInflater();
@@ -176,7 +177,8 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	}
 	
 	private void searchSeries(String text) {
-		
+		SearchSeriesFragment f = SearchSeriesFragment.newInstance(text);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
 	}
 	
 	private void searchMovies(String text) {

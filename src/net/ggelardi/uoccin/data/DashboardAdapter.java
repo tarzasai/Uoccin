@@ -1,12 +1,11 @@
 package net.ggelardi.uoccin.data;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
+import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
 import android.text.TextUtils;
@@ -37,46 +36,54 @@ public class DashboardAdapter extends BaseAdapter {
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		items = new ArrayList<DashboardAdapter.DashboardItem>();
 		
-		String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(System.currentTimeMillis()));
-		List<String> ids;
+		List<String> ids = new ArrayList<String>();
+		
+		String today = Commons.DateStuff.locale("yyyy-MM-dd").format(new Date(System.currentTimeMillis()));
+		
 		// calendar
-		String query = "select e.imdb_id from episode e join series s on (e.series_imdb_id = s.imdb_id) " +
-			"join title t on (s.imdb_id = t.imdb_id) where date(e.firstAired) = ? and s.watchlist = 1 " +
-			"order by t.name, e.season, e.episode";
-		ids = check(Title.getIDs(context, query, today));
-		if (!ids.isEmpty()) {
-			items.add(new DashboardItem(HDR_CAL, null));
-			for (String tid: ids)
-				items.add(new DashboardItem(ITM_SEP, Episode.get(context, tid)));
+		String query = "select e.series, e.season, e.episode from episode e join series s on (e.series = s.tvdb_id) " +
+			"where date(e.firstAired) = ? and s.watchlist = 1 order by s.name, e.season, e.episode";
+		List<Episode> eps = Episode.get(context, query, today);
+		if (!eps.isEmpty()) {
+			items.add(new DashboardItem(HDR_CAL));
+			for (Episode ep: eps) {
+				items.add(new DashboardItem(ITM_SEP, ep));
+				ids.add(ep.extendedEID());
+			}
 		}
+		
 		// premieres
-		query = "select s.imdb_id from episode e join series s on (e.series_imdb_id = s.imdb_id) " +
-			"join title t on (s.imdb_id = t.imdb_id) where date(e.firstAired) = ? and s.watchlist = 0 and " +
-			"e.season = 1 and e.episode = 1 order by t.name";
-		ids = check(Title.getIDs(context, query, today));
+		query = "select s.tvdb_id from episode e join series s on (e.series = s.tvdb_id) " +
+			"where date(e.firstAired) = ? and s.watchlist = 0 and e.season = 1 and e.episode = 1 order by s.name";
+		List<Series> ses = Series.get(context, query, today);
 		if (!ids.isEmpty()) {
-			items.add(new DashboardItem(HDR_PRE, null));
-			for (String tid: ids)
-				items.add(new DashboardItem(ITM_SER, Series.get(context, tid)));
+			items.add(new DashboardItem(HDR_PRE));
+			for (Series ser: ses)
+				items.add(new DashboardItem(ITM_SER, ser));
 		}
+		
 		// available episodes
-		query = "select e.imdb_id from episode e join series s on (e.series_imdb_id = s.imdb_id) " +
-			"join title t on (s.imdb_id = t.imdb_id) where e.collected = 1 and e.watched = 0 " +
-			"order by t.name, e.season, e.episode";
-		ids = check(Title.getIDs(context, query));
-		if (!ids.isEmpty()) {
-			items.add(new DashboardItem(HDR_CSE, null));
-			for (String tid: ids)
-				items.add(new DashboardItem(ITM_SEP, Episode.get(context, tid)));
+		query = "select e.series, e.season, e.episode from episode e join series s on (e.series = s.tvdb_id) " +
+			"where e.collected = 1 and e.watched = 0 order by s.name, e.season, e.episode";
+		eps = Episode.get(context, query, (String[]) null);
+		if (!eps.isEmpty()) {
+			boolean hdr = false;
+			for (Episode ep: eps)
+				if (!ids.contains(ep.extendedEID())) {
+					if (!hdr)
+						hdr = items.add(new DashboardItem(HDR_CSE));
+					items.add(new DashboardItem(ITM_SEP, ep));
+					ids.add(ep.extendedEID());
+				}
 		}
+		
 		// available movies
-		query = "select m.imdb_id from movie m join title t on (m.imdb_id = t.imdb_id) " +
-			"where m.collected = 1 and m.watched = 0 order by t.name";
-		ids = check(Title.getIDs(context, query));
-		if (!ids.isEmpty()) {
-			items.add(new DashboardItem(HDR_CMV, null));
-			for (String tid: ids)
-				items.add(new DashboardItem(ITM_MOV, Movie.get(context, tid)));
+		query = "select imdb_id from movie where collected = 1 and watched = 0 order by name";
+		List<Movie> mvs = Movie.get(context, query, (String[]) null);
+		if (!mvs.isEmpty()) {
+			items.add(new DashboardItem(HDR_CMV));
+			for (Movie mv: mvs)
+				items.add(new DashboardItem(ITM_MOV, mv));
 		}
 	}
 	
@@ -169,17 +176,18 @@ public class DashboardAdapter extends BaseAdapter {
 				break;
 			case ITM_SEP:
 				Episode ep = (Episode) itm.title;
-				vh.txt_ep_head.setText(ep.series().name);
+				Series series = ep.getSeries();
+				vh.txt_ep_head.setText(series.name);
 				vh.txt_ep_name.setText(ep.simpleEID() + " - " + session.defaultText(ep.name, R.string.unknown_title));
 				vh.txt_ep_plot.setText(session.defaultText(ep.plot, R.string.unknown_plot));
-				vh.txt_ep_flgs.setVisibility(ep.collected || ep.watched || ep.hasSubtitles() ? View.VISIBLE : View.GONE);
-				vh.img_ep_coll.setVisibility(ep.collected ? View.VISIBLE : View.GONE);
-				vh.img_ep_seen.setVisibility(ep.watched ? View.VISIBLE : View.GONE);
+				vh.txt_ep_flgs.setVisibility(ep.inCollection() || ep.isWatched() || ep.hasSubtitles() ? View.VISIBLE : View.GONE);
+				vh.img_ep_coll.setVisibility(ep.inCollection() ? View.VISIBLE : View.GONE);
+				vh.img_ep_seen.setVisibility(ep.isWatched() ? View.VISIBLE : View.GONE);
 				vh.img_ep_subs.setVisibility(ep.hasSubtitles() ? View.VISIBLE : View.GONE);
 				if (!TextUtils.isEmpty(ep.poster))
 					session.picasso().load(ep.poster).placeholder(R.drawable.ic_action_image).fit().into(vh.img_ep_scrn);
-				else if (!TextUtils.isEmpty(ep.series().fanart))
-					session.picasso().load(ep.series().fanart).placeholder(R.drawable.ic_action_image).fit().into(vh.img_ep_scrn);
+				else if (!TextUtils.isEmpty(series.fanart))
+					session.picasso().load(series.fanart).placeholder(R.drawable.ic_action_image).fit().into(vh.img_ep_scrn);
 				else
 					vh.img_ep_scrn.setImageResource(R.drawable.ic_action_image);
 				break;
@@ -189,23 +197,31 @@ public class DashboardAdapter extends BaseAdapter {
 		return view;
 	}
 	
-	private List<String> check(List<String> ids) {
-		int pos = -1;
-		for (DashboardItem itm: items) {
-			pos = itm.title != null ? ids.indexOf(itm.title.imdb_id) : -1;
-			if (pos >= 0)
-				ids.remove(pos);
-		}
-		return ids;
-	}
-	
 	static class DashboardItem {
 		int kind;
-		Title title;
+		String key;
+		Object title;
 		
-		public DashboardItem(int k, Title t) {
+		public DashboardItem(int k) {
 			kind = k;
-			title = t;
+		}
+		
+		public DashboardItem(int k, Movie o) {
+			kind = k;
+			key = o.imdb_id;
+			title = o;
+		}
+		
+		public DashboardItem(int k, Series o) {
+			kind = k;
+			key = o.tvdb_id;
+			title = o;
+		}
+		
+		public DashboardItem(int k, Episode o) {
+			kind = k;
+			key = o.extendedEID();
+			title = o;
 		}
 	}
 	

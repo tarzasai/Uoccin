@@ -2,6 +2,7 @@ package net.ggelardi.uoccin.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Session;
@@ -52,6 +53,7 @@ public class MoviesAdapter extends BaseAdapter {
 			vh = new ViewHolder();
 			vh.img_mov_poster = (ImageView) view.findViewById(R.id.img_mov_poster);
 			vh.txt_mov_name = (TextView) view.findViewById(R.id.txt_mov_name);
+			vh.txt_mov_info = (TextView) view.findViewById(R.id.txt_mov_info);
 			vh.txt_mov_plot = (TextView) view.findViewById(R.id.txt_mov_plot);
 			vh.txt_mov_actors = (TextView) view.findViewById(R.id.txt_mov_actors);
 			vh.txt_mov_genres = (TextView) view.findViewById(R.id.txt_mov_genres);
@@ -59,12 +61,13 @@ public class MoviesAdapter extends BaseAdapter {
 		} else {
 			vh = (ViewHolder) view.getTag();
 		}
-		Movie mv = getItem(position);
-		session.picasso().load(mv.poster).placeholder(R.drawable.ic_action_image).fit().into(vh.img_mov_poster);
-		vh.txt_mov_name.setText(mv.name);
-		vh.txt_mov_plot.setText(mv.plot);
-		vh.txt_mov_actors.setText(TextUtils.join(", ", mv.actors));
-		vh.txt_mov_genres.setText(TextUtils.join(", ", mv.genres));
+		Movie mov = getItem(position);
+		session.picasso().load(mov.poster).placeholder(R.drawable.ic_action_image).fit().into(vh.img_mov_poster);
+		vh.txt_mov_name.setText(mov.name);
+		vh.txt_mov_info.setText(Integer.toString(mov.year) + " " + mov.country);
+		vh.txt_mov_plot.setText(mov.plot);
+		vh.txt_mov_actors.setText(TextUtils.join(", ", mov.actors));
+		vh.txt_mov_genres.setText(TextUtils.join(", ", mov.genres).toLowerCase(Locale.getDefault()));
 		return view;
 	}
 	
@@ -76,6 +79,7 @@ public class MoviesAdapter extends BaseAdapter {
 	static class ViewHolder {
 		public ImageView img_mov_poster;
 		public TextView txt_mov_name;
+		public TextView txt_mov_info;
 		public TextView txt_mov_plot;
 		public TextView txt_mov_actors;
 		public TextView txt_mov_genres;

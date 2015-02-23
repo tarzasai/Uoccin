@@ -1,10 +1,7 @@
 package net.ggelardi.uoccin.api;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.WaitingUCC;
@@ -12,10 +9,6 @@ import net.ggelardi.uoccin.serv.Commons.WaitingUCC;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
-import org.simpleframework.xml.convert.Convert;
-import org.simpleframework.xml.convert.Converter;
-import org.simpleframework.xml.stream.InputNode;
-import org.simpleframework.xml.stream.OutputNode;
 
 import retrofit.Callback;
 import retrofit.RequestInterceptor;
@@ -24,7 +17,6 @@ import retrofit.converter.SimpleXMLConverter;
 import retrofit.http.GET;
 import retrofit.http.Path;
 import retrofit.http.Query;
-import android.text.TextUtils;
 
 public class TVDB {
 	private static final String apiUrl = "http://thetvdb.com/api";
@@ -36,29 +28,34 @@ public class TVDB {
 		 * http://thetvdb.com/api/GetSeries.php?seriesname=interest&language=en
 		 */
 		@GET("/GetSeries.php")
-		List<Series> findSeries(@Query("seriesname") String text, @Query("language") String language);
+		Data findSeries(@Query("seriesname") String text, @Query("language") String language);
 		/*
 		 * http://thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=tt1839578&language=en
 		 */
 		@GET("/GetSeriesByRemoteID.php")
 		void getSeriesByImdb(@Query("imdbid") String imdb_id, @Query("language") String language,
-			Callback<Series> callback);
+			Callback<Data> callback);
 		/*
 		 * http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/en.xml
 		 */
 		@GET("/" + apiKey + "/series/{tvdb_id}/{language}.xml")
-		void getSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
+		void getSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<Data> callback);
 		/*
 		 * http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/all/en.xml
 		 */
 		@GET("/" + apiKey + "/series/{tvdb_id}/all/{language}.xml")
-		void getFullSeries(@Path("tvdb_id") int tvdb_id, @Path("language") String language, Callback<Series> callback);
+		void getFullSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<Data> callback);
 		/*
 		 * http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/default/4/13/en.xml
 		 */
 		@GET("/" + apiKey + "/series/{tvdb_id}/default/{season}/{episode}/{language}.xml")
-		void getEpisode(@Path("tvdb_id") int tvdb_id, @Path("season") int season, @Path("episode") int episode,
-			@Path("language") String language, Callback<Episode> callback);
+		void getEpisode(@Path("tvdb_id") String tvdb_id, @Path("season") int season, @Path("episode") int episode,
+			@Path("language") String language, Callback<Data> callback);
+		/*
+		 * http://thetvdb.com/api/A74D017DA5F2C3B0/episodes/4099507/en.xml
+		 */
+		@GET("/" + apiKey + "/episodes/{tvdb_id}/{language}.xml")
+		void getEpisodeById(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<Data> callback);
 	}
 	
 	public static API getInstance() {
@@ -69,39 +66,64 @@ public class TVDB {
 					@Override
 					public void intercept(RequestFacade request) {
 						request.addHeader("User-Agent", Commons.USER_AGENT);
-						//String authText = session.getUsername() + ":" + session.getRemoteKey();
-						//String authData = "Basic " + Base64.encodeToString(authText.getBytes(), 0);
-						//request.addHeader("Authorization", authData);
-						//request.addQueryParam("locale", session.getPrefs().getString(PK.LOCALE, "en"));
 					}
 				}).setLogLevel(RestAdapter.LogLevel.BASIC).setClient(new WaitingUCC()).build().create(API.class);
 		}
 		return apiInstance;
 	}
 	
-	static class BaseType {
-		@Element(name = "IMDB_ID")
-		public String imdb_id;
+	@Root(name = "Data")
+	public static class Data {
+		@Element(name = "Series", required = false)
+		private Series s1;
 		
-		@Element(name = "Language")
-		public String language;
+		@ElementList(name = "Series", inline = true, required = false)
+		private List<Series> s2;
 		
-		@Element(name = "Rating")
-		public double rating;
-		
-		@Element(name = "lastupdated")
-		public long lastupdated = System.currentTimeMillis();
-		
-		public long getAge() {
-			return System.currentTimeMillis() - lastupdated;
+		public List<Series> series() {
+			List<Series> res = s2;
+			if (res == null || res.isEmpty()) {
+				res = new ArrayList<Series>();
+				if (s1 != null)
+					res.add(s1);
+			}
+			return res;
 		}
+		
+		@ElementList(name = "Episode", inline = true, required = false)
+		public List<Episode> episodes;
 	}
 	
-	@Root(name = "Series")
-	public static class Series extends BaseType {
+	static class BaseType {
 		@Element(name = "id")
-		public int tvdb_id;
+		public String tvdb_id;
 		
+		@Element(name = "IMDB_ID", required = false)
+		public String imdb_id;
+
+		@Element(required = false)
+		public String seriesid;
+
+		@Element(required = false)
+		public String language;
+		
+		@Element(required = false)
+		public String Language;
+
+		@Element(required = false)
+		private String SeriesID;
+		
+		@Element(required = false)
+		private double Rating;
+		
+		@Element(required = false)
+		private int RatingCount;
+		
+		@Element(required = false)
+		private long lastupdated;
+	}
+	
+	public static class Series extends BaseType {
 		@Element(name = "SeriesName")
 		public String name;
 
@@ -115,95 +137,74 @@ public class TVDB {
 		public String status;
 
 		@Element(name = "FirstAired")
-		public Date firstAired;
+		public String firstAired;
 
-		@Element(name = "ContentRating")
+		@Element(name = "ContentRating", required = false)
 		public String contentRating;
 		
-		@Element(name = "Airs_DayOfWeek")
-		@Convert(DayName2IntConverter.class)
-		public int airsDay;
+		@Element(name = "Airs_DayOfWeek", required = false)
+		public String airsDay;
 
-		@Element(name = "Airs_Time")
+		@Element(name = "Airs_Time", required = false)
 		public String airsTime;
 		
-		@Element(name = "Runtime")
+		@Element(name = "Runtime", required = false)
 		public int runtime;
 		
-		@Element(name = "poster")
-		@Convert(ImageUrlConverter.class)
+		@Element(required = false)
+		public String banner;
+		
+		@Element(required = false)
 		public String poster;
 		
-		/*
-		@Element(name = "banner")
-		@Convert(ImageUrlConverter.class)
-		public String banner;
-		*/
-		
-		@Element(name = "fanart")
-		@Convert(ImageUrlConverter.class)
+		@Element(required = false)
 		public String fanart;
-
-		@Element(name = "zap2it_id")
-		public String zap2it_id;
 		
 		@Element(name = "Genre")
-		@Convert(PipedStringsConverter.class)
-		public List<String> genres;
+		public String genres;
 
 		@Element(name = "Actors")
-		@Convert(PipedStringsConverter.class)
-		public List<String> actors;
-		
-		@ElementList(entry = "Episode", inline = true)
-		public List<Episode> episodes;
+		public String actors;
+
+		@Element(required = false)
+		private String zap2it_id;
 	}
 	
-	@Root(name = "Episode")
 	public static class Episode extends BaseType {
-		@Element(name = "seriesid")
-		public int tvdb_id;
-		
-		@Element(name = "seasonid")
-		public int tvdb_season;
-		
-		@Element(name = "id")
-		public int tvdb_episode;
-		
-		/**
-		 * @return The tipical season/episode id string (es. "S02E11").
-		 */
-		public String signature() {
-			return String.format(Locale.getDefault(), "S%1$02dE%2$02d", season, episode);
-		}
-		
 		@Element(name = "SeasonNumber")
 		public int season;
 		
 		@Element(name = "EpisodeNumber")
 		public int episode;
 		
+		@Element(name = "EpisodeName")
+		public String name;
+		
 		@Element(name = "Overview")
 		public String overview;
 		
 		@Element(name = "FirstAired")
-		public Date firstAired;
+		public String firstAired;
 		
 		@Element(name = "Director")
 		public String director;
 
 		@Element(name = "Writer")
-		@Convert(PipedStringsConverter.class)
-		public List<String> writers;
+		public String writers;
 		
 		@Element(name = "GuestStars")
-		@Convert(PipedStringsConverter.class)
-		public List<String> guestStars;
+		public String guestStars;
 		
 		@Element(name = "filename")
-		@Convert(ImageUrlConverter.class)
 		public String poster;
+		
+		@Element(name = "seasonid")
+		public int tvdb_season;
 	}
+	
+	//@formatter:off
+	/*
+	// I tried converters but I wasn't able to use them...
 	
 	static class ImageUrlConverter implements Converter<String> {
 		private static String bannerUrl = "http://thetvdb.com/banners/";
@@ -250,6 +251,9 @@ public class TVDB {
 			}
 		}
 	}
+	
+	*/
+	//@formatter:on
 }
 
 /*

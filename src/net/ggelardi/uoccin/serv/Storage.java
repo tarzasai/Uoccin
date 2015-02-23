@@ -15,7 +15,6 @@ public class Storage extends SQLiteOpenHelper {
 	
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL(CREATE_TABLE_TITLES);
 		db.execSQL(CREATE_TABLE_MOVIES);
 		db.execSQL(CREATE_TABLE_SERIES);
 		db.execSQL(CREATE_TABLE_EPISODES);
@@ -28,7 +27,6 @@ public class Storage extends SQLiteOpenHelper {
 			db.execSQL("drop table episode");
 			db.execSQL("drop table series");
 			db.execSQL("drop table movie");
-			db.execSQL("drop table title");
 			onCreate(db);
 		}
 	}
@@ -41,73 +39,72 @@ public class Storage extends SQLiteOpenHelper {
 	private static final String DT_FLG = " INTEGER NOT NULL DEFAULT 0";
 	private static final String CC_NNU = " NOT NULL";
 	
-	private static final String CREATE_TABLE_TITLES = "CREATE TABLE title (" +
-		"imdb_id" + DT_STR + PK + CC_NNU + CS +
-		"type" + DT_STR + CC_NNU + " CHECK (type IN ('movie', 'series', 'episode'))" + CS +
-		"name" + DT_STR + CS +
-		"plot" + DT_STR + CS +
-		"actors" + DT_STR + CS + // comma delimited
-		"poster" + DT_STR + CS + // url
-		"runtime" + DT_INT + CS + // minutes
-		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS +
-		"rating" + DT_INT +
-		")";
-	
 	private static final String CREATE_TABLE_MOVIES = "CREATE TABLE movie (" +
-		"imdb_id" + DT_STR + PK + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
-		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
+		"imdb_id" + DT_STR + PK + CC_NNU + CS +
+		"name" + DT_STR + CC_NNU + CS +
 		"year" + DT_INT + CC_NNU + CS +
-		"rated" + DT_STR + CS +
+		"plot" + DT_STR + CS +
+		"poster" + DT_STR + CS + // url
 		"genres" + DT_STR + CS + // comma delimited
+		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
 		"director" + DT_STR + CS +
 		"writers" + DT_STR + CS + // comma delimited
+		"actors" + DT_STR + CS + // comma delimited
 		"country" + DT_STR + CS +
 		"released" + DT_INT + CS +
+		"runtime" + DT_INT + CS + // minutes
+		"rated" + DT_STR + CS +
 		"awards" + DT_STR + CS +
 		"metascore" + DT_INT + CS +
 		"imdbRating" + DT_DBL + CS +
 		"imdbVotes" + DT_INT + CS +
+		"rating" + DT_INT + CS +
 		"subtitles" + DT_STR + CS +
 		"watchlist" + DT_FLG + CS +
 		"collected" + DT_FLG + CS +
-		"watched" + DT_FLG +
+		"watched" + DT_FLG + CS +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" +
 		")";
 	
 	private static final String CREATE_TABLE_SERIES = "CREATE TABLE series (" +
-		"imdb_id" + DT_STR + PK + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
-		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
-		"year" + DT_INT + CC_NNU + CS +
-		"rated" + DT_STR + CS +
+		"tvdb_id" + DT_STR + PK + CC_NNU + CS +
+		"name" + DT_STR + CC_NNU + CS +
+		"year" + DT_INT + CS +
+		"plot" + DT_STR + CS +
+		"poster" + DT_STR + CS + // url
 		"genres" + DT_STR + CS + // comma delimited
-		"tvdb_id" + DT_INT + CC_NNU + CS +
+		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
+		"actors" + DT_STR + CS + // comma delimited
+		"imdb_id" + DT_STR + CS +
 		"status" + DT_STR + CC_NNU + " CHECK (status IN ('continuing', 'ended'))" + CS +
 		"network" + DT_STR + CS +
 		"firstAired" + DT_INT + CS +
 		"airsDay" + DT_INT + CS +
 		"airsTime" + DT_STR + CS +
+		"runtime" + DT_INT + CS + // minutes
+		"rated" + DT_STR + CS +
 		"fanart" + DT_STR + CS + // url
-		"watchlist" + DT_FLG +
+		"rating" + DT_INT + CS +
+		"watchlist" + DT_FLG + CS +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" +
 		")";
 	
 	private static final String CREATE_TABLE_EPISODES = "CREATE TABLE episode (" +
-		"imdb_id" + DT_STR + PK + " REFERENCES title(imdb_id) ON DELETE CASCADE" + CS +
-		"tvdb_id" + DT_INT + CC_NNU + CS +
-		"series_imdb_id" + DT_STR + CC_NNU + CS + // series imdb_id
-		"series_tvdb_id" + DT_INT + CC_NNU + CS + // series tvdb_id
+		"tvdb_id" + DT_STR + PK + CC_NNU + CS +
+		"series" + DT_STR + CC_NNU + " REFERENCES series(tvdb_id) ON DELETE CASCADE" + CS +
 		"season" + DT_INT + CC_NNU + CS +
 		"episode" + DT_INT + CC_NNU + CS +
-		"director" + DT_STR + CS +
+		"name" + DT_STR + CS +
+		"plot" + DT_STR + CS +
+		"poster" + DT_STR + CS + // url
 		"writers" + DT_STR + CS + // comma delimited
+		"director" + DT_STR + CS +
+		"guestStars" + DT_STR + CS + // comma delimited
 		"firstAired" + DT_INT + CS +
+		"imdb_id" + DT_STR + CS +
 		"subtitles" + DT_STR + CS +
 		"collected" + DT_FLG + CS +
-		"watched" + DT_FLG +
+		"watched" + DT_FLG + CS +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" +
 		")";
-	
-	/*
-	private static final String[] INDEXES = {
-		"CREATE INDEX indexname ON tablename(columnname)",
-		""
-	};
-	*/
 }
