@@ -40,14 +40,15 @@
     <string name="unknown_plot">Unknown plot</string>
     
     <string name="sample_title">Person of Interest</string>
-    <string name="sample_info1">2003 - Continuing</string>
-    <string name="sample_info2">History Channel - Wed 10:00 PM</string>
+    <string name="sample_info1">CBS</string>
+    <string name="sample_info2">Wed 10:00 PM on History Channel</string>
     <string name="sample_episode">4x13 - M.I.A.</string>
     <string name="sample_plot1">Person of Interest is an American crime drama television series broadcasting on CBS. It is based on a screenplay developed by Jonathan Nolan. The series revolves around a former CIA officer (Jim Caviezel) recruited by a mysterious billionaire (Michael Emerson) to prevent violent crimes in New York City.</string>
     <string name="sample_plot2">Reese and Root’s hunt for Shaw takes them to a small town in upstate New York where it becomes apparent that not everything is as idyllic as it seems. Also, Fusco teams with a former POI to tackle the newest number.</string>
     <string name="sample_actors">Michael Emerson, Jim Caviezel, Kevin Chapman, Amy Acker, Sarah Shahi, Enrico Colantoni, Taraji P. Henson</string>
     <string name="sample_genres">Action, Adventure, Drama, Mystery, Thriller</string>
     <string name="sample_subs">it / en</string>
+    <string name="sample_tags">pippo, pluto, paperino, tafazzi, perdinci, drocopio</string>
     
     <string name="drawer_example">Example drawer item</string>
     <string name="action_example">Example action</string>

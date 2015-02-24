@@ -55,14 +55,12 @@
                 android:id="@+id/textView6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_small_label"
                 android:text="@string/sample_genres" />
 
             <TextView
                 android:id="@+id/textView5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_small_time"
                 android:text="@string/sample_info2"
                 android:textColor="@android:color/darker_gray"
                 android:textStyle="bold" />
