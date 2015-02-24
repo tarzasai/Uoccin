@@ -49,8 +49,8 @@ public class SeriesAdapter extends BaseAdapter {
 		ViewHolder vh;
 		View view = convertView;
 		if (view == null) {
-			vh = new ViewHolder();
 			view = inflater.inflate(R.layout.item_series, parent, false);
+			vh = new ViewHolder();
 			vh.img_ser_poster = (ImageView) view.findViewById(R.id.img_ser_poster);
 			vh.txt_ser_name = (TextView) view.findViewById(R.id.txt_ser_name);
 			vh.txt_ser_info = (TextView) view.findViewById(R.id.txt_ser_info);
