@@ -32,16 +32,32 @@
             android:id="@+id/txt_ser_info"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sample_info"
+            android:text="@string/sample_info1"
             android:textColor="@android:color/darker_gray"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/txt_ser_plot"
-            android:layout_width="fill_parent"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="@string/sample_plot1" />
+            android:layout_weight="1" >
+
+            <TextView
+                android:id="@+id/txt_ser_plot"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_margin="0dp"
+                android:text="@string/sample_plot1" />
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="fill_parent"
+                android:layout_height="2dp"
+                android:layout_alignParentBottom="true"
+                android:alpha="0.7"
+                android:background="@android:color/background_light"
+                android:text="@string/empty_text" />
+
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/txt_ser_actors"

@@ -368,10 +368,11 @@ public class Series {
 	public void refresh() {
 		Log.v(LOGTAG, "Refreshing series " + tvdb_id);
 		dispatch(OnTitleListener.LOADING, null);
-		Callback<TVDB.Data> callback = new Callback<TVDB.Data>() {
+		Callback<String> callback = new Callback<String>() {
 			@Override
-			public void success(TVDB.Data result, Response response) {
-				//updateFromTVDB(result.series().get(0));
+			public void success(String result, Response response) {
+				Document doc = Commons.XML.str2xml(result);
+				load((Element)doc.getElementsByTagName("Series").item(0));
 				commit();
 				dispatch(OnTitleListener.READY, null);
 			}
@@ -394,7 +395,7 @@ public class Series {
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			if (watchlist)
+			if (watchlist || rating > 0)
 				save(isNew());
 			else
 				delete();

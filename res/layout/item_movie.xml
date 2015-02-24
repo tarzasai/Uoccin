@@ -35,7 +35,7 @@
             android:id="@+id/txt_mov_info"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sample_info"
+            android:text="@string/sample_info1"
             android:textColor="@android:color/darker_gray"
             android:textStyle="bold" />
 

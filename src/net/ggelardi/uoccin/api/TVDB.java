@@ -44,17 +44,17 @@ public class TVDB {
 		 */
 		@GET("/GetSeriesByRemoteID.php")
 		void getSeriesByImdb(@Query("imdbid") String imdb_id, @Query("language") String language,
-			Callback<Data> callback);
+			Callback<String> callback);
 		/*
 		 * http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/en.xml
 		 */
 		@GET("/" + apiKey + "/series/{tvdb_id}/{language}.xml")
-		void getSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<Data> callback);
+		void getSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<String> callback);
 		/*
 		 * http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/all/en.xml
 		 */
 		@GET("/" + apiKey + "/series/{tvdb_id}/all/{language}.xml")
-		void getFullSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<Data> callback);
+		void getFullSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<String> callback);
 		/*
 		 * http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/default/4/13/en.xml
 		 */
@@ -85,24 +85,6 @@ public class TVDB {
 	
 	@Root(name = "Data")
 	public static class Data {
-		/*
-		@Element(name = "Series", required = false)
-		private Series s1;
-		*/
-		
-		@ElementList(name = "Series", inline = true, required = false)
-		private List<TVDBSeries> s2;
-		
-		public List<TVDBSeries> series() {
-			List<TVDBSeries> res = s2;
-			/*if (res == null || res.isEmpty()) {
-				res = new ArrayList<Series>();
-				if (s1 != null)
-					res.add(s1);
-			}*/
-			return res;
-		}
-		
 		@ElementList(name = "Episode", inline = true, required = false)
 		public List<Episode> episodes;
 	}
@@ -134,54 +116,6 @@ public class TVDB {
 		
 		@Element(required = false)
 		private long lastupdated;
-	}
-	
-	@Root
-	public static class TVDBSeries extends BaseType {
-		@Element(name = "SeriesName")
-		public String name;
-
-		@Element(name = "Overview", required = false)
-		public String overview;
-
-		@Element(name = "Network", required = false)
-		public String network;
-
-		@Element(name = "Status", required = false)
-		public String status;
-
-		@Element(name = "FirstAired", required = false)
-		public String firstAired;
-
-		@Element(name = "ContentRating", required = false)
-		public String contentRating;
-		
-		@Element(name = "Airs_DayOfWeek", required = false)
-		public String airsDay;
-
-		@Element(name = "Airs_Time", required = false)
-		public String airsTime;
-		
-		@Element(name = "Runtime", required = false)
-		public int runtime;
-		
-		@Element(required = false)
-		public String banner;
-		
-		@Element(required = false)
-		public String poster;
-		
-		@Element(required = false)
-		public String fanart;
-		
-		@Element(name = "Genre", required = false)
-		public String genres;
-
-		@Element(name = "Actors", required = false)
-		public String actors;
-
-		@Element(required = false)
-		private String zap2it_id;
 	}
 	
 	public static class Episode extends BaseType {
@@ -244,59 +178,6 @@ public class TVDB {
 	        return out.toString();
 	    }
 	}
-	
-	//@formatter:off
-	/*
-	// I tried converters but I wasn't able to use them...
-	
-	static class ImageUrlConverter implements Converter<String> {
-		private static String bannerUrl = "http://thetvdb.com/banners/";
-		@Override
-		public String read(InputNode node) throws Exception {
-			return node.isEmpty() ? "" : bannerUrl + node.getValue();
-		}
-		@Override
-		public void write(OutputNode node, String value) throws Exception {
-			if (value == null)
-				node.remove();
-			else if (value.startsWith(bannerUrl))
-				node.setValue(value.substring(bannerUrl.length()));
-			else
-				node.setValue(value);
-		}
-	}
-	
-	static class PipedStringsConverter implements Converter<List<String>> {
-		@Override
-		public List<String> read(InputNode node) throws Exception {
-			return !node.isEmpty() ? Arrays.asList(node.getValue().split("\\|")) : new ArrayList<String>();
-		}
-		@Override
-		public void write(OutputNode node, List<String> value) throws Exception {
-			node.setValue(TextUtils.join("|", value));
-		}
-	}
-	
-	static class DayName2IntConverter implements Converter<Integer> {
-		private static final List<String> days = Arrays.asList("sunday", "monday", "tuesday", "wednesday", "thursday",
-			"friday", "saturday");
-		@Override
-		public Integer read(InputNode node) throws Exception {
-			return days.indexOf(node.isEmpty() ? "null" : node.getValue().toLowerCase(Locale.getDefault())) + 1;
-		}
-		@Override
-		public void write(OutputNode node, Integer value) throws Exception {
-			if (value < 0)
-				node.remove(); //node.setValue(""); ???
-			else {
-				String d = days.get(value-1);
-				node.setValue(d.substring(0, 0).toUpperCase(Locale.getDefault()) + d.substring(1));
-			}
-		}
-	}
-	
-	*/
-	//@formatter:on
 }
 
 /*
