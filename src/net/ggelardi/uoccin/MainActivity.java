@@ -147,7 +147,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		final View view = inflater.inflate(R.layout.dialog_search, null);
 		final EditText edt = (EditText) view.findViewById(R.id.edt_search_text);
 		final RadioGroup grp = (RadioGroup) view.findViewById(R.id.grp_search_type);
-		final AlertDialog dlg = new AlertDialog.Builder(this).setTitle(R.string.search_title).setIcon(
+		final AlertDialog dlg = new AlertDialog.Builder(this).setTitle(R.string.search_dialog).setIcon(
 			R.drawable.ic_action_search).setPositiveButton(R.string.dlg_btn_ok, null).setNegativeButton(
 			R.string.dlg_btn_cancel, null).setView(view).create();
 		edt.setTextIsSelectable(true);

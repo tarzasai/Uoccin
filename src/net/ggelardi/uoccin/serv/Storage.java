@@ -59,6 +59,7 @@ public class Storage extends SQLiteOpenHelper {
 		"imdbRating" + DT_DBL + CS +
 		"imdbVotes" + DT_INT + CS +
 		"rating" + DT_INT + CS +
+		"tags" + DT_STR + CS +
 		"subtitles" + DT_STR + CS +
 		"watchlist" + DT_FLG + CS +
 		"collected" + DT_FLG + CS +
@@ -75,16 +76,17 @@ public class Storage extends SQLiteOpenHelper {
 		"genres" + DT_STR + CS + // comma delimited
 		"actors" + DT_STR + CS + // comma delimited
 		"imdb_id" + DT_STR + CS +
-		"status" + DT_STR + CC_NNU + " CHECK (status IN ('continuing', 'ended'))" + CS +
+		"status" + DT_STR + CC_NNU + " CHECK (status IN ('Continuing', 'Ended'))" + CS +
 		"network" + DT_STR + CS +
 		"firstAired" + DT_INT + CS +
 		"airsDay" + DT_INT + CS +
-		"airsTime" + DT_STR + CS +
+		"airsTime" + DT_INT + CS +
 		"runtime" + DT_INT + CS + // minutes
 		"rated" + DT_STR + CS +
 		"banner" + DT_STR + CS + // url
 		"fanart" + DT_STR + CS + // url
 		"rating" + DT_INT + CS +
+		"tags" + DT_STR + CS +
 		"watchlist" + DT_FLG + CS +
 		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" +
 		")";

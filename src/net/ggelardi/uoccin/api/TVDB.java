@@ -5,16 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Locale;
 
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.WaitingUCC;
-
-import org.simpleframework.xml.Element;
-import org.simpleframework.xml.ElementList;
-import org.simpleframework.xml.Root;
-
 import retrofit.Callback;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
@@ -60,12 +54,12 @@ public class TVDB {
 		 */
 		@GET("/" + apiKey + "/series/{tvdb_id}/default/{season}/{episode}/{language}.xml")
 		void getEpisode(@Path("tvdb_id") String tvdb_id, @Path("season") int season, @Path("episode") int episode,
-			@Path("language") String language, Callback<Data> callback);
+			@Path("language") String language, Callback<String> callback);
 		/*
 		 * http://thetvdb.com/api/A74D017DA5F2C3B0/episodes/4099507/en.xml
 		 */
 		@GET("/" + apiKey + "/episodes/{tvdb_id}/{language}.xml")
-		void getEpisodeById(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<Data> callback);
+		void getEpisodeById(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<String> callback);
 	}
 	
 	public static API getInstance() {
@@ -81,73 +75,6 @@ public class TVDB {
 				}).setLogLevel(RestAdapter.LogLevel.BASIC).setClient(new WaitingUCC()).build().create(API.class);
 		}
 		return apiInstance;
-	}
-	
-	@Root(name = "Data")
-	public static class Data {
-		@ElementList(name = "Episode", inline = true, required = false)
-		public List<Episode> episodes;
-	}
-	
-	static class BaseType {
-		@Element(name = "id")
-		public String tvdb_id;
-		
-		@Element(name = "IMDB_ID", required = false)
-		public String imdb_id;
-
-		@Element(required = false)
-		public String seriesid;
-
-		@Element(required = false)
-		public String language;
-		
-		@Element(required = false)
-		public String Language;
-
-		@Element(required = false)
-		private String SeriesID;
-		
-		@Element(required = false)
-		private double Rating;
-		
-		@Element(required = false)
-		private int RatingCount;
-		
-		@Element(required = false)
-		private long lastupdated;
-	}
-	
-	public static class Episode extends BaseType {
-		@Element(name = "SeasonNumber")
-		public int season;
-		
-		@Element(name = "EpisodeNumber")
-		public int episode;
-		
-		@Element(name = "EpisodeName")
-		public String name;
-		
-		@Element(name = "Overview")
-		public String overview;
-		
-		@Element(name = "FirstAired")
-		public String firstAired;
-		
-		@Element(name = "Director")
-		public String director;
-
-		@Element(name = "Writer")
-		public String writers;
-		
-		@Element(name = "GuestStars")
-		public String guestStars;
-		
-		@Element(name = "filename")
-		public String poster;
-		
-		@Element(name = "seasonid")
-		public int tvdb_season;
 	}
 	
 	static class StringConverter implements Converter {

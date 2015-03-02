@@ -5,8 +5,10 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 
-public abstract class BaseFragment extends Fragment {
+public abstract class BaseFragment extends Fragment implements OnClickListener {
 	
 	protected Session session;
 	protected OnFragmentListener mListener;
@@ -70,8 +72,17 @@ public abstract class BaseFragment extends Fragment {
 		mListener = null;
 	}
 	
+	@Override
+	public void onClick(View v) {
+		//
+	}
+	
 	protected String logTag() {
 		return this.getClass().getSimpleName();
+	}
+	
+	protected void showHourGlass(boolean value) {
+		getActivity().setProgressBarIndeterminateVisibility(value);
 	}
 	
 	public interface OnFragmentListener {

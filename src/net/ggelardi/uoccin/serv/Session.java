@@ -6,6 +6,7 @@ import net.ggelardi.uoccin.serv.Commons.PK;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -44,8 +45,16 @@ public class Session implements OnSharedPreferenceChangeListener {
 		//
 	}
 	
+	public Context getContext() {
+		return appContext;
+	}
+	
 	public SharedPreferences getPrefs() {
 		return prefs;
+	}
+	
+	public Resources getRes() {
+		return appContext.getResources();
 	}
 	
 	public SQLiteDatabase getDB() {

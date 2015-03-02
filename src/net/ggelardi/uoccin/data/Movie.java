@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.OMDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Session;
@@ -19,18 +21,18 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
-public class Movie {
-	private static final String LOGTAG = "Movie";
+public class Movie extends Title {
+	private static final String TAG = "Movie";
 	private static final String TABLE = "movie";
 	
 	private static final Set<Movie> cache = Collections.newSetFromMap(new WeakHashMap<Movie, Boolean>());
-	
-	private static final List<OnTitleListener> listeners = new ArrayList<OnTitleListener>();
-	
+
 	private final Session session;
 
 	private int rating = 0;
+	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;
 	private boolean collected = false;
 	private boolean watched = false;
@@ -62,16 +64,10 @@ public class Movie {
 		this.imdb_id = imdb_id;
 	}
 	
-	private static void dispatch(String state, Throwable error) {
-		for (OnTitleListener listener: listeners)
-			//if (listener != null)
-				listener.changed(state, error);
-	}
-	
 	private static synchronized Movie getInstance(Context context, String imdb_id) {
 		for (Movie m: cache)
 			if (m.imdb_id.equals(imdb_id)) {
-				Log.v(LOGTAG, imdb_id + " found in cache");
+				Log.v(TAG, "Movie " + imdb_id + " found in cache");
 				return m;
 			}
 		Movie res = new Movie(context, imdb_id);
@@ -146,10 +142,6 @@ public class Movie {
 		return res;
 	}
 	
-	public static void addOnTitleEventListener(OnTitleListener aListener) {
-		listeners.add(aListener);
-	}
-	
 	private void updateFromOMDB(OMDB.Movie data) {
 		if (!TextUtils.isEmpty(data.title) && (TextUtils.isEmpty(name) || !name.equals(data.title))) {
 			name = data.title;
@@ -219,7 +211,7 @@ public class Movie {
 			try {
 				chk = Commons.DateStuff.english("dd MMM yyyy").parse(data.released).getTime();
 			} catch (Exception err) {
-				Log.e("updateFromOMDB", data.released, err);
+				Log.e(TAG, data.released, err);
 				chk = 0;
 			}
 			if (chk > 0) {
@@ -261,7 +253,7 @@ public class Movie {
 	*/
 	
 	protected void load(Cursor cr) {
-		Log.v(LOGTAG, "Loading movie " + imdb_id);
+		Log.v(TAG, "Loading movie " + imdb_id);
 		
 		int ci;
 		imdb_id = cr.getString(cr.getColumnIndex("imdb_id")); // it's already set btw...
@@ -313,6 +305,9 @@ public class Movie {
 		ci = cr.getColumnIndex("rating");
 		if (!cr.isNull(ci))
 			rating = cr.getInt(ci);
+		ci = cr.getColumnIndex("tags");
+		if (!cr.isNull(ci))
+			tags = Arrays.asList(cr.getString(ci).split(","));
 		ci = cr.getColumnIndex("subtitles");
 		if (!cr.isNull(ci))
 			subtitles = Arrays.asList(cr.getString(ci).split(","));
@@ -323,7 +318,7 @@ public class Movie {
 	}
 	
 	protected void save(boolean isnew) {
-		Log.v(LOGTAG, "Saving movie " + imdb_id);
+		Log.v(TAG, "Saving movie " + imdb_id);
 		
 		ContentValues cv = new ContentValues();
 		cv.put("name", name);
@@ -344,6 +339,7 @@ public class Movie {
 		cv.put("imdbRating", imdbRating);
 		cv.put("imdbVotes", imdbVotes);
 		cv.put("rating", rating);
+		cv.put("tags", TextUtils.join(",", tags));
 		cv.put("subtitles", TextUtils.join(",", subtitles));
 		cv.put("watchlist", watchlist);
 		cv.put("collected", collected);
@@ -359,14 +355,15 @@ public class Movie {
 	}
 	
 	protected void delete() {
-		Log.v(LOGTAG, "Deleting movie " + imdb_id);
-		
+		Log.v(TAG, "Deleting movie " + imdb_id);
+		dispatch(OnTitleListener.WORKING, null);
 		session.getDB().delete(TABLE, "imdb_id=?", new String[] { imdb_id });
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	public void refresh() {
-		Log.v(LOGTAG, "Refreshing movie " + imdb_id);
-		dispatch(OnTitleListener.LOADING, null);
+		Log.v(TAG, "Refreshing movie " + imdb_id);
+		dispatch(OnTitleListener.WORKING, null);
 		Callback<OMDB.Data> callback = new Callback<OMDB.Data>() {
 			@Override
 			public void success(OMDB.Data result, Response response) {
@@ -376,7 +373,7 @@ public class Movie {
 			}
 			@Override
 			public void failure(RetrofitError error) {
-				Log.e(LOGTAG, "refresh", error);
+				Log.e(TAG, "refresh", error);
 				
 				plot = error.getLocalizedMessage();
 				
@@ -387,6 +384,9 @@ public class Movie {
 	}
 	
 	public final void commit() {
+		if (!modified)
+			return;
+		dispatch(OnTitleListener.WORKING, null);
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
@@ -399,6 +399,7 @@ public class Movie {
 		} finally {
 			db.endTransaction();
 		}
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	public boolean isNew() {
@@ -413,47 +414,108 @@ public class Movie {
 		return watchlist;
 	}
 	
+	public void setWatchlist(boolean value) {
+		if (value != watchlist) {
+			watchlist = value;
+			modified = true;
+			if (isNew())
+				refresh();
+			else
+				commit();
+			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_mov : R.string.msg_wlst_del_mov);
+			msg = String.format(msg, name);
+			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
+		}
+	}
+	
 	public boolean inCollection() {
 		return collected;
+	}
+	
+	public void setCollected(boolean value) {
+		if (value != collected) {
+			collected = value;
+			modified = true;
+			if (isNew())
+				refresh();
+			else
+				commit();
+			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_mov : R.string.msg_coll_del_mov);
+			msg = String.format(msg, name);
+			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
+		}
 	}
 	
 	public boolean isWatched() {
 		return watched;
 	}
 	
-	public int getRating() {
-		return rating;
-	}
-	
-	public boolean hasSubtitles() {
-		return !subtitles.isEmpty();
-	}
-	
-	public void setWatchlist(boolean value) {
-		if (value != watchlist) {
-			watchlist = value;
-			commit();
-		}
-	}
-	
-	public void setCollected(boolean value) {
-		if (value != collected) {
-			collected = value;
-			commit();
-		}
-	}
-	
 	public void setWatched(boolean value) {
 		if (value != watched) {
 			watched = value;
-			commit();
+			modified = true;
+			if (isNew())
+				refresh();
+			else
+				commit();
+			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_mov : R.string.msg_seen_del_mov);
+			msg = String.format(msg, name);
+			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
+	}
+	
+	public int getRating() {
+		return rating;
 	}
 	
 	public void setRating(int value) {
 		if (value != rating) {
 			rating = value;
-			commit();
+			modified = true;
+			if (isNew())
+				refresh();
+			else
+				commit();
 		}
+	}
+	
+	public List<String> getTags() {
+		return new ArrayList<String>(tags);
+	}
+	
+	public boolean hasTag(String tag) {
+		return tags.contains(tag);
+	}
+	
+	public void addTag(String tag) {
+		tag = tag.toLowerCase(Locale.getDefault());
+		if (!hasTag(tag)) {
+			tags.add(tag);
+			modified = true;
+			if (isNew())
+				refresh();
+			else
+				commit();
+			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
+			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	public void delTag(String tag) {
+		tag = tag.toLowerCase(Locale.getDefault());
+		if (hasTag(tag)) {
+			tags.remove(tag);
+			modified = true;
+			if (isNew())
+				refresh();
+			else
+				commit();
+			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
+			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	public boolean hasSubtitles() {
+		return !subtitles.isEmpty();
 	}
 }

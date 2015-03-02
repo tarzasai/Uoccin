@@ -23,13 +23,19 @@
     <string name="dashboard_availeps">Available episodes</string>
     <string name="dashboard_availmvs">Available movies</string>
     
-    <string name="search_title">Search titles</string>
+    <string name="search_dialog">Search titles</string>
     <string name="search_hint">Search text</string>
     <string name="search_type">Search for:</string>
     <string name="search_series">Series</string>
     <string name="search_movies">Movies</string>
     <string name="search_no_text">Please provide some text to look for.</string>
     <string name="search_not_found">Title not found.</string>
+    
+    <string name="title_search">Results for \"%s\"</string>
+    
+    <string name="fmtdt_airdate">EEE dd, yyyy</string>
+    <string name="fmtdt_airday">EEE</string>
+    <string name="fmtdt_airtime">EEE hh:mm a</string>
     
     <string name="empty_text"></string>
     <string name="hello_world">Hello world!</string>
@@ -38,15 +44,32 @@
     <string name="dlg_btn_retry">Try again</string>
     <string name="unknown_title">Unknown title</string>
     <string name="unknown_plot">Unknown plot</string>
+    <string name="msg_wlst_add_mov">Movie \"%s\" added to watchlist</string>
+    <string name="msg_wlst_del_mov">Movie \"%s\" removed from watchlist</string>
+    <string name="msg_coll_add_mov">Movie \"%s\" added to collection</string>
+    <string name="msg_coll_del_mov">Movie \"%s\" removed from collection</string>
+    <string name="msg_seen_add_mov">Movie \"%s\" set as watched</string>
+    <string name="msg_seen_del_mov">Movie \"%s\" set to be watched</string>
+    <string name="msg_wlst_add_ser">Series \"%s\" added to watchlist</string>
+    <string name="msg_wlst_del_ser">Series \"%s\" removed from watchlist</string>
+    <string name="msg_coll_add_epi">Episode \"%s\" added to collection</string>
+    <string name="msg_coll_del_epi">Episode \"%s\" removed from collection</string>
+    <string name="msg_seen_add_epi">Episode \"%s\" set as watched</string>
+    <string name="msg_seen_del_epi">Episode \"%s\" set to be watched</string>
+    <string name="msg_tags_add">Tag \"%s\" added</string>
+    <string name="msg_tags_del">Tag \"%s\" removed</string>
     
     <string name="sample_title">Person of Interest</string>
     <string name="sample_info1">CBS</string>
-    <string name="sample_info2">Wed 10:00 PM on History Channel</string>
+    <string name="sample_info2">History Channel - Wed 10:00 PM</string>
     <string name="sample_episode">4x13 - M.I.A.</string>
     <string name="sample_plot1">Person of Interest is an American crime drama television series broadcasting on CBS. It is based on a screenplay developed by Jonathan Nolan. The series revolves around a former CIA officer (Jim Caviezel) recruited by a mysterious billionaire (Michael Emerson) to prevent violent crimes in New York City.</string>
     <string name="sample_plot2">Reese and Root’s hunt for Shaw takes them to a small town in upstate New York where it becomes apparent that not everything is as idyllic as it seems. Also, Fusco teams with a former POI to tackle the newest number.</string>
     <string name="sample_actors">Michael Emerson, Jim Caviezel, Kevin Chapman, Amy Acker, Sarah Shahi, Enrico Colantoni, Taraji P. Henson</string>
     <string name="sample_genres">Action, Adventure, Drama, Mystery, Thriller</string>
+    <string name="sample_date1">Oct 13, 2013</string>
+    <string name="sample_date2">13/02/2013</string>
+    <string name="sample_nextd">in 12 hours (Mon)</string>
     <string name="sample_subs">it / en</string>
     <string name="sample_tags">pippo, pluto, paperino, tafazzi, perdinci, drocopio</string>
     

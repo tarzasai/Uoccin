@@ -8,13 +8,12 @@
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/list_background"
         android:divider="@android:color/transparent"
         android:dividerHeight="4dp"
-        android:overScrollFooter="@drawable/divider_4dp"
-        android:overScrollHeader="@drawable/divider_4dp"
-        android:paddingLeft="6dp"
-        android:paddingRight="10dp"
-        android:scrollbarStyle="outsideOverlay" />
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:scrollbarStyle="insideOverlay" />
 
     <TextView
         android:id="@android:id/empty"

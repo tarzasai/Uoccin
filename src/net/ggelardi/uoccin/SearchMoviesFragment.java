@@ -4,7 +4,7 @@ import java.util.List;
 
 import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.data.MoviesAdapter;
-import net.ggelardi.uoccin.data.OnTitleListener;
+import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -70,7 +70,7 @@ public class SearchMoviesFragment extends BaseFragment implements AbsListView.On
 							if (state.equals(OnTitleListener.NOTFOUND)) {
 								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_LONG).show();
 								//mAdapter.notifyDataSetChanged();
-							} else if (state.equals(OnTitleListener.LOADING)) {
+							} else if (state.equals(OnTitleListener.WORKING)) {
 								
 							} else if (state.equals(OnTitleListener.ERROR)) {
 								Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
