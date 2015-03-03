@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import net.ggelardi.uoccin.R;
-import net.ggelardi.uoccin.api.TVDB;
+import net.ggelardi.uoccin.api.XML.TVDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Session;
 
@@ -228,7 +228,7 @@ public class Series extends Title {
 		chk = Commons.XML.nodeText(xml, "FirstAired");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
-				long t = Commons.DateStuff.english("yyyy-MM-dd").parse(chk).getTime();
+				long t = Commons.SDF.eng("yyyy-MM-dd").parse(chk).getTime();
 				if (t > 0) {
 					firstAired = t;
 					year = Commons.getDatePart(firstAired, Calendar.YEAR);
@@ -240,7 +240,7 @@ public class Series extends Title {
 		}
 		chk = Commons.XML.nodeText(xml, "Airs_DayOfWeek");
 		if (!TextUtils.isEmpty(chk)) {
-			int d = Commons.DateStuff.day2int(chk);
+			int d = Commons.SDF.day(chk);
 			if (d > 0) {
 				airsDay = d;
 				modified = true;
@@ -249,13 +249,24 @@ public class Series extends Title {
 		chk = Commons.XML.nodeText(xml, "Airs_Time");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
-				long t = Commons.DateStuff.english("hh:mm a").parse(chk).getTime();
+				long t = Commons.SDF.eng("hh:mm a").parse(chk).getTime();
 				if (t > 0) {
 					airsTime = t;
 					modified = true;
 				}
 			} catch (Exception err) {
-				Log.e(TAG, chk, err);
+
+				try {
+					long t = Commons.SDF.eng("hh:mma").parse(chk).getTime();
+					if (t > 0) {
+						airsTime = t;
+						modified = true;
+					}
+				} catch (Exception err2) {
+					Log.e(TAG, chk, err2);
+				}
+				
+				//Log.e(TAG, chk, err);
 			}
 		}
 		chk = Commons.XML.nodeText(xml, "Runtime");

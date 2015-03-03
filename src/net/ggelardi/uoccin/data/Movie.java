@@ -1,5 +1,6 @@
 package net.ggelardi.uoccin.data;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,9 +10,14 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import net.ggelardi.uoccin.R;
-import net.ggelardi.uoccin.api.OMDB;
+import net.ggelardi.uoccin.api.XML.OMDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Session;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -129,128 +135,174 @@ public class Movie extends Title {
 	
 	public static List<Movie> find(Context context, String text) {
 		List<Movie> res = new ArrayList<Movie>();
-		OMDB.Data lst = OMDB.getInstance().findMovie(text);
-		if (lst.response)
-			for (OMDB.Movie movie: lst.movies()) {
+		String response;
+		try {
+			response = OMDB.getInstance().findMovie(text);
+		} catch (Exception err) {
+			Log.e(TAG, "find", err);
+			dispatch(OnTitleListener.ERROR, null);
+			return res;
+		}
+		Document doc = Commons.XML.str2xml(response);
+		if (doc != null) {
+			NodeList lst = doc.getElementsByTagName("Movie");
+			for (int i = 0; i < lst.getLength(); i++) {
+				String imdbID = Commons.XML.nodeText((Element) lst.item(i), "imdbID");
 				// since OMDB search returns id and title only, we'll use the factory method that retrieves full data
-				Movie itm = Movie.get(context, movie.imdbID);
-				itm.name = movie.Title;
-				res.add(itm);
+				if (!TextUtils.isEmpty(imdbID))
+					res.add(Movie.get(context, imdbID));
 			}
-		else
+		}
+		if (res.isEmpty())
 			dispatch(OnTitleListener.NOTFOUND, null);
 		return res;
 	}
 	
-	private void updateFromOMDB(OMDB.Movie data) {
-		if (!TextUtils.isEmpty(data.title) && (TextUtils.isEmpty(name) || !name.equals(data.title))) {
-			name = data.title;
+	protected void load(Element xml) {
+		String chk;
+		chk = Commons.XML.nodeText(xml, "title", "Title");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) || !name.equals(chk))) {
+			name = chk;
 			modified = true;
 		}
-		if (!TextUtils.isEmpty(data.plot) && (TextUtils.isEmpty(plot) || !plot.equals(data.plot))) {
-			plot = data.plot;
+		chk = Commons.XML.nodeText(xml, "plot");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(plot) || !plot.equals(chk))) {
+			plot = chk;
 			modified = true;
 		}
-		if (!TextUtils.isEmpty(data.actors)) {
-			List<String> chk = Arrays.asList(data.actors.split(",\\s"));
-			if (!Commons.sameStringLists(actors, chk)) {
-				actors = new ArrayList<String>(chk);
-				modified = true;
-			}
-		}
-		if (!TextUtils.isEmpty(data.poster) && (TextUtils.isEmpty(poster) || !poster.equals(data.poster))) {
-			poster = data.poster;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.runtime)) {
-			int chk = Commons.str2int(data.runtime, 0);
-			if (chk > 0) {
-				runtime = chk;
-				modified = true;
-			}
-		}
-		if (!TextUtils.isEmpty(data.language) && (TextUtils.isEmpty(language) || !language.equals(data.language))) {
-			language = data.language;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.year)) {
-			int chk = Commons.str2int(data.year, 0);
-			if (chk > 0) {
-				year = chk;
-				modified = true;
-			}
-		}
-		if (!TextUtils.isEmpty(data.rated) && (TextUtils.isEmpty(rated) || !rated.equals(data.rated))) {
-			rated = data.rated;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.genre)) {
-			List<String> chk = Arrays.asList(data.genre.split(","));
-			if (!Commons.sameStringLists(genres, chk)) {
-				genres = new ArrayList<String>(chk);
-				modified = true;
-			}
-		}
-		if (!TextUtils.isEmpty(data.director) && (TextUtils.isEmpty(director) || !director.equals(data.director))) {
-			director = data.director;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.writer)) {
-			List<String> chk = Arrays.asList(data.writer.split(","));
-			if (!Commons.sameStringLists(writers, chk)) {
-				writers = new ArrayList<String>(chk);
-				modified = true;
-			}
-		}
-		if (!TextUtils.isEmpty(data.country) && (TextUtils.isEmpty(country) || !country.equals(data.country))) {
-			country = data.country;
-			modified = true;
-		}
-		if (!TextUtils.isEmpty(data.released)) {
-			long chk;
+		chk = Commons.XML.nodeText(xml, "year");
+		if (!TextUtils.isEmpty(chk)) {
 			try {
-				chk = Commons.DateStuff.english("dd MMM yyyy").parse(data.released).getTime();
+				int r = Integer.parseInt(chk);
+				if (r > 0 && r != year) {
+					year = r;
+					modified = true;
+				}
 			} catch (Exception err) {
-				Log.e(TAG, data.released, err);
-				chk = 0;
-			}
-			if (chk > 0) {
-				released = chk;
-				modified = true;
+				Log.e(TAG, chk, err);
 			}
 		}
-		if (!TextUtils.isEmpty(data.awards) && (TextUtils.isEmpty(awards) || !awards.equals(data.awards))) {
-			awards = data.awards;
+		chk = Commons.XML.nodeText(xml, "poster");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
+			poster = chk;
 			modified = true;
 		}
-		if (!TextUtils.isEmpty(data.metascore)) {
-			int chk = Commons.str2int(data.metascore, 0);
-			if (chk > 0) {
-				metascore = chk;
+		chk = Commons.XML.nodeText(xml, "genre");
+		if (!TextUtils.isEmpty(chk)) {
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\")));
+			lst.removeAll(Arrays.asList("", null));
+			if (!Commons.sameStringLists(genres, lst)) {
+				genres = new ArrayList<String>(lst);
 				modified = true;
 			}
 		}
-		if (!TextUtils.isEmpty(data.imdbRating)) {
-			double chk = Commons.str2num(data.imdbRating, 0);
-			if (chk > 0) {
-				imdbRating = chk;
+		chk = Commons.XML.nodeText(xml, "language");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(language) || !language.equals(chk))) {
+			language = chk;
+			modified = true;
+		}
+		chk = Commons.XML.nodeText(xml, "director");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(director) || !director.equals(chk))) {
+			director = chk;
+			modified = true;
+		}
+		chk = Commons.XML.nodeText(xml, "writer");
+		if (!TextUtils.isEmpty(chk)) {
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\")));
+			lst.removeAll(Arrays.asList("", null));
+			if (!Commons.sameStringLists(writers, lst)) {
+				writers = new ArrayList<String>(lst);
 				modified = true;
 			}
 		}
-		if (!TextUtils.isEmpty(data.imdbVotes)) {
-			int chk = Commons.str2int(data.imdbVotes, 0);
-			if (chk > 0) {
-				imdbVotes = chk;
+		chk = Commons.XML.nodeText(xml, "actors");
+		if (!TextUtils.isEmpty(chk)) {
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\")));
+			lst.removeAll(Arrays.asList("", null));
+			if (!Commons.sameStringLists(actors, lst)) {
+				actors = new ArrayList<String>(lst);
 				modified = true;
 			}
 		}
+		chk = Commons.XML.nodeText(xml, "country");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(country) || !country.equals(chk))) {
+			country = chk;
+			modified = true;
+		}
+		chk = Commons.XML.nodeText(xml, "released");
+		if (!TextUtils.isEmpty(chk)) {
+			try {
+				long t = Commons.SDF.eng("dd MMM yyyy").parse(chk).getTime();
+				if (t > 0) {
+					released = t;
+					modified = true;
+				}
+			} catch (Exception err) {
+				Log.e(TAG, chk, err);
+			}
+		}
+		chk = Commons.XML.nodeText(xml, "runtime");
+		if (!TextUtils.isEmpty(chk)) {
+			if (chk.contains(" min"))
+				chk = chk.split(" ")[0];
+			try {
+				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
+				if (r > 0 && r != runtime) {
+					runtime = r;
+					modified = true;
+				}
+			} catch (Exception err) {
+				Log.e(TAG, chk, err);
+			}
+		}
+		chk = Commons.XML.nodeText(xml, "rated");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(rated) || !rated.equals(chk))) {
+			rated = chk;
+			modified = true;
+		}
+		chk = Commons.XML.nodeText(xml, "awards");
+		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(awards) || !awards.equals(chk))) {
+			awards = chk;
+			modified = true;
+		}
+		chk = Commons.XML.nodeText(xml, "metascore");
+		if (!TextUtils.isEmpty(chk)) {
+			try {
+				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
+				if (r > 0 && r != metascore) {
+					metascore = r;
+					modified = true;
+				}
+			} catch (Exception err) {
+				Log.e(TAG, chk, err);
+			}
+		}
+		chk = Commons.XML.nodeText(xml, "imdbRating");
+		if (!TextUtils.isEmpty(chk)) {
+			try {
+				double r = Double.parseDouble(chk);
+				if (r > 0 && r != imdbRating) {
+					imdbRating = r;
+					modified = true;
+				}
+			} catch (Exception err) {
+				Log.e(TAG, chk, err);
+			}
+		}
+		chk = Commons.XML.nodeText(xml, "imdbVotes");
+		if (!TextUtils.isEmpty(chk)) {
+			try {
+				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
+				if (r > 0 && r != imdbVotes) {
+					imdbVotes = r;
+					modified = true;
+				}
+			} catch (Exception err) {
+				Log.e(TAG, chk, err);
+			}
+		}
+		
 	}
-	
-	/*
-	protected void load(Object source) {
-		updateFromOMDB((OMDB.Movie) source);
-	}
-	*/
 	
 	protected void load(Cursor cr) {
 		Log.v(TAG, "Loading movie " + imdb_id);
@@ -364,10 +416,11 @@ public class Movie extends Title {
 	public void refresh() {
 		Log.v(TAG, "Refreshing movie " + imdb_id);
 		dispatch(OnTitleListener.WORKING, null);
-		Callback<OMDB.Data> callback = new Callback<OMDB.Data>() {
+		Callback<String> callback = new Callback<String>() {
 			@Override
-			public void success(OMDB.Data result, Response response) {
-				updateFromOMDB(result.movies().get(0));
+			public void success(String result, Response response) {
+				Document doc = Commons.XML.str2xml(result);
+				load((Element) doc.getElementsByTagName("movie").item(0));
 				commit();
 				dispatch(OnTitleListener.READY, null);
 			}

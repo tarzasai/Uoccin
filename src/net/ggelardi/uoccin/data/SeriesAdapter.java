@@ -113,8 +113,7 @@ public class SeriesAdapter extends BaseAdapter {
 				Calendar cal = Calendar.getInstance();
 				cal.setTimeInMillis(ser.airsTime);
 				cal.set(Calendar.DAY_OF_WEEK, ser.airsDay);
-				info += " - " + Commons.DateStuff.locale(session.getRes().getString(
-					R.string.fmtdt_airtime)).format(cal.getTime());
+				info += " - " + Commons.SDF.loc(session.getString(R.string.fmtdt_airtime)).format(cal.getTime());
 			}
 			vh.txt_ser_info.setText(info);
 		}

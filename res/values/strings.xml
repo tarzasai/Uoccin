@@ -9,6 +9,12 @@
     <string name="action_search">Search</string>
     <string name="action_settings">Settings</string>
     
+    <string name="drawer_upcoming">Upcoming episodes</string>
+    <string name="drawer_availeps">Available episodes</string>
+    <string name="drawer_availmvs">Available movies</string>
+    <string name="drawer_wlseries">Series watchlist</string>
+    <string name="drawer_wlmovies">Movies watchlist</string>
+    
     <string name="drawer_dashboard">Dashboard</string>
     <string name="drawer_calendar">Calendar</string>
     <string name="drawer_favseries">My Series</string>

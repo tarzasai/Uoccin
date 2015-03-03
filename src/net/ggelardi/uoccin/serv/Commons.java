@@ -10,10 +10,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.TimeZone;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -156,31 +154,19 @@ public class Commons {
 		}
 	}
 	
-	public static class DateStuff {
-		private static Map<String, SimpleDateFormat> locs = new HashMap<>();
-		private static Map<String, SimpleDateFormat> engs = new HashMap<>();
+	public static class SDF {
 		private static final List<String> engdays = Arrays.asList("sunday", "monday", "tuesday", "wednesday",
-				"thursday", "friday", "saturday");
+			"thursday", "friday", "saturday");
 		
-		public static synchronized SimpleDateFormat locale(String format) {
-			SimpleDateFormat sdf = locs.get(format);
-			if (sdf == null) {
-				sdf = new SimpleDateFormat(format, Locale.getDefault());
-				locs.put(format, sdf);
-			}
-			return sdf;
+		public static SimpleDateFormat eng(String format) {
+			return new SimpleDateFormat(format, Locale.ENGLISH);
 		}
 		
-		public static synchronized SimpleDateFormat english(String format) {
-			SimpleDateFormat sdf = engs.get(format);
-			if (sdf == null) {
-				sdf = new SimpleDateFormat(format, Locale.ENGLISH);
-				engs.put(format, sdf);
-			}
-			return sdf;
+		public static SimpleDateFormat loc(String format) {
+			return new SimpleDateFormat(format, Locale.getDefault());
 		}
 		
-		public static int day2int(String dayname) {
+		public static int day(String dayname) {
 			return TextUtils.isEmpty(dayname) ? 0 : engdays.indexOf(dayname.toLowerCase(Locale.getDefault())) + 1;
 		}
 	}

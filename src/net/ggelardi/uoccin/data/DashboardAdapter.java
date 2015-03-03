@@ -38,7 +38,7 @@ public class DashboardAdapter extends BaseAdapter {
 		
 		List<String> ids = new ArrayList<String>();
 		
-		String today = Commons.DateStuff.locale("yyyy-MM-dd").format(new Date(System.currentTimeMillis()));
+		String today = Commons.SDF.loc("yyyy-MM-dd").format(new Date(System.currentTimeMillis()));
 		
 		// calendar
 		String query = "select e.series, e.season, e.episode from episode e join series s on (e.series = s.tvdb_id) " +

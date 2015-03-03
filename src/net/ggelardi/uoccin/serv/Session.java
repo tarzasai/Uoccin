@@ -57,6 +57,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return appContext.getResources();
 	}
 	
+	public String getString(int id) {
+		return appContext.getResources().getString(id);
+	}
+	
 	public SQLiteDatabase getDB() {
 		if (dbconn == null)
 			dbconn = dbhlp.getWritableDatabase();

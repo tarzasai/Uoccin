@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import net.ggelardi.uoccin.R;
-import net.ggelardi.uoccin.api.TVDB;
+import net.ggelardi.uoccin.api.XML.TVDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Session;
 
@@ -198,7 +198,7 @@ public class Episode extends Title {
 		chk = Commons.XML.nodeText(xml, "FirstAired");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
-				long t = Commons.DateStuff.english("yyyy-MM-dd").parse(chk).getTime();
+				long t = Commons.SDF.eng("yyyy-MM-dd").parse(chk).getTime();
 				if (t > 0) {
 					firstAired = t;
 					modified = true;
