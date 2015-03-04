@@ -28,7 +28,7 @@ public class DashboardFragment extends BaseFragment implements AbsListView.OnIte
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
+		View view = inflater.inflate(R.layout.fragment_items, container, false);
 		
 		getActivity().setTitle(getString(R.string.drawer_dashboard));
 		
