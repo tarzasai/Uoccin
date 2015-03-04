@@ -22,11 +22,37 @@ public class DrawerAdapter extends BaseAdapter {
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		items = new ArrayList<DrawerAdapter.DrawerItem>();
 		
-		items.add(new DrawerItem(R.string.drawer_dashboard, R.drawable.ic_action_dashboard));
-		items.add(new DrawerItem(R.string.drawer_calendar, R.drawable.ic_action_calendar));
-		items.add(new DrawerItem(R.string.drawer_favseries, R.drawable.ic_action_tv));
-		items.add(new DrawerItem(R.string.drawer_favmovies, R.drawable.ic_action_movie));
-		items.add(new DrawerItem(R.string.drawer_settings, R.drawable.ic_action_settings));
+		// series header
+		DrawerItem di = new DrawerItem();
+		di.header = true;
+		di.type = DrawerItem.SERIES;
+		di.id = "header";
+		di.label = context.getResources().getString(R.string.drwhdr_series);
+		di.icon = R.drawable.ic_action_tv;
+		items.add(di);
+		// series items
+		String[] defids = context.getResources().getStringArray(R.array.view_defser_ids);
+		String[] deflbs = context.getResources().getStringArray(R.array.view_defser_titles);
+		String[] defqrs = context.getResources().getStringArray(R.array.view_defser_queries);
+		for (int i = 0; i < defids.length; i++) {
+			di = new DrawerItem();
+			di.type = DrawerItem.SERIES;
+			di.id = defids[i];
+			di.label = deflbs[i];
+			di.query = defqrs[i];
+			items.add(di);
+		}
+		//
+	}
+	
+	@Override
+	public boolean areAllItemsEnabled() {
+		return false;
+	}
+	
+	@Override
+	public boolean isEnabled(int position) {
+		return !getItem(position).header;
 	}
 	
 	@Override
@@ -45,33 +71,45 @@ public class DrawerAdapter extends BaseAdapter {
 	}
 	
 	@Override
+	public int getItemViewType(int position) {
+		return getItem(position).header ? 0 : 1;
+	}
+	
+	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		ViewHolder vh;
 		View view = convertView;
 		if (view == null) {
-			view = inflater.inflate(R.layout.item_drawer, parent, false);
 			vh = new ViewHolder();
-			vh.txt = (TextView) view.findViewById(R.id.txt_itemdrawer);
+			if (getItemViewType(position) == 0)
+				view = inflater.inflate(R.layout.header_drawer, parent, false);
+			else
+				view = inflater.inflate(R.layout.item_drawer, parent, false);
+			vh.txt = (TextView) view.getRootView();
 			view.setTag(vh);
 		} else {
 			vh = (ViewHolder) view.getTag();
 		}
 		DrawerItem itm = getItem(position);
 		vh.txt.setText(itm.label);
-		vh.txt.setCompoundDrawablesWithIntrinsicBounds(itm.icon, 0, 0, 0);
+		if (itm.header)
+			vh.txt.setCompoundDrawablesWithIntrinsicBounds(itm.icon, 0, 0, 0);
 		return view;
-	}
-	
-	static class DrawerItem {
-		int label;
-		int icon;
-		public DrawerItem(int lbl, int ico) {
-			label = lbl;
-			icon = ico;
-		}
 	}
 	
 	static class ViewHolder {
 		public TextView txt;
+	}
+	
+	public static class DrawerItem {
+		public static final String SERIES = "DrawerItem.SERIES";
+		public static final String MOVIE = "DrawerItem.MOVIE";
+		
+		public boolean header = false;
+		public int icon = 0;
+		public String id;
+		public String type;
+		public String label;
+		public String query;
 	}
 }

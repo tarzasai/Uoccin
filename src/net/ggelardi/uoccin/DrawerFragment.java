@@ -1,6 +1,7 @@
 package net.ggelardi.uoccin;
 
 import net.ggelardi.uoccin.data.DrawerAdapter;
+import net.ggelardi.uoccin.data.DrawerAdapter.DrawerItem;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -50,11 +51,12 @@ public class DrawerFragment extends Fragment {
 	 */
 	private ActionBarDrawerToggle mDrawerToggle;
 	
+	private DrawerAdapter mDrawerAdapter;
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerListView;
 	private View mFragmentContainerView;
 	
-	private int mCurrentSelectedPosition = 0;
+	private int mCurrentSelectedPosition = 1;
 	private boolean mFromSavedInstanceState;
 	private boolean mUserLearnedDrawer;
 	
@@ -74,6 +76,8 @@ public class DrawerFragment extends Fragment {
 			mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
 			mFromSavedInstanceState = true;
 		}
+		
+		mDrawerAdapter = new DrawerAdapter(getActionBar().getThemedContext());
 		
 		// Select either the default item (0) or the last selected item.
 		selectItem(mCurrentSelectedPosition);
@@ -96,7 +100,7 @@ public class DrawerFragment extends Fragment {
 				selectItem(position);
 			}
 		});
-		mDrawerListView.setAdapter(new DrawerAdapter(getActionBar().getThemedContext()));
+		mDrawerListView.setAdapter(mDrawerAdapter);
 		mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
 		return mDrawerListView;
 	}
@@ -233,7 +237,7 @@ public class DrawerFragment extends Fragment {
 		if (mDrawerLayout != null)
 			mDrawerLayout.closeDrawer(mFragmentContainerView);
 		if (mCallbacks != null)
-			mCallbacks.onNavigationDrawerItemSelected(position);
+			mCallbacks.onNavigationDrawerItemSelected(mDrawerAdapter.getItem(position));
 	}
 	
 	/**
@@ -258,6 +262,6 @@ public class DrawerFragment extends Fragment {
 		/**
 		 * Called when an item in the navigation drawer is selected.
 		 */
-		void onNavigationDrawerItemSelected(int position);
+		void onNavigationDrawerItemSelected(DrawerItem selection);
 	}
 }

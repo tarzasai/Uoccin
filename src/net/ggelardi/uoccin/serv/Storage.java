@@ -5,12 +5,19 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class Storage extends SQLiteOpenHelper {
+	private static final String TAG = "Storage";
 	
 	public static final String NAME = "Uoccin.db";
 	public static final int VERSION = 1;
 	
 	public Storage(Context context) {
 		super(context, NAME, null, VERSION);
+		
+		/*
+		Log.v(TAG, CREATE_TABLE_MOVIES);
+		Log.v(TAG, CREATE_TABLE_SERIES);
+		Log.v(TAG, CREATE_TABLE_EPISODES);
+		*/
 	}
 	
 	@Override

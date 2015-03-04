@@ -1,5 +1,6 @@
 package net.ggelardi.uoccin;
 
+import net.ggelardi.uoccin.data.DrawerAdapter.DrawerItem;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -57,7 +58,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	protected void onResume() {
 		super.onResume();
 		
-		onNavigationDrawerItemSelected(0);
+		//onNavigationDrawerItemSelected(0);
 	}
 	
 	@Override
@@ -106,26 +107,20 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	}
 	
 	@Override
-	public void onNavigationDrawerItemSelected(int position) {
-		BaseFragment f = null;
-		switch (position) {
-			case 0:
-				f = DashboardFragment.newInstance();
-				break;
-			case 1:
-				break;
-			case 2:
-				break;
-			case 3:
-				break;
-			case 4:
-				break;
+	public void onNavigationDrawerItemSelected(DrawerItem selection) {
+		
+		if (selection.id.equals("settings")) {
+			return;
 		}
 		
-		if (f == null)
-			return;
-		
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).commit();
+		if (selection.type.equals(DrawerItem.SERIES)) {
+			String lbl = selection.label;
+			String qry = selection.query;
+			SeriesFragment f = SeriesFragment.newQuery(lbl, qry, (String[]) null);
+			getSupportFragmentManager().beginTransaction().replace(R.id.container, f).commit();
+		} else {
+			
+		}
 	}
 	
 	@Override
@@ -177,12 +172,14 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	}
 	
 	private void searchSeries(String text) {
-		SearchSeriesFragment f = SearchSeriesFragment.newInstance(text);
+		SeriesFragment f = SeriesFragment.newSearch(text);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
 	}
 	
 	private void searchMovies(String text) {
+		/*
 		SearchMoviesFragment f = SearchMoviesFragment.newInstance(text);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
+		*/
 	}
 }

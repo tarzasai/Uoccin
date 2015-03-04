@@ -1,4 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     
+    <string-array name="view_defser_ids">
+        <item>sernext</item>
+        <item>sernews</item>
+        <item>serfavs</item>
+        <item>ser2see</item>
+        <item>sercoll</item>
+        <item>serseen</item>
+    </string-array>
+    
+    <string-array name="view_defser_titles">
+        <item>Upcoming episodes</item>
+        <item>New TV shows</item>
+        <item>Series watchlist</item>
+        <item>Available episodes</item>
+        <item>Collected episodes</item>
+        <item>Watched episodes</item>
+    </string-array>
+    
+    <string-array name="view_defser_queries">
+        <item>
+select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
+where datetime(e.firstAired, \'unixepoch\') >= datetime(\'now\') order by e.firstAired
+        </item>
+        <item>
+select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
+where datetime(e.firstAired, \'unixepoch\') >= datetime(\'now\') 
+and e.season = 1 and e.episode = 1 order by e.firstAired
+        </item>
+        <item>
+select tvdb_id from series where watchlist = 1 order by name
+        </item>
+        <item>
+select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
+where e.collected = 1 and e.watched = 0 order by e.firstAired
+        </item>
+        <item>
+select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
+where e.collected = 1 order by s.name
+        </item>
+        <item>
+select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
+where e.watched = 1 order by s.name
+        </item>
+    </string-array>
+    
 </resources>
