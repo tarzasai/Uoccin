@@ -474,7 +474,7 @@ public class Series extends Title {
 	}
 	
 	public boolean isOld() {
-		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 24; // TODO preferences
+		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
 	}
 	
 	public boolean inWatchlist() {
