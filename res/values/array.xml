@@ -19,10 +19,20 @@
         <item>Watched episodes</item>
     </string-array>
     
+    <string-array name="view_defser_details">
+        <item>NEXT_EPISODE</item>
+        <item>NEAR_EPISODE</item>
+        <item>NEAR_EPISODE</item>
+        <item>LAST_EPISODE</item>
+        <item>SERIES_STATS</item>
+        <item>SERIES_STATS</item>
+    </string-array>
+    
     <string-array name="view_defser_queries">
         <item>
 select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where datetime(e.firstAired/1000, \'unixepoch\') >= datetime(\'now\') order by e.firstAired
+where datetime(e.firstAired/1000, \'unixepoch\') between datetime(\'now\') 
+and datetime(\'now\', \'+6 days\') order by e.firstAired
         </item>
         <item>
 select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 

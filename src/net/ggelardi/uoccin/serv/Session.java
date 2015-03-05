@@ -83,6 +83,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return prefs.getString(PK.LOCALE, Locale.getDefault().getLanguage());
 	}
 	
+	public boolean specials() {
+		return prefs.getBoolean(PK.SPECIALS, false);
+	}
+	
 	public Picasso picasso() {
 		// @formatter:off
 		/* DEBUG ONLY!!!

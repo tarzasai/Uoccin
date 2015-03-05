@@ -114,10 +114,9 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		}
 		
 		if (selection.type.equals(DrawerItem.SERIES)) {
-			String lbl = selection.label;
-			String qry = selection.query;
-			SeriesFragment f = SeriesFragment.newQuery(lbl, qry, (String[]) null);
-			getSupportFragmentManager().beginTransaction().replace(R.id.container, f).commit();
+			getSupportFragmentManager().beginTransaction().replace(R.id.container,
+				SeriesFragment.newQuery(selection.label, selection.query, selection.details,
+					(String[]) null)).commit();
 		} else {
 			
 		}

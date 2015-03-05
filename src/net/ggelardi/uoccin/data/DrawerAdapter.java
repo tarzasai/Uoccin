@@ -34,12 +34,14 @@ public class DrawerAdapter extends BaseAdapter {
 		String[] defids = context.getResources().getStringArray(R.array.view_defser_ids);
 		String[] deflbs = context.getResources().getStringArray(R.array.view_defser_titles);
 		String[] defqrs = context.getResources().getStringArray(R.array.view_defser_queries);
+		String[] defdet = context.getResources().getStringArray(R.array.view_defser_details);
 		for (int i = 0; i < defids.length; i++) {
 			di = new DrawerItem();
 			di.type = DrawerItem.SERIES;
 			di.id = defids[i];
 			di.label = deflbs[i];
 			di.query = defqrs[i];
+			di.details = defdet[i];
 			items.add(di);
 		}
 		//
@@ -111,5 +113,6 @@ public class DrawerAdapter extends BaseAdapter {
 		public String type;
 		public String label;
 		public String query;
+		public String details;
 	}
 }

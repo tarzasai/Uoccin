@@ -3,16 +3,14 @@ package net.ggelardi.uoccin.data;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.TVDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Session;
+import net.ggelardi.uoccin.serv.SimpleCache;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -34,16 +32,19 @@ public class Series extends Title {
     private static final String TAG = "Series";
 	private static final String TABLE = "series";
 	
-	private static final Set<Series> cache = Collections.newSetFromMap(new WeakHashMap<Series, Boolean>());
+	private static final SimpleCache cache = new SimpleCache(500);
 	
 	private final Session session;
 	
-	private SparseIntArray seasons = new SparseIntArray();
 	private int rating = 0;
 	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;
+
 	private Episode lastep = null;
 	private Episode nextep = null;
+	private SparseIntArray seasons = new SparseIntArray();
+	private int epscoll = 0;
+	private int epsseen = 0;
 	
 	public String tvdb_id;
 	public String name;
@@ -72,13 +73,13 @@ public class Series extends Title {
 	}
 	
 	private static synchronized Series getInstance(Context context, String tvdb_id) {
-		for (Series m: cache)
-			if (m.tvdb_id.equals(tvdb_id)) {
-				Log.v(TAG, "Series " + tvdb_id + " found in cache");
-				return m;
-			}
+		Object tmp = cache.get(tvdb_id);
+		if (tmp != null) {
+			Log.v(TAG, "Series " + tvdb_id + " found in cache");
+			return (Series) tmp;
+		}
 		Series res = new Series(context, tvdb_id);
-		cache.add(res);
+		cache.add(tvdb_id, res);
 		Cursor cur = Session.getInstance(context).getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
 				null, null, null);
 		try {
@@ -344,16 +345,8 @@ public class Series extends Title {
 			tags = Arrays.asList(cr.getString(ci).split(","));
 		watchlist = cr.getInt(cr.getColumnIndex("watchlist")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
-		//
-		seasons = new SparseIntArray();
-		String sql = "select season, max(episode) from episode where series = ? group by season";
-		Cursor eps = session.getDB().rawQuery(sql, new String[] { tvdb_id });
-		try {
-			while (eps.moveToNext())
-				seasons.put(eps.getInt(0), eps.getInt(1));
-		} finally {
-			eps.close();
-		}
+		
+		recalc();
 	}
 	
 	protected void save(boolean isnew) {
@@ -408,6 +401,8 @@ public class Series extends Title {
 				NodeList lst = doc.getElementsByTagName("Episode");
 				if (lst != null && lst.getLength() > 0) {
 					seasons = new SparseIntArray();
+					lastep = null;
+					nextep = null;
 					Episode ep;
 					for (int i = 0; i < lst.getLength(); i++) {
 						ep = Episode.get(session.getContext(), (Element) lst.item(i));
@@ -466,6 +461,67 @@ public class Series extends Title {
 		} finally {
 			db.endTransaction();
 		}
+		dispatch(OnTitleListener.READY, null);
+	}
+	
+	public void recalc() {
+		dispatch(OnTitleListener.WORKING, null);
+		String sql;
+		String[] key = new String[] { tvdb_id };
+		Cursor cur;
+		// last episode
+		lastep = null;
+		sql = "select season, episode from episode where series = ? and " +
+			"datetime(firstAired/1000, 'unixepoch') <= datetime('now') order by firstAired desc, episode desc limit 1";
+		cur = session.getDB().rawQuery(sql, key);
+		try {
+			if (cur.moveToNext())
+				lastep = Episode.get(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1));
+		} finally {
+			cur.close();
+		}
+		// next episode
+		nextep = null;
+		sql = "select season, episode from episode where series = ? and " +
+			"datetime(firstAired/1000, 'unixepoch') > datetime('now') order by firstAired, episode limit 1";
+		cur = session.getDB().rawQuery(sql, key);
+		try {
+			if (cur.moveToNext())
+				nextep = Episode.get(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1));
+		} finally {
+			cur.close();
+		}
+		// seasons list
+		seasons = new SparseIntArray();
+		sql = "select season, max(episode) from episode where series = ? group by season";
+		cur = session.getDB().rawQuery(sql, key);
+		try {
+			while (cur.moveToNext())
+				seasons.put(cur.getInt(0), cur.getInt(1));
+		} finally {
+			cur.close();
+		}
+		// collected episodes
+		epscoll = 0;
+		sql = "select count(*) from episode where series = ? and collected = 1";
+		cur = session.getDB().rawQuery(sql, key);
+		try {
+			if (cur.moveToNext())
+				epscoll = cur.getInt(0);
+		} finally {
+			cur.close();
+		}
+		// watched episodes
+		epsseen = 0;
+		sql = "select count(*) from episode where series = ? and watched = 1";
+		cur = session.getDB().rawQuery(sql, key);
+		try {
+			if (cur.moveToNext())
+				epsseen = cur.getInt(0);
+		} finally {
+			cur.close();
+		}
+		//
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -547,29 +603,33 @@ public class Series extends Title {
 	}
 	
 	public Episode lastEpisode() {
-		if (lastep == null && seasons != null && seasons.size() > 0) {
-			Episode ep;
-			for (int s = 1; s <= seasons.size(); s++)
-				for (int e = 1; e <= seasons.get(s); e++) {
-					ep = Episode.get(session.getContext(), tvdb_id, s, e);
-					if (ep.firstAired > 0 && ep.firstAired <= System.currentTimeMillis() &&
-							(lastep == null || ep.isAfter(lastep)))
-						lastep = ep;
-				}
-		}
 		return lastep;
 	}
 	
 	public Episode nextEpisode() {
-		if (nextep == null && seasons != null && seasons.size() > 0) {
-			Episode ep;
-			for (int s = 1; s <= seasons.size(); s++)
-				for (int e = 1; e <= seasons.get(s); e++) {
-					ep = Episode.get(session.getContext(), tvdb_id, s, e);
-					if (ep.firstAired > System.currentTimeMillis() && (nextep == null || ep.isBefore(nextep)))
-						nextep = ep;
-				}
-		}
 		return nextep;
+	}
+	
+	public int seasonCount() {
+		return seasons.size();
+	}
+	
+	public int episodeCount() {
+		int res = 0;
+		for (int i = 0; i < seasons.size(); i++)
+			res += seasons.get(i);
+		return res;
+	}
+	
+	public int episodeCount(int season) {
+		return seasons.get(season);
+	}
+	
+	public int episodeCollected() {
+		return epscoll;
+	}
+	
+	public int episodeWatched() {
+		return epsseen;
 	}
 }

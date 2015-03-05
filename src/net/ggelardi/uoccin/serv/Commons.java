@@ -36,6 +36,7 @@ public class Commons {
 	
 	static class PK {
 		public static final String LOCALE = "pk_locale";
+		public static final String SPECIALS = "pk_specials";
 		/*
 		public static final String USERNAME = "Username";
 		public static final String REMOTEKEY = "RemoteKey";

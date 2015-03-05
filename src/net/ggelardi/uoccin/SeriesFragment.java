@@ -35,15 +35,17 @@ public class SeriesFragment extends BaseFragment implements SeriesTaskContainer,
 	private String title;
 	private String query;
 	private String[] params;
+	private String details = SeriesAdapter.SERIES_PLOT;
 	private String search;
 	
-	public static SeriesFragment newQuery(String title, String query, String ... params) {
+	public static SeriesFragment newQuery(String title, String query, String details, String ... params) {
 		SeriesFragment fragment = new SeriesFragment();
 		Bundle args = new Bundle();
 		args.putString("type", QUERY);
 		args.putString("title", title);
 		args.putString("query", query);
 		args.putStringArray("params", params);
+		args.putString("details", details);
 		fragment.setArguments(args);
 		return fragment;
 	}
@@ -65,16 +67,17 @@ public class SeriesFragment extends BaseFragment implements SeriesTaskContainer,
 		
 		type = args.getString("type");
 		
-		mAdapter = new SeriesAdapter(getActivity(), this);
-		
 		if (isQuery()) {
 			title = args.getString("title");
 			query = args.getString("query");
 			params = args.getStringArray("params");
+			details = args.getString("details");
 		} else {
 			search = args.getString("search");
 			title = String.format(getString(R.string.title_search), search);
 		}
+		
+		mAdapter = new SeriesAdapter(getActivity(), this, details);
 	}
 	
 	@SuppressLint("InflateParams")

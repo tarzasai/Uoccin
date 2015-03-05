@@ -2,16 +2,14 @@ package net.ggelardi.uoccin.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.TVDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Session;
+import net.ggelardi.uoccin.serv.SimpleCache;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -31,7 +29,7 @@ public class Episode extends Title {
 	private static final String TAG = "Episode";
 	private static final String TABLE = "episode";
 	
-	private static final Set<Episode> cache = Collections.newSetFromMap(new WeakHashMap<Episode, Boolean>());
+	private static final SimpleCache cache = new SimpleCache(1000);
 	
 	private final Context context;
 	private final Session session;
@@ -69,13 +67,13 @@ public class Episode extends Title {
 	
 	private static synchronized Episode getInstance(Context context, String series, int season, int episode) {
 		String eid = getEID(series, season, episode);
-		for (Episode m: cache)
-			if (m.extendedEID().equals(eid)) {
-				Log.v(TAG, "Episode " + eid + " found in cache");
-				return m;
-			}
+		Object tmp = cache.get(eid);
+		if (tmp != null) {
+			Log.v(TAG, "Episode " + eid + " found in cache");
+			return (Episode) tmp;
+		}
 		Episode res = new Episode(context, series, season, episode);
-		cache.add(res);
+		cache.add(eid, res);
 		Cursor cur = Session.getInstance(context).getDB().query("episode", null, "series=? and season=? and episode=?",
 				new String[] { series, Integer.toString(season), Integer.toString(episode) }, null, null, null);
 		try {
@@ -100,6 +98,8 @@ public class Episode extends Title {
 			String sid = xml.getElementsByTagName("seriesid").item(0).getTextContent();
 			int sen = Integer.parseInt(xml.getElementsByTagName("SeasonNumber").item(0).getTextContent());
 			int epn = Integer.parseInt(xml.getElementsByTagName("EpisodeNumber").item(0).getTextContent());
+			if (!Session.getInstance(context).specials() && (sen == 0 || epn == 0))
+				return null;
 			Episode res = Episode.getInstance(context, sid, sen, epn);
 			res.load(xml);
 			//if (res.modified && !res.isNew())
@@ -350,6 +350,7 @@ public class Episode extends Title {
 				db.endTransaction();
 			}
 			dispatch(OnTitleListener.READY, null);
+			getSeries().recalc();
 		}
 	}
 	
@@ -421,11 +422,19 @@ public class Episode extends Title {
 		return Series.get(context, series);
 	}
 	
+	public boolean isAfter(int seasonNo, int episodeNo) {
+		return season > seasonNo || (season == seasonNo && episode > episodeNo);
+	}
+	
 	public boolean isAfter(Episode ep) {
-		return season > ep.season || (season == ep.season && episode > ep.episode);
+		return isAfter(ep.season, ep.episode);
+	}
+	
+	public boolean isBefore(int seasonNo, int episodeNo) {
+		return season < seasonNo || (season == seasonNo && episode < episodeNo);
 	}
 	
 	public boolean isBefore(Episode ep) {
-		return season < ep.season || (season == ep.season && episode < ep.episode);
+		return isBefore(ep.season, ep.episode);
 	}
 }

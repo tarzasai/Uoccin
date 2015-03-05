@@ -3,16 +3,14 @@ package net.ggelardi.uoccin.data;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.OMDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Session;
+import net.ggelardi.uoccin.serv.SimpleCache;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,7 +31,7 @@ public class Movie extends Title {
 	private static final String TAG = "Movie";
 	private static final String TABLE = "movie";
 	
-	private static final Set<Movie> cache = Collections.newSetFromMap(new WeakHashMap<Movie, Boolean>());
+	private static final SimpleCache cache = new SimpleCache(500);
 
 	private final Session session;
 
@@ -71,13 +69,13 @@ public class Movie extends Title {
 	}
 	
 	private static synchronized Movie getInstance(Context context, String imdb_id) {
-		for (Movie m: cache)
-			if (m.imdb_id.equals(imdb_id)) {
-				Log.v(TAG, "Movie " + imdb_id + " found in cache");
-				return m;
-			}
+		Object tmp = cache.get(imdb_id);
+		if (tmp != null) {
+			Log.v(TAG, "Movie " + imdb_id + " found in cache");
+			return (Movie) tmp;
+		}
 		Movie res = new Movie(context, imdb_id);
-		cache.add(res);
+		cache.add(imdb_id, res);
 		Cursor cur = Session.getInstance(context).getDB().query(TABLE, null, "imdb_id=?", new String[] { imdb_id },
 				null, null, null);
 		try {
