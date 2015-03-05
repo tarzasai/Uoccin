@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import com.android.photos.views.HeaderGridView;
 
-public class SeriesFragment extends BaseFragment implements SeriesTaskContainer, AbsListView.OnItemClickListener {
+public class SeriesListFragment extends BaseFragment implements SeriesTaskContainer, AbsListView.OnItemClickListener {
 	public static final String QUERY = "SeriesFragment.QUERY";
 	public static final String SEARCH = "SeriesFragment.SEARCH";
 	
@@ -38,8 +38,8 @@ public class SeriesFragment extends BaseFragment implements SeriesTaskContainer,
 	private String details = SeriesAdapter.SERIES_PLOT;
 	private String search;
 	
-	public static SeriesFragment newQuery(String title, String query, String details, String ... params) {
-		SeriesFragment fragment = new SeriesFragment();
+	public static SeriesListFragment newQuery(String title, String query, String details, String ... params) {
+		SeriesListFragment fragment = new SeriesListFragment();
 		Bundle args = new Bundle();
 		args.putString("type", QUERY);
 		args.putString("title", title);
@@ -50,8 +50,8 @@ public class SeriesFragment extends BaseFragment implements SeriesTaskContainer,
 		return fragment;
 	}
 	
-	public static SeriesFragment newSearch(String search) {
-		SeriesFragment fragment = new SeriesFragment();
+	public static SeriesListFragment newSearch(String search) {
+		SeriesListFragment fragment = new SeriesListFragment();
 		Bundle args = new Bundle();
 		args.putString("type", SEARCH);
 		args.putString("search", search);
@@ -184,17 +184,17 @@ public class SeriesFragment extends BaseFragment implements SeriesTaskContainer,
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		//
 	}
-
+	
 	@Override
 	public Context getContext() {
 		return getActivity();
 	}
-
+	
 	@Override
 	public void preExecuteTask() {
 		showHourGlass(true);
 	}
-
+	
 	@Override
 	public void postExecuteTask(List<Series> result) {
 		mAdapter.setTitles(result);

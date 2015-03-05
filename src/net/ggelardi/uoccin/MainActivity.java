@@ -115,7 +115,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		
 		if (selection.type.equals(DrawerItem.SERIES)) {
 			getSupportFragmentManager().beginTransaction().replace(R.id.container,
-				SeriesFragment.newQuery(selection.label, selection.query, selection.details,
+				SeriesListFragment.newQuery(selection.label, selection.query, selection.details,
 					(String[]) null)).commit();
 		} else {
 			
@@ -171,7 +171,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	}
 	
 	private void searchSeries(String text) {
-		SeriesFragment f = SeriesFragment.newSearch(text);
+		SeriesListFragment f = SeriesListFragment.newSearch(text);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
 	}
 	
