@@ -48,7 +48,6 @@ public class SeriesInfoFragment extends BaseFragment {
 	
 	private int pstHeight = 1;
 	private int pstWidth = 1;
-	private boolean refrRequested;
 	
 	public static SeriesInfoFragment newInstance(String tvdb_id) {
 		SeriesInfoFragment fragment = new SeriesInfoFragment();
@@ -175,8 +174,6 @@ public class SeriesInfoFragment extends BaseFragment {
 	public void onResume() {
 		super.onResume();
 		
-		refrRequested = false;
-		
 		Series.addOnTitleEventListener(new OnTitleListener() {
 			@Override
 			public void changed(final String state, final Throwable error) {
@@ -239,7 +236,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_acts.setText(series.actors());
 		txt_gens.setText(series.genres());
 		
-		grd_seas.setNumColumns(Math.round(pstWidth/120));
+		grd_seas.setNumColumns(Math.round(pstWidth/140));
 		grd_seas.setAdapter(new SeasonAdapter(getActivity(), series));
 		txt_imdb.setEnabled(!TextUtils.isEmpty(series.imdb_id));
 	}

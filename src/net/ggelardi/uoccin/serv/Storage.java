@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class Storage extends SQLiteOpenHelper {
-	private static final String TAG = "Storage";
+	//private static final String TAG = "Storage";
 	
 	public static final String NAME = "Uoccin.db";
 	public static final int VERSION = 1;
@@ -19,11 +19,8 @@ public class Storage extends SQLiteOpenHelper {
 		Log.v(TAG, CREATE_TABLE_EPISODES);
 		*/
 		
-		SQLiteDatabase db = getWritableDatabase();
-		db.execSQL("delete from series where watchlist = 0 and (rating is null or rating = 0) and tvdb_id in (" +
-			"select distinct series from episode where collected = 0 and watched = 0)");
-		
 		/*
+		SQLiteDatabase db = getWritableDatabase();
 		db.execSQL("delete from episode where season = 0 or episode = 0");
 		db.execSQL("update episode set subtitles = null");
 		db.execSQL("delete from movie");

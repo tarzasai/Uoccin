@@ -22,7 +22,6 @@ import retrofit.client.Response;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -99,20 +98,19 @@ public class Episode extends Title {
 	}
 	
 	public static Episode get(Context context, Element xml) {
+		Episode res = null;
 		try {
 			String sid = xml.getElementsByTagName("seriesid").item(0).getTextContent();
 			int sen = Integer.parseInt(xml.getElementsByTagName("SeasonNumber").item(0).getTextContent());
 			int epn = Integer.parseInt(xml.getElementsByTagName("EpisodeNumber").item(0).getTextContent());
-			if (!Session.getInstance(context).specials() && (sen == 0 || epn == 0))
-				return null;
-			Episode res = Episode.getInstance(context, sid, sen, epn);
-			res.load(xml);
-			if (!res.getSeries().isNew())
-				res.commit();
-			return res;
+			if ((sen > 0 && epn > 0) || Session.getInstance(context).specials()) {
+				res = Episode.getInstance(context, sid, sen, epn);
+				res.load(xml);
+			}
 		} catch (Exception err) {
-			return null;
+			res = null;
 		}
+		return res;
 	}
 	
 	public static List<Episode> get(Context context, String query, String ... args) {
@@ -391,7 +389,7 @@ public class Episode extends Title {
 				Document doc = Commons.XML.str2xml(result);
 				load((Element) doc.getElementsByTagName("Episode").item(0));
 				commit();
-				dispatch(OnTitleListener.READY, null);
+				//dispatch(OnTitleListener.READY, null);
 			}
 			@Override
 			public void failure(RetrofitError error) {
@@ -409,20 +407,7 @@ public class Episode extends Title {
 	}
 	
 	public final void commit() {
-		if (!modified || getSeries().isNew())
-			return;
-		dispatch(OnTitleListener.WORKING, null);
-		SQLiteDatabase db = session.getDB();
-		db.beginTransaction();
-		try {
-			save(isNew());
-			db.setTransactionSuccessful();
-			modified = false;
-		} finally {
-			db.endTransaction();
-		}
-		dispatch(OnTitleListener.READY, null);
-		getSeries().recalc();
+		getSeries().commit();
 	}
 	
 	public boolean isNew() {
@@ -441,10 +426,7 @@ public class Episode extends Title {
 		if (value != collected) {
 			collected = value;
 			modified = true;
-			if (isNew())
-				refresh();
-			else
-				commit();
+			commit();
 			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_epi : R.string.msg_coll_del_epi);
 			msg = String.format(msg, simpleEID());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -459,10 +441,7 @@ public class Episode extends Title {
 		if (value != watched) {
 			watched = value;
 			modified = true;
-			if (isNew())
-				refresh();
-			else
-				commit();
+			commit();
 			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_epi : R.string.msg_seen_del_epi);
 			msg = String.format(msg, simpleEID());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();

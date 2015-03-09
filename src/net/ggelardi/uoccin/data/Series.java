@@ -32,7 +32,6 @@ public class Series extends Title {
     private static final String TAG = "Series";
 	private static final String TABLE = "series";
 
-	public static final String ARCHIVE = "CommitRequired";
 	public static final String ACTIVE = "Continuing";
 	public static final String ENDED = "Ended";
 	
@@ -457,101 +456,7 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public void refresh() {
-		Log.v(TAG, "Refreshing series " + tvdb_id);
-		dispatch(OnTitleListener.WORKING, null);
-		Callback<String> callback = new Callback<String>() {
-			@Override
-			public void success(String result, Response response) {
-				boolean store = !isNew() || (status != null && status.equals(ARCHIVE));
-				Document doc = Commons.XML.str2xml(result);
-				load((Element) doc.getElementsByTagName("Series").item(0));
-				if (store)
-					commit();
-				// episodes
-				noRecalc = true;
-				try {
-					long now = System.currentTimeMillis();
-					if (isNew()) {
-						seasons = new SparseIntArray();
-						epcount = 0;
-						epscoll = 0;
-						epsseen = 0;
-						lastep = null;
-						nextep = null;
-					}
-					NodeList lst = doc.getElementsByTagName("Episode");
-					if (lst != null && lst.getLength() > 0) {
-						Episode ep;
-						for (int i = 0; i < lst.getLength(); i++) {
-							ep = Episode.get(session.getContext(), (Element) lst.item(i));
-							if (isNew() && ep != null) {
-								int en = seasons.get(ep.season);
-								if (ep.episode > en)
-									seasons.put(ep.season, ep.episode);
-								epcount++;
-								if (ep.firstAired <= 0)
-									continue;
-								if (ep.firstAired < now && (lastep == null || ep.firstAired > lastep.firstAired ||
-									ep.episode > lastep.episode))
-									lastep = ep;
-								else if (ep.firstAired > now && (nextep == null || ep.firstAired < lastep.firstAired ||
-									ep.episode < lastep.episode))
-									nextep = ep;
-							}
-						}
-					}
-				} finally {
-					noRecalc = false;
-					if (!isNew())
-						recalc();
-				}
-				dispatch(OnTitleListener.READY, null);
-			}
-			@Override
-			public void failure(RetrofitError error) {
-				Log.e(TAG, "refresh", error);
-				
-				plot = error.getLocalizedMessage();
-				
-				dispatch(OnTitleListener.ERROR, error);
-			}
-		};
-		TVDB.getInstance().getFullSeries(tvdb_id, session.language(), callback);
-	}
-	
-	public final void commit() {
-		if (!modified)
-			return;
-		dispatch(OnTitleListener.WORKING, null);
-		SQLiteDatabase db = session.getDB();
-		db.beginTransaction();
-		try {
-			if (watchlist || rating > 0)
-				save(isNew());
-			else {
-				boolean chk = false;
-				String sql = "select count(*) from episode where series = ? and collected = 1 or watched = 1";
-				Cursor qry = db.rawQuery(sql, new String[] { tvdb_id });
-				try {
-					chk = (qry.moveToNext() && qry.getInt(0) > 0);
-				} finally {
-					qry.close();
-				}
-				if (chk)
-					save(isNew());
-				else
-					delete();
-			}
-			db.setTransactionSuccessful();
-			modified = false;
-		} finally {
-			db.endTransaction();
-		}
-		dispatch(OnTitleListener.READY, null);
-	}
-	
-	public synchronized void recalc() {
+	private void recalc() {
 		if (noRecalc)
 			return;
 		dispatch(OnTitleListener.WORKING, null);
@@ -624,6 +529,93 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
+	public void refresh() {
+		Log.v(TAG, "Refreshing series " + tvdb_id);
+		dispatch(OnTitleListener.WORKING, null);
+		final boolean needCommit = isNew() && (watchlist || rating > 0 || !tags.isEmpty());
+		Callback<String> callback = new Callback<String>() {
+			@Override
+			public void success(String result, Response response) {
+				Document doc = Commons.XML.str2xml(result);
+				load((Element) doc.getElementsByTagName("Series").item(0));
+				// episodes
+				noRecalc = true;
+				try {
+					seasons = new SparseIntArray();
+					epcount = 0;
+					epscoll = 0;
+					epsseen = 0;
+					lastep = null;
+					nextep = null;
+					long now = System.currentTimeMillis();
+					NodeList lst = doc.getElementsByTagName("Episode");
+					if (lst != null && lst.getLength() > 0) {
+						Episode ep;
+						for (int i = 0; i < lst.getLength(); i++) {
+							ep = Episode.get(session.getContext(), (Element) lst.item(i));
+							if (ep != null) {
+								int en = seasons.get(ep.season);
+								if (ep.episode > en)
+									seasons.put(ep.season, ep.episode);
+								epcount++;
+								if (ep.firstAired <= 0)
+									continue;
+								if (ep.firstAired < now && (lastep == null || ep.firstAired > lastep.firstAired ||
+									ep.episode > lastep.episode))
+									lastep = ep;
+								else if (ep.firstAired > now && (nextep == null || ep.firstAired < lastep.firstAired ||
+									ep.episode < lastep.episode))
+									nextep = ep;
+							}
+						}
+					}
+				} finally {
+					noRecalc = false;
+					if (!isNew() || needCommit)
+						commit();
+				}
+				dispatch(OnTitleListener.READY, null);
+			}
+			@Override
+			public void failure(RetrofitError error) {
+				Log.e(TAG, "refresh", error);
+				
+				plot = error.getLocalizedMessage();
+				
+				dispatch(OnTitleListener.ERROR, error);
+			}
+		};
+		TVDB.getInstance().getFullSeries(tvdb_id, session.language(), callback);
+	}
+	
+	public final synchronized void commit() {
+		dispatch(OnTitleListener.WORKING, null);
+		SQLiteDatabase db = session.getDB();
+		db.beginTransaction();
+		try {
+			int changes = 0;
+			if (modified) {
+				changes++;
+				save(isNew());
+			}
+			List<Episode> eps = Episode.cached(tvdb_id, -1);
+			for (Episode ep: eps)
+				if (ep.modified) {
+					changes++;
+					ep.save(ep.isNew());
+				}
+			db.setTransactionSuccessful();
+			modified = false;
+			for (Episode ep: eps)
+				ep.modified = false;
+			if (changes > 0)
+				recalc();
+		} finally {
+			db.endTransaction();
+		}
+		dispatch(OnTitleListener.READY, null);
+	}
+	
 	public boolean isNew() {
 		return timestamp <= 0;
 	}
@@ -640,10 +632,9 @@ public class Series extends Title {
 		if (value != watchlist) {
 			watchlist = value;
 			modified = true;
-			if (isNew()) {
-				status = ARCHIVE;
+			if (TextUtils.isEmpty(status))
 				refresh();
-			} else
+			else
 				commit();
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_ser : R.string.msg_wlst_del_ser);
 			msg = String.format(msg, name);
@@ -659,10 +650,9 @@ public class Series extends Title {
 		if (value != rating) {
 			rating = value;
 			modified = true;
-			if (isNew()) {
-				status = ARCHIVE;
+			if (TextUtils.isEmpty(status))
 				refresh();
-			} else
+			else
 				commit();
 		}
 	}
@@ -680,10 +670,9 @@ public class Series extends Title {
 		if (!hasTag(tag)) {
 			tags.add(tag);
 			modified = true;
-			if (isNew()) {
-				status = ARCHIVE;
+			if (TextUtils.isEmpty(status))
 				refresh();
-			} else
+			else
 				commit();
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -695,10 +684,9 @@ public class Series extends Title {
 		if (hasTag(tag)) {
 			tags.remove(tag);
 			modified = true;
-			if (isNew()) {
-				status = ARCHIVE;
+			if (TextUtils.isEmpty(status))
 				refresh();
-			} else
+			else
 				commit();
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -841,50 +829,58 @@ public class Series extends Title {
 	}
 	
 	public void setCollected(boolean flag, int season) {
-		SQLiteDatabase db = session.getDB();
-		db.beginTransaction();
-		try {
-			ContentValues cv = new ContentValues();
-			cv.put("collected", flag);
-			List<String> args = new ArrayList<String>();
-			String where = "series = ?";
-			args.add(tvdb_id);
-			if (season >= 0) {
-				where += " and season = ?";
-				args.add(Integer.toString(season));
+		if (!isNew()) {
+			SQLiteDatabase db = session.getDB();
+			db.beginTransaction();
+			try {
+				ContentValues cv = new ContentValues();
+				cv.put("collected", flag);
+				List<String> args = new ArrayList<String>();
+				String where = "series = ?";
+				args.add(tvdb_id);
+				if (season >= 0) {
+					where += " and season = ?";
+					args.add(Integer.toString(season));
+				}
+				String[] wargs = new String[args.size()];
+				wargs = args.toArray(wargs);
+				db.update("episode", cv, where, wargs);
+				db.setTransactionSuccessful();
+			} finally {
+				db.endTransaction();
 			}
-			String[] wargs = new String[args.size()];
-			wargs = args.toArray(wargs);
-			db.update("episode", cv, where, wargs);
-			db.setTransactionSuccessful();
-			Episode.setDirtyFlags(tvdb_id, season, flag, null);
-		} finally {
-			db.endTransaction();
+			recalc();
 		}
-		recalc();
+		Episode.setDirtyFlags(tvdb_id, season, flag, null);
+		if (isNew())
+			commit();
 	}
 	
 	public void setWatched(boolean flag, int season) {
-		SQLiteDatabase db = session.getDB();
-		db.beginTransaction();
-		try {
-			ContentValues cv = new ContentValues();
-			cv.put("watched", flag);
-			List<String> args = new ArrayList<String>();
-			String where = "series = ?";
-			args.add(tvdb_id);
-			if (season >= 0) {
-				where += " and season = ?";
-				args.add(Integer.toString(season));
+		if (!isNew()) {
+			SQLiteDatabase db = session.getDB();
+			db.beginTransaction();
+			try {
+				ContentValues cv = new ContentValues();
+				cv.put("watched", flag);
+				List<String> args = new ArrayList<String>();
+				String where = "series = ?";
+				args.add(tvdb_id);
+				if (season >= 0) {
+					where += " and season = ?";
+					args.add(Integer.toString(season));
+				}
+				String[] wargs = new String[args.size()];
+				wargs = args.toArray(wargs);
+				db.update("episode", cv, where, wargs);
+				db.setTransactionSuccessful();
+			} finally {
+				db.endTransaction();
 			}
-			String[] wargs = new String[args.size()];
-			wargs = args.toArray(wargs);
-			db.update("episode", cv, where, wargs);
-			db.setTransactionSuccessful();
-			Episode.setDirtyFlags(tvdb_id, season, null, flag);
-		} finally {
-			db.endTransaction();
+			recalc();
 		}
-		recalc();
+		Episode.setDirtyFlags(tvdb_id, season, null, flag);
+		if (isNew())
+			commit();
 	}
 }

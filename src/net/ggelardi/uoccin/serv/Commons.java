@@ -35,6 +35,7 @@ public class Commons {
 	public static final String[] weekdays = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
 	
 	public static class PK {
+		public static final String CLEANING = "pk_cleaning";
 		public static final String STARTUP = "pk_startup";
 		public static final String LOCALE = "pk_locale";
 		public static final String SPECIALS = "pk_specials";
