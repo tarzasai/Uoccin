@@ -23,6 +23,6 @@ public class Title {
 		public static String READY = "TitleEvent.READY";
 		public static String ERROR = "TitleEvent.ERROR";
 		
-		void changed(String state, Throwable error);
+		void changed(final String state, final Throwable error);
 	}
 }

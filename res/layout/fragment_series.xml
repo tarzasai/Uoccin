@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="@color/list_foreground" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -9,64 +10,237 @@
         android:orientation="vertical" >
 
         <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="wrap_content"
+            android:id="@+id/img_serinf_bann"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
             android:contentDescription="@string/empty_text"
-            android:src="@drawable/tvdb_banner" />
+            android:src="@drawable/ic_action_image" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="5dp" >
+
+            <TextView
+                android:id="@+id/txt_serinf_netw"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="@string/sample_network"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_serinf_airt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/txt_serinf_netw"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="@string/sample_time1"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:text="@string/lbl_serinf_ratd" />
+
+                <TextView
+                    android:id="@+id/txt_serinf_ratd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sample_rated"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="4dp" >
+            android:gravity="center_horizontal"
+            android:padding="10dp" >
 
             <TextView
-                android:id="@+id/textView1"
-                android:layout_width="match_parent"
+                android:id="@+id/txt_serinf_wlst"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/sample_title"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_loved"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_wlst" />
 
             <TextView
-                android:id="@+id/textView2"
-                android:layout_width="match_parent"
+                android:id="@+id/txt_serinf_coll"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/sample_info1"
-                android:textColor="@android:color/darker_gray"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_storage"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_coll" />
 
             <TextView
-                android:id="@+id/textView3"
-                android:layout_width="wrap_content"
+                android:id="@+id/txt_serinf_seen"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/sample_plot1" />
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_seen"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_seen" />
 
             <TextView
-                android:id="@+id/textView4"
-                android:layout_width="match_parent"
+                android:id="@+id/txt_serinf_shar"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/sample_actors"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_share"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_shar" />
 
             <TextView
-                android:id="@+id/textView6"
-                android:layout_width="match_parent"
+                android:id="@+id/txt_serinf_refr"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/sample_genres" />
-
-            <TextView
-                android:id="@+id/textView5"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sample_info2"
-                android:textColor="@android:color/darker_gray"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_refresh"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_refr" />
 
         </LinearLayout>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:paddingBottom="2dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/lbl_serinf_plot"
+            android:textSize="@dimen/mini_section_title"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txt_serinf_plot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="5dp"
+            android:text="@string/sample_plot1" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:paddingBottom="2dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/lbl_serinf_with"
+            android:textSize="@dimen/mini_section_title"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txt_serinf_acts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="5dp"
+            android:text="@string/sample_people" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:paddingBottom="2dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/lbl_serinf_gens"
+            android:textSize="@dimen/mini_section_title"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txt_serinf_gens"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="5dp"
+            android:text="@string/sample_genres" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:paddingBottom="2dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/lbl_serinf_seas"
+            android:textSize="@dimen/mini_section_title"
+            android:textStyle="bold" />
+
+        <net.ggelardi.uoccin.comp.ExpandableHeightGridView
+            android:id="@+id/grd_serinf_seas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="5"
+            android:paddingBottom="10dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="5dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:paddingBottom="2dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/lbl_comm_link"
+            android:textSize="@dimen/mini_section_title"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp" >
+
+            <TextView
+                android:id="@+id/txt_serinf_tvdb"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_link"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_tvdb" />
+
+            <TextView
+                android:id="@+id/txt_serinf_imdb"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_link"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_imdb" />
+
+        </LinearLayout>
     </LinearLayout>
 
 </ScrollView>

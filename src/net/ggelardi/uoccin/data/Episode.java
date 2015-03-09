@@ -2,6 +2,8 @@ package net.ggelardi.uoccin.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -22,6 +24,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -33,7 +36,9 @@ public class Episode extends Title {
 	
 	private final Context context;
 	private final Session session;
-
+	
+	private Episode epprev = null;
+	private Episode epnext = null;
 	private boolean collected = false;
 	private boolean watched = false;
 	
@@ -85,14 +90,14 @@ public class Episode extends Title {
 		}
 		return res;
 	}
-
+	
 	public static Episode get(Context context, String series, int season, int episode) {
 		Episode res = Episode.getInstance(context, series, season, episode);
 		if (res.isNew() || res.isOld())
 			res.refresh();
 		return res;
 	}
-
+	
 	public static Episode get(Context context, Element xml) {
 		try {
 			String sid = xml.getElementsByTagName("seriesid").item(0).getTextContent();
@@ -102,7 +107,7 @@ public class Episode extends Title {
 				return null;
 			Episode res = Episode.getInstance(context, sid, sen, epn);
 			res.load(xml);
-			//if (res.modified && !res.isNew())
+			if (!res.getSeries().isNew())
 				res.commit();
 			return res;
 		} catch (Exception err) {
@@ -132,6 +137,41 @@ public class Episode extends Title {
 			cur.close();
 		}
 		return res;
+	}
+	
+	public static List<Episode> cached(String series, int season) {
+		List<Episode> res = new ArrayList<Episode>();
+		String chk = series + ".";
+		if (season >= 0)
+			chk += String.format("S%1$02d", season);
+		Object ep;
+		for (String k: cache.getKeys())
+			if (k.startsWith(chk)) {
+				ep = cache.get(k);
+				if (ep != null)
+					res.add((Episode) ep);
+			}
+		Collections.sort(res, new EpisodeComparator());
+		return res;
+	}
+	
+	public static synchronized void setDirtyFlags(String series, int season, Boolean collected, Boolean watched) {
+		if (collected == null && watched == null)
+			return;
+		String chk = series + ".";
+		if (season >= 0)
+			chk += String.format("S%1$02d", season);
+		Object ep;
+		for (String k: cache.getKeys())
+			if (k.startsWith(chk)) {
+				ep = cache.get(k);
+				if (ep != null) {
+					if (collected != null)
+						((Episode) ep).collected = collected;
+					if (watched != null)
+						((Episode) ep).watched = watched;
+				}
+			}
 	}
 	
 	protected void load(Element xml) {
@@ -179,13 +219,13 @@ public class Episode extends Title {
 		if (!TextUtils.isEmpty(lang)) {
 			chk = Commons.XML.nodeText(xml, "EpisodeName");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) ||
-				(!name.equals(chk) && lang.equals(TVDB.preferredLanguage)))) {
+				(!name.equals(chk) && lang.equals(session.language())))) {
 				name = chk;
 				modified = true;
 			}
 			chk = Commons.XML.nodeText(xml, "Overview");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(plot) ||
-				(!plot.equals(chk) && lang.equals(TVDB.preferredLanguage)))) {
+				(!plot.equals(chk) && lang.equals(session.language())))) {
 				plot = chk;
 				modified = true;
 			}
@@ -226,9 +266,14 @@ public class Episode extends Title {
 			}
 		}
 		chk = Commons.XML.nodeText(xml, "Director");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(director) || !director.equals(chk))) {
-			director = chk;
-			modified = true;
+		if (!TextUtils.isEmpty(chk)) {
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split("[\\x7C]")));
+			lst.removeAll(Arrays.asList("", null));
+			chk = TextUtils.join(", ", lst);
+			if (TextUtils.isEmpty(director) || !director.equals(chk)) {
+				director = chk;
+				modified = true;
+			}
 		}
 	}
 
@@ -280,20 +325,46 @@ public class Episode extends Title {
 		cv.put("series", series);
 		cv.put("season", season);
 		cv.put("episode", episode);
-		cv.put("name", name);
-		cv.put("plot", plot);
-		cv.put("poster", poster);
-		cv.put("writers", TextUtils.join(",", writers));
-		cv.put("director", director);
-		cv.put("guestStars", TextUtils.join(",", guestStars));
-		cv.put("firstAired", firstAired);
-		cv.put("imdb_id", imdb_id);
-		cv.put("subtitles", TextUtils.join(",", subtitles));
+		if (!TextUtils.isEmpty(name))
+			cv.put("name", name);
+		else
+			cv.putNull("name");
+		if (!TextUtils.isEmpty(plot))
+			cv.put("plot", plot);
+		else
+			cv.putNull("plot");
+		if (!TextUtils.isEmpty(poster))
+			cv.put("poster", poster);
+		else
+			cv.putNull("poster");
+		if (!writers.isEmpty())
+			cv.put("writers", TextUtils.join(",", writers));
+		else
+			cv.putNull("writers");
+		if (!TextUtils.isEmpty(director))
+			cv.put("director", director);
+		else
+			cv.putNull("director");
+		if (!guestStars.isEmpty())
+			cv.put("guestStars", TextUtils.join(",", guestStars));
+		else
+			cv.putNull("guestStars");
+		if (firstAired > 0)
+			cv.put("firstAired", firstAired);
+		else
+			cv.putNull("firstAired");
+		if (!TextUtils.isEmpty(imdb_id))
+			cv.put("imdb_id", imdb_id);
+		else
+			cv.putNull("imdb_id");
+		if (!subtitles.isEmpty())
+			cv.put("subtitles", TextUtils.join(",", subtitles));
+		else
+			cv.putNull("subtitles");
 		cv.put("collected", collected);
 		cv.put("watched", watched);
 		timestamp = System.currentTimeMillis();
 		cv.put("timestamp", timestamp);
-		
 		if (isnew)
 			session.getDB().insertOrThrow(TABLE, null, cv);
 		else
@@ -334,24 +405,24 @@ public class Episode extends Title {
 		if (!TextUtils.isEmpty(tvdb_id))
 			TVDB.getInstance().getEpisodeById(tvdb_id, Locale.getDefault().getLanguage(), callback);
 		else
-			TVDB.getInstance().getEpisode(series, season, episode, Locale.getDefault().getLanguage(), callback);
+			TVDB.getInstance().getEpisode(series, season, episode, session.language(), callback);
 	}
 	
 	public final void commit() {
-		if (modified && !getSeries().isNew()) {
-			dispatch(OnTitleListener.WORKING, null);
-			SQLiteDatabase db = session.getDB();
-			db.beginTransaction();
-			try {
-				save(isNew());
-				db.setTransactionSuccessful();
-				modified = false;
-			} finally {
-				db.endTransaction();
-			}
-			dispatch(OnTitleListener.READY, null);
-			getSeries().recalc();
+		if (!modified || getSeries().isNew())
+			return;
+		dispatch(OnTitleListener.WORKING, null);
+		SQLiteDatabase db = session.getDB();
+		db.beginTransaction();
+		try {
+			save(isNew());
+			db.setTransactionSuccessful();
+			modified = false;
+		} finally {
+			db.endTransaction();
 		}
+		dispatch(OnTitleListener.READY, null);
+		getSeries().recalc();
 	}
 	
 	public boolean isNew() {
@@ -359,7 +430,7 @@ public class Episode extends Title {
 	}
 	
 	public boolean isOld() {
-		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
+		return timestamp > 0 && (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
 	}
 	
 	public boolean inCollection() {
@@ -414,12 +485,70 @@ public class Episode extends Title {
 		return season == 1 && episode == 1;
 	}
 	
+	public String name() {
+		return TextUtils.isEmpty(name) ? "N/A" : name;
+	}
+	
+	public String plot() {
+		return TextUtils.isEmpty(plot) ? "N/A" : plot;
+	}
+	
+	public String firstAired() {
+		if (firstAired <= 0)
+			return "N/A";
+		long now = System.currentTimeMillis();
+		if (DateUtils.isToday(firstAired))
+			return DateUtils.getRelativeTimeSpanString(firstAired, now, DateUtils.MINUTE_IN_MILLIS).toString();
+		String res = DateUtils.getRelativeTimeSpanString(firstAired, now, DateUtils.DAY_IN_MILLIS).toString();
+		if (Math.abs(now - firstAired)/(1000 * 60 * 60) < 168)
+			res += " (" + Commons.SDF.loc("EEE").format(firstAired) + ")";
+		return res;
+	}
+	
+	public String guests() {
+		return guestStars.isEmpty() ? "N/A" : TextUtils.join(", ", guestStars);
+	}
+	
+	public String writers() {
+		return writers.isEmpty() ? "N/A" : TextUtils.join(", ", writers);
+	}
+	
+	public String director() {
+		return TextUtils.isEmpty(director) ? "N/A" : director;
+	}
+	
+	public String tvdbUrl() {
+		return TextUtils.isEmpty(tvdb_id) ? null : "http://thetvdb.com/?tab=episode&id=" + tvdb_id;
+	}
+	
+	public String imdbUrl() {
+		return TextUtils.isEmpty(imdb_id) ? null : "http://www.imdb.com/title/" + imdb_id;
+	}
+	
 	public boolean hasSubtitles() {
 		return !subtitles.isEmpty();
 	}
 	
+	public String subtitles() {
+		if (!subtitles.isEmpty())
+			return TextUtils.join("/", subtitles);
+		return null;
+	}
+	
 	public Series getSeries() {
 		return Series.get(context, series);
+	}
+	
+	public Episode getPrior() {
+		if (epprev == null)
+			epprev = getSeries().whatsBefore(season, episode);
+		return epprev;
+	}
+	
+	public Episode getNext() {
+		if (epnext == null)
+			epnext = getSeries().whatsAfter(season, episode);
+		return epnext;
 	}
 	
 	public boolean isAfter(int seasonNo, int episodeNo) {
@@ -436,5 +565,15 @@ public class Episode extends Title {
 	
 	public boolean isBefore(Episode ep) {
 		return isBefore(ep.season, ep.episode);
+	}
+	
+	static class EpisodeComparator implements Comparator<Episode> {
+	    @Override
+	    public int compare(Episode o1, Episode o2) {
+	    	int res = o1.season - o2.season;
+	    	if (res == 0)
+	    		res = o1.episode - o2.episode;
+	        return res;
+	    }
 	}
 }

@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/list_foreground" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:divider="@drawable/divider_2dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="5dp"
+            android:showDividers="middle" >
+
+            <TextView
+                android:id="@+id/lbl_epinf_seas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_small_news"
+                android:text="@string/lbl_epinf_seas"
+                android:textAllCaps="true"
+                android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/txt_epinf_seas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sample_number1"
+                android:textAllCaps="true"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lbl_epinf_epis"
+                android:textAllCaps="true"
+                android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/txt_epinf_epis"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sample_number2"
+                android:textAllCaps="true"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_epinf_subs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_small_subtitles"
+                android:drawableStart="@drawable/ic_small_subtitles"
+                android:text="@string/sample_subs"
+                android:textAllCaps="true"
+                android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/txt_epinf_time"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:text="@string/sample_time1"
+                android:textAllCaps="true"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/img_epinf_scrn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:contentDescription="@string/empty_text"
+            android:src="@drawable/ic_action_image" />
+
+        <TextView
+            android:id="@+id/txt_epinf_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="5dp"
+            android:text="@string/sample_title2"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="10dp" >
+
+            <TextView
+                android:id="@+id/txt_epinf_prev"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_back"
+                android:gravity="center_horizontal"
+                android:text="@string/sample_epnum" />
+
+            <TextView
+                android:id="@+id/txt_epinf_coll"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_storage"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_coll" />
+
+            <TextView
+                android:id="@+id/txt_epinf_seen"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_seen"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_seen" />
+
+            <TextView
+                android:id="@+id/txt_epinf_shar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_share"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_shar" />
+
+            <TextView
+                android:id="@+id/txt_epinf_refr"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_refresh"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_refr" />
+
+            <TextView
+                android:id="@+id/txt_epinf_next"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_forward"
+                android:gravity="center_horizontal"
+                android:text="@string/sample_epnum" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:paddingBottom="2dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/lbl_epinf_plot"
+            android:textSize="@dimen/mini_section_title"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txt_epinf_plot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="5dp"
+            android:text="@string/sample_plot1" />
+
+        <LinearLayout
+            android:id="@+id/box_epinf_gues"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:paddingBottom="2dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:text="@string/lbl_epinf_gues"
+                android:textSize="@dimen/mini_section_title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_epinf_gues"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingTop="5dp"
+                android:text="@string/sample_people" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/box_epinf_writ"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:paddingBottom="2dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:text="@string/lbl_epinf_writ"
+                android:textSize="@dimen/mini_section_title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_epinf_writ"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingTop="5dp"
+                android:text="@string/sample_people" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/box_epinf_dire"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:paddingBottom="2dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:text="@string/lbl_epinf_dire"
+                android:textSize="@dimen/mini_section_title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_epinf_dire"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingTop="5dp"
+                android:text="@string/sample_guy" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:paddingBottom="2dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/lbl_comm_link"
+            android:textSize="@dimen/mini_section_title"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp" >
+
+            <TextView
+                android:id="@+id/txt_epinf_tvdb"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_link"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_tvdb" />
+
+            <TextView
+                android:id="@+id/txt_epinf_imdb"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_action_link"
+                android:gravity="center_horizontal"
+                android:text="@string/lbl_comm_imdb" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+    
+
+</ScrollView>

@@ -1,7 +1,7 @@
 package net.ggelardi.uoccin;
 
-import net.ggelardi.uoccin.data.DrawerAdapter;
-import net.ggelardi.uoccin.data.DrawerAdapter.DrawerItem;
+import net.ggelardi.uoccin.adapters.DrawerAdapter;
+import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -228,6 +228,12 @@ public class DrawerFragment extends Fragment {
 		});
 		
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
+	}
+	
+	public void selectItem(String id) {
+		int pos = mDrawerAdapter.indexOfVID(id);
+		if (pos >= 0 && mCallbacks != null)
+			mCallbacks.onNavigationDrawerItemSelected(mDrawerAdapter.getItem(pos));
 	}
 	
 	private void selectItem(int position) {

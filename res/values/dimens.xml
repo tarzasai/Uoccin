@@ -9,5 +9,9 @@
          https://developer.android.com/design/patterns/navigation-drawer.html
     -->
     <dimen name="navigation_drawer_width">240dp</dimen>
+    
+    <dimen name="mini_section_title">12dp</dimen>
+    
+    <dimen name="big_season_title">20dp</dimen>
 
 </resources>

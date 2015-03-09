@@ -31,6 +31,10 @@ import android.widget.Toast;
 public class Series extends Title {
     private static final String TAG = "Series";
 	private static final String TABLE = "series";
+
+	public static final String ARCHIVE = "CommitRequired";
+	public static final String ACTIVE = "Continuing";
+	public static final String ENDED = "Ended";
 	
 	private static final SimpleCache cache = new SimpleCache(500);
 	
@@ -39,10 +43,12 @@ public class Series extends Title {
 	private int rating = 0;
 	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;
-
+	
+	private boolean noRecalc = false;;
 	private Episode lastep = null;
 	private Episode nextep = null;
 	private SparseIntArray seasons = new SparseIntArray();
+	private int epcount = 0;
 	private int epscoll = 0;
 	private int epsseen = 0;
 	
@@ -94,7 +100,8 @@ public class Series extends Title {
 	
 	public static Series get(Context context, String tvdb_id) {
 		Series res = Series.getInstance(context, tvdb_id);
-		if (res.isNew() || res.isOld())
+		//if (res.isNew() || res.isOld())
+		if (res.isOld())
 			res.refresh();
 		return res;
 	}
@@ -103,7 +110,7 @@ public class Series extends Title {
 		String tvdb_id = xml.getElementsByTagName("id").item(0).getTextContent();
 		Series res = Series.getInstance(context, tvdb_id);
 		res.load(xml);
-		if (res.modified && !res.isNew())
+		if (!res.isNew())
 			res.commit();
 		return res;
 	}
@@ -135,7 +142,7 @@ public class Series extends Title {
 		List<Series> res = new ArrayList<Series>();
 		String response;
 		try {
-			response = TVDB.getInstance().findSeries(text, TVDB.preferredLanguage);
+			response = TVDB.getInstance().findSeries(text, "en");
 		} catch (Exception err) {
 			Log.e(TAG, "find", err);
 			dispatch(OnTitleListener.ERROR, null);
@@ -167,13 +174,13 @@ public class Series extends Title {
 		if (!TextUtils.isEmpty(lang)) {
 			chk = Commons.XML.nodeText(xml, "SeriesName");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) ||
-				(!name.equals(chk) && lang.equals(TVDB.preferredLanguage)))) {
+				(!name.equals(chk) && lang.equals(session.language())))) {
 				name = chk;
 				modified = true;
 			}
 			chk = Commons.XML.nodeText(xml, "Overview");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(plot) ||
-				(!plot.equals(chk) && lang.equals(TVDB.preferredLanguage)))) {
+				(!plot.equals(chk) && lang.equals(session.language())))) {
 				plot = chk;
 				modified = true;
 			}
@@ -249,25 +256,34 @@ public class Series extends Title {
 		}
 		chk = Commons.XML.nodeText(xml, "Airs_Time");
 		if (!TextUtils.isEmpty(chk)) {
-			try {
-				long t = Commons.SDF.eng("hh:mm a").parse(chk).getTime();
-				if (t > 0) {
-					airsTime = t;
-					modified = true;
-				}
-			} catch (Exception err) {
-
+			if (!chk.contains("M")) {
 				try {
-					long t = Commons.SDF.eng("hh:mma").parse(chk).getTime();
+					long t = Commons.SDF.eng("HH:mm").parse(chk).getTime();
 					if (t > 0) {
 						airsTime = t;
 						modified = true;
 					}
-				} catch (Exception err2) {
-					Log.e(TAG, chk, err2);
+				} catch (Exception err) {
+					Log.e(TAG, chk, err);
 				}
-				
-				//Log.e(TAG, chk, err);
+			} else {
+				try {
+					long t = Commons.SDF.eng("hh:mm a").parse(chk).getTime();
+					if (t > 0) {
+						airsTime = t;
+						modified = true;
+					}
+				} catch (Exception err) {
+					try {
+						long t = Commons.SDF.eng("hh:mma").parse(chk).getTime();
+						if (t > 0) {
+							airsTime = t;
+							modified = true;
+						}
+					} catch (Exception err2) {
+						Log.e(TAG, chk, err2);
+					}
+				}
 			}
 		}
 		chk = Commons.XML.nodeText(xml, "Runtime");
@@ -334,6 +350,9 @@ public class Series extends Title {
 		ci = cr.getColumnIndex("rated");
 		if (!cr.isNull(ci))
 			rated = cr.getString(ci);
+		ci = cr.getColumnIndex("banner");
+		if (!cr.isNull(ci))
+			banner = cr.getString(ci);
 		ci = cr.getColumnIndex("fanart");
 		if (!cr.isNull(ci))
 			fanart = cr.getString(ci);
@@ -345,7 +364,6 @@ public class Series extends Title {
 			tags = Arrays.asList(cr.getString(ci).split(","));
 		watchlist = cr.getInt(cr.getColumnIndex("watchlist")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
-		
 		recalc();
 	}
 	
@@ -355,26 +373,77 @@ public class Series extends Title {
 		ContentValues cv = new ContentValues();
 		cv.put("tvdb_id", tvdb_id);
 		cv.put("name", name);
-		cv.put("year", year);
-		cv.put("plot", plot);
-		cv.put("poster", poster);
-		cv.put("genres", TextUtils.join(",", genres));
-		cv.put("actors", TextUtils.join(",", actors));
-		cv.put("imdb_id", imdb_id);
-		cv.put("status", status);
-		cv.put("network", network);
-		cv.put("firstAired", firstAired);
-		cv.put("airsDay", airsDay);
-		cv.put("airsTime", airsTime);
-		cv.put("runtime", runtime);
-		cv.put("rated", rated);
-		cv.put("fanart", fanart);
-		cv.put("rating", rating);
-		cv.put("tags", TextUtils.join(",", tags));
+		if (year > 0)
+			cv.put("year", year);
+		else
+			cv.putNull("year");
+		if (!TextUtils.isEmpty(plot))
+			cv.put("plot", plot);
+		else
+			cv.putNull("plot");
+		if (!TextUtils.isEmpty(poster))
+			cv.put("poster", poster);
+		else
+			cv.putNull("poster");
+		if (!genres.isEmpty())
+			cv.put("genres", TextUtils.join(",", genres));
+		else
+			cv.putNull("genres");
+		if (!actors.isEmpty())
+			cv.put("actors", TextUtils.join(",", actors));
+		else
+			cv.putNull("actors");
+		if (!TextUtils.isEmpty(imdb_id))
+			cv.put("imdb_id", imdb_id);
+		else
+			cv.putNull("imdb_id");
+		if (!TextUtils.isEmpty(status))
+			cv.put("status", status);
+		else
+			cv.putNull("status");
+		if (!TextUtils.isEmpty(network))
+			cv.put("network", network);
+		else
+			cv.putNull("network");
+		if (firstAired > 0)
+			cv.put("firstAired", firstAired);
+		else
+			cv.putNull("firstAired");
+		if (airsDay > 0)
+			cv.put("airsDay", airsDay);
+		else
+			cv.putNull("airsDay");
+		if (airsTime > 0)
+			cv.put("airsTime", airsTime);
+		else
+			cv.putNull("airsTime");
+		if (runtime > 0)
+			cv.put("runtime", runtime);
+		else
+			cv.putNull("runtime");
+		if (!TextUtils.isEmpty(rated))
+			cv.put("rated", rated);
+		else
+			cv.putNull("rated");
+		if (!TextUtils.isEmpty(banner))
+			cv.put("banner", banner);
+		else
+			cv.putNull("banner");
+		if (!TextUtils.isEmpty(fanart))
+			cv.put("fanart", fanart);
+		else
+			cv.putNull("fanart");
+		if (rating > 0)
+			cv.put("rating", rating);
+		else
+			cv.putNull("rating");
+		if (!tags.isEmpty())
+			cv.put("tags", TextUtils.join(",", tags));
+		else
+			cv.putNull("tags");
 		cv.put("watchlist", watchlist);
 		timestamp = System.currentTimeMillis();
 		cv.put("timestamp", timestamp);
-		
 		if (isnew)
 			session.getDB().insertOrThrow(TABLE, null, cv);
 		else
@@ -394,30 +463,48 @@ public class Series extends Title {
 		Callback<String> callback = new Callback<String>() {
 			@Override
 			public void success(String result, Response response) {
+				boolean store = !isNew() || (status != null && status.equals(ARCHIVE));
 				Document doc = Commons.XML.str2xml(result);
 				load((Element) doc.getElementsByTagName("Series").item(0));
-				commit();
+				if (store)
+					commit();
 				// episodes
-				NodeList lst = doc.getElementsByTagName("Episode");
-				if (lst != null && lst.getLength() > 0) {
-					seasons = new SparseIntArray();
-					lastep = null;
-					nextep = null;
-					Episode ep;
-					for (int i = 0; i < lst.getLength(); i++) {
-						ep = Episode.get(session.getContext(), (Element) lst.item(i));
-						if (ep != null) {
-							int chk = seasons.get(ep.season);
-							if (ep.episode > chk)
-								seasons.put(ep.season, chk);
-							if (ep.firstAired > 0) {
-								if (ep.firstAired <= System.currentTimeMillis() && (lastep == null || ep.isAfter(lastep)))
+				noRecalc = true;
+				try {
+					long now = System.currentTimeMillis();
+					if (isNew()) {
+						seasons = new SparseIntArray();
+						epcount = 0;
+						epscoll = 0;
+						epsseen = 0;
+						lastep = null;
+						nextep = null;
+					}
+					NodeList lst = doc.getElementsByTagName("Episode");
+					if (lst != null && lst.getLength() > 0) {
+						Episode ep;
+						for (int i = 0; i < lst.getLength(); i++) {
+							ep = Episode.get(session.getContext(), (Element) lst.item(i));
+							if (isNew() && ep != null) {
+								int en = seasons.get(ep.season);
+								if (ep.episode > en)
+									seasons.put(ep.season, ep.episode);
+								epcount++;
+								if (ep.firstAired <= 0)
+									continue;
+								if (ep.firstAired < now && (lastep == null || ep.firstAired > lastep.firstAired ||
+									ep.episode > lastep.episode))
 									lastep = ep;
-								if (ep.firstAired > System.currentTimeMillis() && (nextep == null || ep.isBefore(nextep)))
+								else if (ep.firstAired > now && (nextep == null || ep.firstAired < lastep.firstAired ||
+									ep.episode < lastep.episode))
 									nextep = ep;
 							}
 						}
 					}
+				} finally {
+					noRecalc = false;
+					if (!isNew())
+						recalc();
 				}
 				dispatch(OnTitleListener.READY, null);
 			}
@@ -430,7 +517,7 @@ public class Series extends Title {
 				dispatch(OnTitleListener.ERROR, error);
 			}
 		};
-		TVDB.getInstance().getFullSeries(tvdb_id, Locale.getDefault().getLanguage(), callback);
+		TVDB.getInstance().getFullSeries(tvdb_id, session.language(), callback);
 	}
 	
 	public final void commit() {
@@ -464,33 +551,13 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public void recalc() {
+	public synchronized void recalc() {
+		if (noRecalc)
+			return;
 		dispatch(OnTitleListener.WORKING, null);
 		String sql;
 		String[] key = new String[] { tvdb_id };
 		Cursor cur;
-		// last episode
-		lastep = null;
-		sql = "select season, episode from episode where series = ? and " +
-			"datetime(firstAired/1000, 'unixepoch') <= datetime('now') order by firstAired desc, episode desc limit 1";
-		cur = session.getDB().rawQuery(sql, key);
-		try {
-			if (cur.moveToNext())
-				lastep = Episode.get(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1));
-		} finally {
-			cur.close();
-		}
-		// next episode
-		nextep = null;
-		sql = "select season, episode from episode where series = ? and " +
-			"datetime(firstAired/1000, 'unixepoch') > datetime('now') order by firstAired, episode limit 1";
-		cur = session.getDB().rawQuery(sql, key);
-		try {
-			if (cur.moveToNext())
-				nextep = Episode.get(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1));
-		} finally {
-			cur.close();
-		}
 		// seasons list
 		seasons = new SparseIntArray();
 		sql = "select season, max(episode) from episode where series = ? group by season";
@@ -498,6 +565,16 @@ public class Series extends Title {
 		try {
 			while (cur.moveToNext())
 				seasons.put(cur.getInt(0), cur.getInt(1));
+		} finally {
+			cur.close();
+		}
+		// episodes count
+		epcount = 0;
+		sql = "select count(*) from episode where series = ?";
+		cur = session.getDB().rawQuery(sql, key);
+		try {
+			if (cur.moveToNext())
+				epcount = cur.getInt(0);
 		} finally {
 			cur.close();
 		}
@@ -521,6 +598,28 @@ public class Series extends Title {
 		} finally {
 			cur.close();
 		}
+		// last episode
+		lastep = null;
+		sql = "select season, episode from episode where series = ? and " +
+			"datetime(firstAired/1000, 'unixepoch') <= datetime('now') order by firstAired desc, episode desc limit 1";
+		cur = session.getDB().rawQuery(sql, key);
+		try {
+			if (cur.moveToNext())
+				lastep = Episode.get(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1));
+		} finally {
+			cur.close();
+		}
+		// next episode
+		nextep = null;
+		sql = "select season, episode from episode where series = ? and " +
+			"datetime(firstAired/1000, 'unixepoch') > datetime('now') order by firstAired, episode limit 1";
+		cur = session.getDB().rawQuery(sql, key);
+		try {
+			if (cur.moveToNext())
+				nextep = Episode.get(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1));
+		} finally {
+			cur.close();
+		}
 		//
 		dispatch(OnTitleListener.READY, null);
 	}
@@ -530,7 +629,7 @@ public class Series extends Title {
 	}
 	
 	public boolean isOld() {
-		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
+		return timestamp > 0 && (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
 	}
 	
 	public boolean inWatchlist() {
@@ -541,9 +640,10 @@ public class Series extends Title {
 		if (value != watchlist) {
 			watchlist = value;
 			modified = true;
-			if (isNew())
+			if (isNew()) {
+				status = ARCHIVE;
 				refresh();
-			else
+			} else
 				commit();
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_ser : R.string.msg_wlst_del_ser);
 			msg = String.format(msg, name);
@@ -559,9 +659,10 @@ public class Series extends Title {
 		if (value != rating) {
 			rating = value;
 			modified = true;
-			if (isNew())
+			if (isNew()) {
+				status = ARCHIVE;
 				refresh();
-			else
+			} else
 				commit();
 		}
 	}
@@ -579,9 +680,10 @@ public class Series extends Title {
 		if (!hasTag(tag)) {
 			tags.add(tag);
 			modified = true;
-			if (isNew())
+			if (isNew()) {
+				status = ARCHIVE;
 				refresh();
-			else
+			} else
 				commit();
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -593,13 +695,67 @@ public class Series extends Title {
 		if (hasTag(tag)) {
 			tags.remove(tag);
 			modified = true;
-			if (isNew())
+			if (isNew()) {
+				status = ARCHIVE;
 				refresh();
-			else
+			} else
 				commit();
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
+	}
+	
+	public String tvdbUrl() {
+		return "http://thetvdb.com/?tab=series&id=" + tvdb_id;
+	}
+	
+	public String imdbUrl() {
+		if (!TextUtils.isEmpty(imdb_id))
+			return "http://www.imdb.com/title/" + imdb_id;
+		return null;
+	}
+	
+	public boolean isEnded() {
+		return !TextUtils.isEmpty(status) && status.equals(ENDED);
+	}
+	
+	public String plot() {
+		return TextUtils.isEmpty(plot) ? "N/A" : plot;
+	}
+	
+	public String network() {
+		return TextUtils.isEmpty(network) ? "N/A" : network;
+	}
+	
+	public String rated() {
+		return TextUtils.isEmpty(rated) ? "N/A" : rated;
+	}
+	
+	public String airTime() {
+		if (isEnded())
+			return session.getString(R.string.fmt_status_end);
+		String res = "N/A";
+		if (airsDay > 0 && airsTime > 0) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(airsTime);
+			cal.set(Calendar.DAY_OF_WEEK, airsDay);
+			res = Commons.SDF.loc(session.getString(R.string.fmt_airtime)).format(cal.getTime());
+		}
+		return res;
+	}
+	
+	public String airInfo() {
+		if (isEnded())
+			return session.getString(R.string.fmt_status_end);
+		return (TextUtils.isEmpty(network) ? "N/A" : network) + " - " + airTime();
+	}
+	
+	public String actors() {
+		return actors.isEmpty() ? "N/A" : TextUtils.join(", ", actors);
+	}
+	
+	public String genres() {
+		return genres.isEmpty() ? "N/A" : TextUtils.join(", ", genres);
 	}
 	
 	public Episode lastEpisode() {
@@ -610,15 +766,66 @@ public class Series extends Title {
 		return nextep;
 	}
 	
+	public Episode whatsBefore(int season, int episode) {
+		if (isNew()) {
+			List<Episode> lst = Episode.cached(tvdb_id, -1);
+			Episode ep;
+			for (int i = 1; i < lst.size(); i++) {
+				ep = lst.get(i);
+				if (ep.season == season && ep.episode == episode)
+					return lst.get(i - 1);
+			}
+		} else {
+			String sql = "select season, episode from episode where series = ? and season <= ? " +
+				"order by season desc, episode desc";
+			String[] flt = new String[] { tvdb_id, Integer.toString(season) };
+			Cursor cr = session.getDB().rawQuery(sql, flt);
+			try {
+				while (cr.moveToNext()) {
+					if (cr.getInt(0) == season && cr.getInt(1) >= episode)
+						continue;
+					return Episode.get(session.getContext(), tvdb_id, cr.getInt(0), cr.getInt(1));
+				}
+			} finally {
+				cr.close();
+			}
+		}
+		return null;
+	}
+	
+	public Episode whatsAfter(int season, int episode) {
+		if (isNew()) {
+			List<Episode> lst = Episode.cached(tvdb_id, -1);
+			Episode ep;
+			for (int i = 0; i < lst.size() - 1; i++) {
+				ep = lst.get(i);
+				if (ep.season == season && ep.episode == episode)
+					return lst.get(i + 1);
+			}
+		} else {
+			String sql = "select season, episode from episode where series = ? and season >= ? " +
+				"order by season, episode";
+			String[] flt = new String[] { tvdb_id, Integer.toString(season) };
+			Cursor cr = session.getDB().rawQuery(sql, flt);
+			try {
+				while (cr.moveToNext()) {
+					if (cr.getInt(0) == season && cr.getInt(1) <= episode)
+						continue;
+					return Episode.get(session.getContext(), tvdb_id, cr.getInt(0), cr.getInt(1));
+				}
+			} finally {
+				cr.close();
+			}
+		}
+		return null;
+	}
+	
 	public int seasonCount() {
 		return seasons.size();
 	}
 	
 	public int episodeCount() {
-		int res = 0;
-		for (int i = 0; i < seasons.size(); i++)
-			res += seasons.get(i);
-		return res;
+		return epcount;
 	}
 	
 	public int episodeCount(int season) {
@@ -631,5 +838,53 @@ public class Series extends Title {
 	
 	public int episodeWatched() {
 		return epsseen;
+	}
+	
+	public void setCollected(boolean flag, int season) {
+		SQLiteDatabase db = session.getDB();
+		db.beginTransaction();
+		try {
+			ContentValues cv = new ContentValues();
+			cv.put("collected", flag);
+			List<String> args = new ArrayList<String>();
+			String where = "series = ?";
+			args.add(tvdb_id);
+			if (season >= 0) {
+				where += " and season = ?";
+				args.add(Integer.toString(season));
+			}
+			String[] wargs = new String[args.size()];
+			wargs = args.toArray(wargs);
+			db.update("episode", cv, where, wargs);
+			db.setTransactionSuccessful();
+			Episode.setDirtyFlags(tvdb_id, season, flag, null);
+		} finally {
+			db.endTransaction();
+		}
+		recalc();
+	}
+	
+	public void setWatched(boolean flag, int season) {
+		SQLiteDatabase db = session.getDB();
+		db.beginTransaction();
+		try {
+			ContentValues cv = new ContentValues();
+			cv.put("watched", flag);
+			List<String> args = new ArrayList<String>();
+			String where = "series = ?";
+			args.add(tvdb_id);
+			if (season >= 0) {
+				where += " and season = ?";
+				args.add(Integer.toString(season));
+			}
+			String[] wargs = new String[args.size()];
+			wargs = args.toArray(wargs);
+			db.update("episode", cv, where, wargs);
+			db.setTransactionSuccessful();
+			Episode.setDirtyFlags(tvdb_id, season, null, flag);
+		} finally {
+			db.endTransaction();
+		}
+		recalc();
 	}
 }

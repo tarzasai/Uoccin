@@ -7,22 +7,19 @@ import net.ggelardi.uoccin.data.Series;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.text.TextUtils;
 
 public class SeriesTask extends AsyncTask<String, Void, List<Series>> {
+	public static final String QUERY = "SeriesTask.QUERY";
+	public static final String SEARCH = "SeriesTask.SEARCH";
 	
 	private final SeriesTaskContainer container;
+	private final String type;
 	
-	private String query = null;
-	
-	public SeriesTask(SeriesTaskContainer container) {
+	public SeriesTask(SeriesTaskContainer container, String type) {
+		super();
+
 		this.container = container;
-	}
-	
-	public SeriesTask(SeriesTaskContainer container, String query) {
-		this(container);
-		
-		this.query = query;
+		this.type = type;
 	}
 	
     @Override
@@ -33,12 +30,14 @@ public class SeriesTask extends AsyncTask<String, Void, List<Series>> {
     @Override
 	protected List<Series> doInBackground(String... params) {
     	List<Series> res;
-    	if (TextUtils.isEmpty(query))
+    	if (type.equals(SEARCH)) {
     		res = Series.find(container.getContext(), params[0]);
-    	else {
-    		Session session = Session.getInstance(container.getContext());
+    	} else {
+    		String query = params[0];
+    		String[] args = new String[params.length - 1];
+    		System.arraycopy(params, 1, args, 0, params.length - 1);
     		res = new ArrayList<Series>();
-        	Cursor cr = session.getDB().rawQuery(query, params);
+        	Cursor cr = Session.getInstance(container.getContext()).getDB().rawQuery(query, args);
         	try {
         		int ci = cr.getColumnIndex("tvdb_id");
         		while (cr.moveToNext())

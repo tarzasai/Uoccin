@@ -2,8 +2,8 @@ package net.ggelardi.uoccin;
 
 import java.util.List;
 
+import net.ggelardi.uoccin.adapters.SeriesAdapter;
 import net.ggelardi.uoccin.data.Series;
-import net.ggelardi.uoccin.data.SeriesAdapter;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.SeriesTask;
 import net.ggelardi.uoccin.serv.SeriesTask.SeriesTaskContainer;
@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -24,8 +25,6 @@ import android.widget.Toast;
 import com.android.photos.views.HeaderGridView;
 
 public class SeriesListFragment extends BaseFragment implements SeriesTaskContainer, AbsListView.OnItemClickListener {
-	public static final String QUERY = "SeriesFragment.QUERY";
-	public static final String SEARCH = "SeriesFragment.SEARCH";
 	
 	protected AbsListView mListView;
 	protected SeriesAdapter mAdapter;
@@ -41,7 +40,7 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	public static SeriesListFragment newQuery(String title, String query, String details, String ... params) {
 		SeriesListFragment fragment = new SeriesListFragment();
 		Bundle args = new Bundle();
-		args.putString("type", QUERY);
+		args.putString("type", SeriesTask.QUERY);
 		args.putString("title", title);
 		args.putString("query", query);
 		args.putStringArray("params", params);
@@ -53,7 +52,7 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	public static SeriesListFragment newSearch(String search) {
 		SeriesListFragment fragment = new SeriesListFragment();
 		Bundle args = new Bundle();
-		args.putString("type", SEARCH);
+		args.putString("type", SeriesTask.SEARCH);
 		args.putString("search", search);
 		fragment.setArguments(args);
 		return fragment;
@@ -64,10 +63,8 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 		super.onCreate(savedInstanceState);
 		
 		Bundle args = getArguments();
-		
 		type = args.getString("type");
-		
-		if (isQuery()) {
+		if (type.equals(SeriesTask.QUERY)) {
 			title = args.getString("title");
 			query = args.getString("query");
 			params = args.getStringArray("params");
@@ -136,12 +133,16 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 			}
 		});
 		
-		if (isQuery()) {
-			mTask = new SeriesTask(this, query);
-			mTask.execute(params);
-		} else {
-			mTask = new SeriesTask(this);
+		mTask = new SeriesTask(this, type);
+		if (type.equals(SeriesTask.SEARCH))
 			mTask.execute(search);
+		else if (params == null || params.length <= 0)
+			mTask.execute(new String[] { query });
+		else {
+			String[] args = new String[params.length + 1];
+			args[0] = query;
+			System.arraycopy(params, 0, args, 1, params.length);
+			mTask.execute(args);
 		}
 	}
 	
@@ -173,7 +174,7 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 		} catch (Exception err) {
 			return; // wtf?
 		}
-		if (v.getId() == R.id.img_ser_star) {
+		if (v.getId() == R.id.img_seritm_star) {
 			Series ser = mAdapter.getItem(pos);
 			ser.setWatchlist(!ser.inWatchlist());
 			return;
@@ -182,7 +183,8 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		//
+		int pos = mListView instanceof GridView ? position - 2 : position - 1;
+		mListener.openSeriesInfo(mAdapter.getItem(pos).tvdb_id);
 	}
 	
 	@Override
@@ -200,13 +202,5 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 		mAdapter.setTitles(result);
 		showHourGlass(false);
 		mTask = null;
-	}
-	
-	public boolean isQuery() {
-		return type.equals(QUERY);
-	}
-	
-	public boolean isSearch() {
-		return type.equals(SEARCH);
 	}
 }

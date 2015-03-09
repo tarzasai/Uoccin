@@ -1,10 +1,11 @@
-package net.ggelardi.uoccin.data;
+package net.ggelardi.uoccin.adapters;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
+import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
 import android.text.TextUtils;
@@ -62,7 +63,7 @@ public class MoviesAdapter extends BaseAdapter {
 			vh = (ViewHolder) view.getTag();
 		}
 		Movie mov = getItem(position);
-		session.picasso().load(mov.poster).placeholder(R.drawable.ic_action_image).fit().into(vh.img_mov_poster);
+		session.picasso(mov.poster).fit().into(vh.img_mov_poster);
 		vh.txt_mov_name.setText(mov.name);
 		vh.txt_mov_info.setText(Integer.toString(mov.year) + " " + mov.country);
 		vh.txt_mov_plot.setText(mov.plot);

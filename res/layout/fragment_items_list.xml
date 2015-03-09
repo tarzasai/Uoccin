@@ -10,9 +10,9 @@
         android:layout_height="match_parent"
         android:background="@color/list_background"
         android:divider="@android:color/transparent"
-        android:dividerHeight="4dp"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
+        android:dividerHeight="8dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
         android:scrollbarStyle="insideOverlay" />
 
     <TextView

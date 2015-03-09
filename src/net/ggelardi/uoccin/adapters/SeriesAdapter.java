@@ -1,18 +1,19 @@
-package net.ggelardi.uoccin.data;
+package net.ggelardi.uoccin.adapters;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
 import net.ggelardi.uoccin.R;
-import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.data.Episode;
+import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -32,6 +33,8 @@ public class SeriesAdapter extends BaseAdapter {
 	private final LayoutInflater inflater;
 	private final String details;
 	private List<Series> items;
+	private int pstHeight = 1;
+	private int pstWidth = 1;
 	
 	public SeriesAdapter(Context context, OnClickListener clickListener, String details) {
 		super();
@@ -60,30 +63,38 @@ public class SeriesAdapter extends BaseAdapter {
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		ViewHolder vh;
+		final ViewHolder vh;
 		View view = convertView;
 		if (view == null) {
 			view = inflater.inflate(R.layout.item_series, parent, false);
 			vh = new ViewHolder();
-			vh.img_ser_poster = (ImageView) view.findViewById(R.id.img_ser_poster);
-			vh.img_ser_star = (ImageView) view.findViewById(R.id.img_ser_star);
-			vh.txt_ser_name = (TextView) view.findViewById(R.id.txt_ser_name);
-			vh.txt_ser_info = (TextView) view.findViewById(R.id.txt_ser_info);
-			vh.txt_ser_plot = (TextView) view.findViewById(R.id.txt_ser_plot);
-			vh.box_ser_stat = (LinearLayout) view.findViewById(R.id.box_ser_stat);
-			vh.txt_ser_coll = (TextView) view.findViewById(R.id.txt_ser_coll);
-			vh.txt_ser_seen = (TextView) view.findViewById(R.id.txt_ser_seen);
-			vh.box_ser_epis = (LinearLayout) view.findViewById(R.id.box_ser_epis);
-			vh.txt_ser_epis = (TextView) view.findViewById(R.id.txt_ser_epis);
-			vh.txt_ser_date = (TextView) view.findViewById(R.id.txt_ser_date);
+			vh.img_ser_pstr = (ImageView) view.findViewById(R.id.img_seritm_poster);
+			vh.box_ser_size = (LinearLayout) view.findViewById(R.id.box_seritm_size);
+			vh.img_ser_star = (ImageView) view.findViewById(R.id.img_seritm_star);
+			vh.txt_ser_name = (TextView) view.findViewById(R.id.txt_seritm_name);
+			vh.txt_ser_info = (TextView) view.findViewById(R.id.txt_seritm_info);
+			vh.txt_ser_plot = (TextView) view.findViewById(R.id.txt_seritm_plot);
+			vh.box_ser_stat = (LinearLayout) view.findViewById(R.id.box_seritm_stat);
+			vh.txt_ser_coll = (TextView) view.findViewById(R.id.txt_seritm_coll);
+			vh.txt_ser_seen = (TextView) view.findViewById(R.id.txt_seritm_seen);
+			vh.box_ser_epis = (LinearLayout) view.findViewById(R.id.box_seritm_epis);
+			vh.txt_ser_epis = (TextView) view.findViewById(R.id.txt_seritm_epis);
+			vh.txt_ser_date = (TextView) view.findViewById(R.id.txt_seritm_date);
 			vh.img_ser_star.setOnClickListener(listener);
+			//
+			if (pstHeight <= 1) {
+				view.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
+					MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+				pstHeight = view.getMeasuredHeight();
+				pstWidth = Math.round((pstHeight*340)/500);
+			}
 			view.setTag(vh);
 		} else {
 			vh = (ViewHolder) view.getTag();
 		}
 		vh.img_ser_star.setTag(Integer.valueOf(position));
 		Series ser = getItem(position);
-		session.picasso().load(ser.poster).placeholder(R.drawable.ic_action_image).fit().into(vh.img_ser_poster);
+		session.picasso(ser.poster).resize(pstWidth, pstHeight).into(vh.img_ser_pstr);
 		vh.img_ser_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
 		vh.txt_ser_name.setText(ser.name);
 		if (ser.isNew() || details.equals(SERIES_PLOT)) {
@@ -97,8 +108,8 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.box_ser_stat.setVisibility(View.VISIBLE);
 			vh.box_ser_epis.setVisibility(View.GONE);
 			//
-			vh.txt_ser_coll.setText(String.format(session.getString(R.string.fmtno_colls), ser.episodeCollected(), ser.episodeCount()));
-			vh.txt_ser_seen.setText(String.format(session.getString(R.string.fmtno_seens), ser.episodeWatched(), ser.episodeCount()));
+			vh.txt_ser_coll.setText(String.format(session.getString(R.string.fmt_nums_coll), ser.episodeCollected(), ser.episodeCount()));
+			vh.txt_ser_seen.setText(String.format(session.getString(R.string.fmt_nums_seen), ser.episodeWatched(), ser.episodeCount()));
 		} else {
 			vh.txt_ser_plot.setVisibility(View.GONE);
 			vh.box_ser_stat.setVisibility(View.GONE);
@@ -122,6 +133,7 @@ public class SeriesAdapter extends BaseAdapter {
 				ep = chk.get(1);
 			else
 				ep = chk.get(0);
+			//
 			if (ep == null) {
 				vh.txt_ser_epis.setText("N/A");
 				vh.txt_ser_epis.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
@@ -130,28 +142,12 @@ public class SeriesAdapter extends BaseAdapter {
 				vh.txt_ser_epis.setText(ep.simpleEID() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
 				vh.txt_ser_epis.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ? R.drawable.ic_small_news : 0,
 					0, 0, 0);
-				if (DateUtils.isToday(ep.firstAired)) {
-					vh.txt_ser_date.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_small_clock, 0, 0, 0);
-					vh.txt_ser_date.setText(DateUtils.getRelativeTimeSpanString(ep.firstAired,
-						System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString());
-				} else {
-					vh.txt_ser_date.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-					String ts = DateUtils.getRelativeTimeSpanString(ep.firstAired,
-						System.currentTimeMillis(), DateUtils.DAY_IN_MILLIS).toString();
-					if (Math.abs(now - ep.firstAired)/(1000 * 60 * 60) < 168)
-						ts += " (" + Commons.SDF.loc("EEE").format(ep.firstAired) + ")";
-					vh.txt_ser_date.setText(ts);
-				}
+				vh.txt_ser_date.setCompoundDrawablesWithIntrinsicBounds(DateUtils.isToday(ep.firstAired) ?
+					R.drawable.ic_small_calendar : 0, 0, 0, 0);
+				vh.txt_ser_date.setText(ep.firstAired());
 			}
 		}
-		String info = ser.network;
-		if (ser.airsDay > 0 && ser.airsTime > 0) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(ser.airsTime);
-			cal.set(Calendar.DAY_OF_WEEK, ser.airsDay);
-			info += " - " + Commons.SDF.loc(session.getString(R.string.fmtdt_airtime)).format(cal.getTime());
-		}
-		vh.txt_ser_info.setText(info);
+		vh.txt_ser_info.setText(ser.airInfo());
 		return view;
 	}
 	
@@ -161,7 +157,8 @@ public class SeriesAdapter extends BaseAdapter {
 	}
 	
 	static class ViewHolder {
-		public ImageView img_ser_poster;
+		public ImageView img_ser_pstr;
+		public LinearLayout box_ser_size;
 		public ImageView img_ser_star;
 		public TextView txt_ser_name;
 		public TextView txt_ser_info;

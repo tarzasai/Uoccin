@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.Locale;
 
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.WaitingUCC;
@@ -26,8 +25,6 @@ public class XML {
 		private static final String apiUrl = "http://thetvdb.com/api";
 		private static final String apiKey = "A74D017DA5F2C3B0";
 		private static API apiInstance;
-		
-		public static String preferredLanguage = Locale.getDefault().getLanguage();
 		
 		public interface API {
 			/*

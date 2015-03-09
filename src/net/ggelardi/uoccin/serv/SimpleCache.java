@@ -1,6 +1,8 @@
 package net.ggelardi.uoccin.serv;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SimpleCache {
@@ -45,5 +47,9 @@ public class SimpleCache {
 	public synchronized void clear() {
 		cache = new HashMap<String, Object>();
 		access = new HashMap<String, Long>();
+	}
+	
+	public synchronized List<String> getKeys() {
+		return new ArrayList<String>(cache.keySet());
 	}
 }

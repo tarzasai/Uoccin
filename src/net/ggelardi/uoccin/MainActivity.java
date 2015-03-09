@@ -1,9 +1,15 @@
 package net.ggelardi.uoccin;
 
-import net.ggelardi.uoccin.data.DrawerAdapter.DrawerItem;
+import java.util.Locale;
+
+import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
+import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.serv.Commons.PK;
+import net.ggelardi.uoccin.serv.Session;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -13,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,6 +28,9 @@ import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity implements DrawerFragment.NavigationDrawerCallbacks,
 		BaseFragment.OnFragmentListener {
+	
+	private Session session;
+	private String lastView;
 	
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -35,7 +45,10 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_main);
+		
+		session = Session.getInstance(this);
 		
 		mDrawerFragment = (DrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
 		mDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -44,6 +57,9 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
+
+		if (savedInstanceState != null)
+			lastView = savedInstanceState.getString("lastView", session.getPrefs().getString(PK.STARTUP, "sernext"));
 	}
 	
 	@Override
@@ -58,7 +74,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	protected void onResume() {
 		super.onResume();
 		
-		//onNavigationDrawerItemSelected(0);
+		mDrawerFragment.selectItem(lastView);
 	}
 	
 	@Override
@@ -69,11 +85,16 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
+		
+		if (savedInstanceState != null)
+			lastView = savedInstanceState.getString("lastView");
 	}
 	
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
+		
+		outState.putString("lastView", lastView);
 	}
 	
 	@Override
@@ -100,32 +121,57 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 			return true;
 		}
 		if (id == R.id.action_settings) {
-			Toast.makeText(this, "Settings action.", Toast.LENGTH_SHORT).show();
+			startActivity(new Intent(this, SettingsActivity.class));
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 	
 	@Override
+	public void setTitle(CharSequence title) {
+		mStoredTitle = title;
+		getSupportActionBar().setTitle(mStoredTitle);
+	}
+	
+	@Override
 	public void onNavigationDrawerItemSelected(DrawerItem selection) {
-		
 		if (selection.id.equals("settings")) {
 			return;
 		}
-		
-		if (selection.type.equals(DrawerItem.SERIES)) {
+		lastView = selection.id;
+		if (selection.type.equals(DrawerItem.SERIES))
 			getSupportFragmentManager().beginTransaction().replace(R.id.container,
 				SeriesListFragment.newQuery(selection.label, selection.query, selection.details,
 					(String[]) null)).commit();
-		} else {
+		else if (selection.type.equals(DrawerItem.MOVIE)) {
 			
 		}
 	}
 	
 	@Override
-	public void setTitle(CharSequence title) {
-		mStoredTitle = title;
-		getSupportActionBar().setTitle(mStoredTitle);
+	public void openSeriesInfo(String tvdb_id) {
+		getSupportFragmentManager().beginTransaction().replace(R.id.container,
+			SeriesInfoFragment.newInstance(tvdb_id)).addToBackStack(null).commit();
+	}
+	
+	@Override
+	public void openSeriesSeason(String tvdb_id, int season) {
+		String title = Series.get(this, tvdb_id).name + " - " + String.format(Locale.getDefault(), "S%1$02d", season);
+		EpisodeListFragment f;
+		Series series = Series.get(this, tvdb_id);
+		if (series.isNew())
+			f = EpisodeListFragment.newList(title, tvdb_id, season);
+		else {
+			String sql = "select series, season, episode from episode where series = ? and season = ? order by episode";
+			f = EpisodeListFragment.newQuery(title, sql, tvdb_id, Integer.toString(season));
+		}
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
+	}
+	
+	@Override
+	public void openSeriesEpisode(String tvdb_id, int season, int episode) {
+		getSupportFragmentManager().beginTransaction().replace(R.id.container,
+				EpisodeInfoFragment.newInstance(tvdb_id, season, episode)).addToBackStack(null).commit();
 	}
 	
 	private void restoreActionBar() {

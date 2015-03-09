@@ -1,4 +1,4 @@
-package net.ggelardi.uoccin.data;
+package net.ggelardi.uoccin.adapters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +97,13 @@ public class DrawerAdapter extends BaseAdapter {
 		if (itm.header)
 			vh.txt.setCompoundDrawablesWithIntrinsicBounds(itm.icon, 0, 0, 0);
 		return view;
+	}
+	
+	public int indexOfVID(String id) {
+		for (int i = 0; i < items.size(); i++)
+			if (items.get(i).id.equals(id))
+				return i;
+		return -1;
 	}
 	
 	static class ViewHolder {

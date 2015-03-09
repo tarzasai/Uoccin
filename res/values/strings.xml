@@ -22,17 +22,48 @@
     
     <string name="title_search">Results for \"%s\"</string>
     
-    <string name="fmtdt_airdate">EEE dd, yyyy</string>
-    <string name="fmtdt_airday">EEE</string>
-    <string name="fmtdt_airtime">EEE hh:mm a</string>
-    <string name="fmtno_colls">%1$d collected on %2$d</string>
-    <string name="fmtno_seens">%1$d watched on %2$d</string>
+    <string name="fmt_status_run">Continuing</string>
+    <string name="fmt_status_end">Ended</string>
+    <string name="fmt_airdate">EEE dd, yyyy</string>
+    <string name="fmt_airday">EEE</string>
+    <string name="fmt_airtime">EEE hh:mm a</string>
+    <string name="fmt_nums_coll">%1$d collected on %2$d</string>
+    <string name="fmt_nums_seen">%1$d watched on %2$d</string>
+    
+    <string name="lbl_comm_wlst">Watchlist</string>
+    <string name="lbl_comm_coll">Library</string>
+    <string name="lbl_comm_seen">Seen</string>
+    <string name="lbl_comm_shar">Share</string>
+    <string name="lbl_comm_tvdb">TVDB</string>
+    <string name="lbl_comm_imdb">IMDB</string>
+    <string name="lbl_comm_refr">Refresh</string>
+    <string name="lbl_comm_link">links</string>
+    
+    <string name="lbl_serinf_ratd">rated:</string>
+    <string name="lbl_serinf_plot">plot</string>
+    <string name="lbl_serinf_with">starring</string>
+    <string name="lbl_serinf_gens">genre</string>
+    <string name="lbl_serinf_seas">seasons</string>
+    
+    <string name="lbl_epinf_sdot">S</string>
+    <string name="lbl_epinf_edot">E</string>
+    <string name="lbl_epinf_seas">season</string>
+    <string name="lbl_epinf_epis">episode</string>
+    <string name="lbl_epinf_plot">plot</string>
+    <string name="lbl_epinf_gues">guest star(s)</string>
+    <string name="lbl_epinf_writ">writer(s)</string>
+    <string name="lbl_epinf_dire">director</string>
     
     <string name="empty_text"></string>
-    <string name="hello_world">Hello world!</string>
+    <string name="none_text">None</string>
+    <string name="null_text">Null</string>
     <string name="dlg_btn_ok">OK</string>
     <string name="dlg_btn_cancel">Cancel</string>
     <string name="dlg_btn_retry">Try again</string>
+    <string name="ask_set_series_coll_true">Are you sure to mark all episodes as collected?</string>
+    <string name="ask_set_series_coll_false">Are you sure to mark all episodes as NOT collected?</string>
+    <string name="ask_set_series_seen_true">Are you sure to mark all episodes as watched?</string>
+    <string name="ask_set_series_seen_false">Are you sure to mark all episodes as NOT watched?</string>
     <string name="unknown_title">Unknown title</string>
     <string name="unknown_plot">Unknown plot</string>
     <string name="msg_wlst_add_mov">Movie \"%s\" added to watchlist</string>
@@ -49,27 +80,38 @@
     <string name="msg_seen_del_epi">Episode \"%s\" set to be watched</string>
     <string name="msg_tags_add">Tag \"%s\" added</string>
     <string name="msg_tags_del">Tag \"%s\" removed</string>
+
+    <!-- settings -->
+    <string name="settings_title">Uoccin settings</string>
+    <string name="pk_startup_title">Startup view</string>
+    <string name="pk_startup_summ">The first view you want to see on startup.</string>
+    <string name="pk_locale_title">Localization</string>
+    <string name="pk_locale_summ">The language for titles and synopsis (where available).</string>
     
-    <string name="sample_title">Person of Interest</string>
-    <string name="sample_info1">CBS</string>
-    <string name="sample_info2">History Channel - Wed 10:00 PM</string>
-    <string name="sample_episode">4x13 - M.I.A.</string>
-    <string name="sample_plot1">Person of Interest is an American crime drama television series broadcasting on CBS. It is based on a screenplay developed by Jonathan Nolan. The series revolves around a former CIA officer (Jim Caviezel) recruited by a mysterious billionaire (Michael Emerson) to prevent violent crimes in New York City.</string>
-    <string name="sample_plot2">Reese and Root’s hunt for Shaw takes them to a small town in upstate New York where it becomes apparent that not everything is as idyllic as it seems. Also, Fusco teams with a former POI to tackle the newest number.</string>
-    <string name="sample_actors">Michael Emerson, Jim Caviezel, Kevin Chapman, Amy Acker, Sarah Shahi, Enrico Colantoni, Taraji P. Henson</string>
-    <string name="sample_genres">Action, Adventure, Drama, Mystery, Thriller</string>
+    <!-- sample text -->
+    <string name="sample_title1">A Short Title</string>
+    <string name="sample_title2">A very very very very very very very very long title</string>
+    <string name="sample_number1">2</string>
+    <string name="sample_number2">16</string>
+    <string name="sample_number3">316</string>
+    <string name="sample_number4">2016</string>
     <string name="sample_date1">Oct 13, 2013</string>
     <string name="sample_date2">13/02/2013</string>
+    <string name="sample_time1">Wed 10:00 PM</string>
+    <string name="sample_network">CBS</string>
+    <string name="sample_info">History Channel - Wed 10:00 PM</string>
+    <string name="sample_epnum">4x13</string>
+    <string name="sample_episode">4x13 - M.I.A.</string>
+    <string name="sample_plot1">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</string>
+    <string name="sample_plot2">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</string>
+    <string name="sample_guy">Michael Kevin Shahi III</string>
+    <string name="sample_people">Michael Emerson, Jim Caviezel, Kevin Chapman, Amy Acker, Sarah Shahi, Enrico Colantoni, Taraji P. Henson</string>
+    <string name="sample_genres">Action, Adventure, Drama, Mystery, Thriller</string>
     <string name="sample_nextd">in 12 hours (Mon)</string>
-    <string name="sample_subs">it / en</string>
+    <string name="sample_rated">TV-14</string>
+    <string name="sample_subs">it/en</string>
     <string name="sample_stat">12 / 43 collected</string>
     <string name="sample_tags">pippo, pluto, paperino, tafazzi, perdinci, drocopio</string>
-    
-    <string name="drawer_example">Example drawer item</string>
-    <string name="action_example">Example action</string>
-    
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
+    <string name="sample_season">S03</string>
 
 </resources>

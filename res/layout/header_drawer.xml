@@ -12,7 +12,7 @@
     android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
     android:paddingRight="?android:attr/listPreferredItemPaddingRight"
     android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-    android:text="@string/drawer_example"
+    android:text="@string/sample_title1"
     android:textAppearance="?android:attr/textAppearanceListItemSmall"
     android:textStyle="bold" />
 

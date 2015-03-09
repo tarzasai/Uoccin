@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <ListPreference
+        android:key="pk_startup"
+        android:defaultValue="home"
+        android:dialogTitle="@string/pk_startup_title"
+        android:entries="@array/view_defser_titles"
+        android:entryValues="@array/view_defser_ids"
+        android:summary="@string/pk_startup_summ"
+        android:title="@string/pk_startup_title" />
+
+    <ListPreference
+        android:key="pk_locale"
+        android:defaultValue="en"
+        android:dialogTitle="@string/pk_locale_title"
+        android:entries="@array/pk_locale_names"
+        android:entryValues="@array/pk_locale_values"
+        android:summary="@string/pk_locale_summ"
+        android:title="@string/pk_locale_title" />
+    
+</PreferenceScreen>

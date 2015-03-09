@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:lines="1"
-            android:text="@string/sample_title"
+            android:text="@string/sample_title1"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textStyle="bold" />
 
@@ -35,7 +35,7 @@
             android:id="@+id/txt_mov_info"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sample_info1"
+            android:text="@string/sample_info"
             android:textColor="@android:color/darker_gray"
             android:textStyle="bold" />
 
@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:lines="1"
-            android:text="@string/sample_actors"
+            android:text="@string/sample_people"
             android:textStyle="bold" />
 
         <TextView

@@ -458,7 +458,7 @@ public class Movie extends Title {
 	}
 	
 	public boolean isOld() {
-		return (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
+		return timestamp > 0 && (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
 	}
 	
 	public boolean inWatchlist() {
@@ -564,6 +564,10 @@ public class Movie extends Title {
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
+	}
+	
+	public String imdbUrl() {
+		return "http://www.imdb.com/title/" + imdb_id;
 	}
 	
 	public boolean hasSubtitles() {

@@ -2,6 +2,7 @@ package net.ggelardi.uoccin.serv;
 
 import java.util.Locale;
 
+import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons.PK;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 public class Session implements OnSharedPreferenceChangeListener {
 	
@@ -108,6 +110,16 @@ public class Session implements OnSharedPreferenceChangeListener {
 	    */
 		// @formatter:on
 		return Picasso.with(appContext);
+	}
+	
+	public RequestCreator picasso(String path) {
+		return Picasso.with(appContext).load(path).noPlaceholder();
+	}
+	
+	public RequestCreator picasso(String path, boolean placeholder) {
+		if (!placeholder)
+			return picasso(path);
+		return Picasso.with(appContext).load(path).placeholder(R.drawable.ic_action_image);
 	}
 	
 	public String defaultText(String value, int resId) {

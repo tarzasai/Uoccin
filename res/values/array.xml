@@ -1,6 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     
+    <string-array name="pk_locale_values">
+        <item>de</item>
+        <item>en</item>
+        <item>es</item>
+        <item>fa</item>
+        <item>fr</item>
+        <item>it</item>
+        <item>ja</item>
+        <item>ru</item>
+        <item>tr</item>
+        <item>zh-cn</item>
+    </string-array>
+    
+    <string-array name="pk_locale_names">
+        <item>Deutsch</item>
+        <item>English</item>
+        <item>Español</item>
+        <item>فارسی</item>
+        <item>Français</item>
+        <item>Italiano</item>
+        <item>日本語</item>
+        <item>русский язык</item>
+        <item>Türkçe</item>
+        <item>中文(简体)</item>
+    </string-array>
+    
     <string-array name="view_defser_ids">
         <item>sernext</item>
         <item>sernews</item>
@@ -23,7 +49,7 @@
         <item>NEXT_EPISODE</item>
         <item>NEAR_EPISODE</item>
         <item>NEAR_EPISODE</item>
-        <item>LAST_EPISODE</item>
+        <item>SERIES_STATS</item>
         <item>SERIES_STATS</item>
         <item>SERIES_STATS</item>
     </string-array>

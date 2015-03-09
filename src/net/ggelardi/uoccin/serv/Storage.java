@@ -18,6 +18,19 @@ public class Storage extends SQLiteOpenHelper {
 		Log.v(TAG, CREATE_TABLE_SERIES);
 		Log.v(TAG, CREATE_TABLE_EPISODES);
 		*/
+		
+		SQLiteDatabase db = getWritableDatabase();
+		db.execSQL("delete from series where watchlist = 0 and (rating is null or rating = 0) and tvdb_id in (" +
+			"select distinct series from episode where collected = 0 and watched = 0)");
+		
+		/*
+		db.execSQL("delete from episode where season = 0 or episode = 0");
+		db.execSQL("update episode set subtitles = null");
+		db.execSQL("delete from movie");
+		db.execSQL("update episode set guestStars = null where guestStars = '' or guestStars = ','");
+		db.execSQL("update episode set writers = null where writers = '' or writers = ','");
+		db.execSQL("update episode set director = null where director = ''");
+		*/
 	}
 	
 	@Override

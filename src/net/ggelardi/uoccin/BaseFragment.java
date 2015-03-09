@@ -86,5 +86,8 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 	}
 	
 	public interface OnFragmentListener {
+		void openSeriesInfo(String tvdb_id);
+		void openSeriesSeason(String tvdb_id, int season);
+		void openSeriesEpisode(String tvdb_id, int season, int episode);
 	}
 }
