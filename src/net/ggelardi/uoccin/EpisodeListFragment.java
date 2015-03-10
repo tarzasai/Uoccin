@@ -10,26 +10,28 @@ import net.ggelardi.uoccin.serv.EpisodeTask;
 import net.ggelardi.uoccin.serv.EpisodeTask.EpisodeTaskContainer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.photos.views.HeaderGridView;
 
 public class EpisodeListFragment extends BaseFragment implements EpisodeTaskContainer, AbsListView.OnItemClickListener {
-	
-	protected AbsListView mListView;
-	protected EpisodeAdapter mAdapter;
-	protected EpisodeTask mTask;
 	
 	private String type;
 	private String title;
@@ -37,6 +39,17 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 	private String[] params;
 	private String series;
 	private int season;
+	
+	private AbsListView mListView;
+	private EpisodeAdapter mAdapter;
+	private EpisodeTask mTask;
+	
+	private RelativeLayout rlSHeader;
+	private TextView txtShdrPrev;
+	private TextView txtShdrNext;
+	private TextView lblShdrSeas;
+	private ImageView imgShdrColl;
+	private ImageView imgShdrSeen;
 	
 	public static EpisodeListFragment newQuery(String title, String query, String ... params) {
 		EpisodeListFragment fragment = new EpisodeListFragment();
@@ -49,11 +62,10 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 		return fragment;
 	}
 	
-	public static EpisodeListFragment newList(String title, String series, int season) {
+	public static EpisodeListFragment newList(String series, int season) {
 		EpisodeListFragment fragment = new EpisodeListFragment();
 		Bundle args = new Bundle();
 		args.putString("type", EpisodeTask.LIST);
-		args.putString("title", title);
 		args.putString("series", series);
 		args.putInt("season", season);
 		fragment.setArguments(args);
@@ -66,8 +78,8 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 		
 		Bundle args = getArguments();
 		type = args.getString("type");
-		title = args.getString("title");
 		if (type.equals(EpisodeTask.QUERY)) {
+			title = args.getString("title");
 			query = args.getString("query");
 			params = args.getStringArray("params");
 		} else {
@@ -84,16 +96,80 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 		View view = inflater.inflate(R.layout.fragment_items, container, false);
 
 		mListView = (AbsListView) view.findViewById(android.R.id.list);
-		
-		if (mListView instanceof ListView) {
-			((ListView) mListView).addHeaderView(inflater.inflate(R.layout.header_space, null));
-			((ListView) mListView).addFooterView(inflater.inflate(R.layout.header_space, null));
-		} else {
-			((HeaderGridView) mListView).addHeaderView(inflater.inflate(R.layout.header_space, null));
-			//((HeaderGridView) mListView).addFooterView(inflater.inflate(R.layout.header_space, null));
-		}
-		
 		mListView.setOnItemClickListener(this);
+		
+		if (mListView instanceof HeaderGridView)
+			((HeaderGridView) mListView).addHeaderView(inflater.inflate(R.layout.header_space, null));
+		else if (mListView instanceof ListView) {
+			ListView lst = (ListView) mListView;
+			if (type.equals(EpisodeTask.QUERY))
+				lst.addHeaderView(inflater.inflate(R.layout.header_space, null));
+			else {
+				rlSHeader = (RelativeLayout) inflater.inflate(R.layout.header_season, null);
+				lst.addHeaderView(rlSHeader);
+				
+				txtShdrPrev = (TextView) rlSHeader.findViewById(R.id.txt_sehdr_prev);
+				txtShdrNext = (TextView) rlSHeader.findViewById(R.id.txt_sehdr_next);
+				lblShdrSeas = (TextView) rlSHeader.findViewById(R.id.txt_sehdr_seas);
+				imgShdrColl = (ImageView) rlSHeader.findViewById(R.id.img_sehdr_coll);
+				imgShdrSeen = (ImageView) rlSHeader.findViewById(R.id.img_sehdr_seen);
+				
+				final Series ser = Series.get(getActivity(), series);
+				
+				txtShdrPrev.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						season = ser.seasons().get(ser.seasons().indexOf(season) - 1);
+						load();
+					}
+				});
+				
+				txtShdrNext.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						season = ser.seasons().get(ser.seasons().indexOf(season) + 1);
+						load();
+					}
+				});
+				
+				imgShdrColl.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						final boolean flag = ser.episodeCollected(season) < ser.episodeCount(season);
+						int msg = flag ? R.string.ask_set_season_coll_true : R.string.ask_set_season_coll_false;
+						new AlertDialog.Builder(getActivity()).setTitle(ser.name).setMessage(msg).
+							setIcon(R.drawable.ic_active_storage).setNegativeButton(R.string.dlg_btn_cancel, null).
+							setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									ser.setCollected(flag, season);
+									imgShdrColl.setImageResource(ser.episodeCollected(season) == ser.episodeCount(season) ?
+										R.drawable.ic_active_storage : R.drawable.ic_action_storage);
+								}
+							}).show();
+					}
+				});
+				
+				imgShdrSeen.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						final boolean flag = ser.episodeWatched(season) < ser.episodeCount(season);
+						int msg = flag ? R.string.ask_set_season_seen_true : R.string.ask_set_season_seen_false;
+						new AlertDialog.Builder(getActivity()).setTitle(ser.name).setMessage(msg).
+							setIcon(R.drawable.ic_active_seen).setNegativeButton(R.string.dlg_btn_cancel, null).
+							setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									ser.setWatched(flag, season);
+									imgShdrSeen.setImageResource(ser.episodeWatched(season) == ser.episodeCount(season) ?
+										R.drawable.ic_active_seen : R.drawable.ic_action_seen);
+								}
+							}).show();
+					}
+				});
+			}
+			lst.addFooterView(inflater.inflate(R.layout.header_space, null));
+		}
 		
 		((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 		
@@ -103,8 +179,6 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 	@Override
 	public void onResume() {
 		super.onResume();
-		
-		getActivity().setTitle(title);
 		
 		Series.addOnTitleEventListener(new OnTitleListener() {
 			@Override
@@ -116,17 +190,17 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 						@Override
 						public void run() {
 							if (state.equals(OnTitleListener.NOTFOUND)) {
-								//showHourGlass(false);
+								showHourGlass(false);
 								mAdapter.notifyDataSetChanged();
-								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_LONG).show();
+								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
 							} else if (state.equals(OnTitleListener.WORKING)) {
-								//showHourGlass(true);
+								showHourGlass(true);
 							} else if (state.equals(OnTitleListener.ERROR)) {
-								//showHourGlass(false);
+								showHourGlass(false);
 								mAdapter.notifyDataSetChanged();
 								Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
 							} else if (state.equals(OnTitleListener.READY)) {
-								//showHourGlass(false);
+								showHourGlass(false);
 								mAdapter.notifyDataSetChanged();
 							}
 						}
@@ -134,15 +208,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 			}
 		});
 		
-		mTask = new EpisodeTask(this, type);
-		if (type.equals(EpisodeTask.LIST))
-			mTask.execute(new String[] { series, Integer.toString(season) });
-		else {
-			String[] args = new String[params.length + 1];
-			args[0] = query;
-			System.arraycopy(params, 0, args, 1, params.length);
-			mTask.execute(args);
-		}
+		load();
 	}
 	
 	@Override
@@ -207,5 +273,40 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 		mAdapter.setTitles(result);
 		showHourGlass(false);
 		mTask = null;
+	}
+	
+	private void load() {
+		if (type.equals(EpisodeTask.LIST)) {
+			Series ser = Series.get(getActivity(), series);
+			getActivity().setTitle(ser.name);
+			lblShdrSeas.setText(Integer.toString(season));
+			int sid = ser.seasons().indexOf(season);
+			if (sid <= 0)
+				txtShdrPrev.setVisibility(View.GONE);
+			else {
+				txtShdrPrev.setVisibility(View.VISIBLE);
+				txtShdrPrev.setText(Integer.toString(ser.seasons().get(sid - 1)));
+			}
+			if (sid >= ser.seasons().size() - 1)
+				txtShdrNext.setVisibility(View.GONE);
+			else {
+				txtShdrNext.setVisibility(View.VISIBLE);
+				txtShdrNext.setText(Integer.toString(ser.seasons().get(sid + 1)));
+			}
+			imgShdrColl.setImageResource(ser.episodeCollected(season) == ser.episodeCount(season) ?
+				R.drawable.ic_active_storage : R.drawable.ic_action_storage);
+			imgShdrSeen.setImageResource(ser.episodeWatched(season) == ser.episodeCount(season) ?
+				R.drawable.ic_active_seen : R.drawable.ic_action_seen);
+		} else
+			getActivity().setTitle(title);
+		mTask = new EpisodeTask(this, type);
+		if (type.equals(EpisodeTask.LIST))
+			mTask.execute(new String[] { series, Integer.toString(season) });
+		else {
+			String[] args = new String[params.length + 1];
+			args[0] = query;
+			System.arraycopy(params, 0, args, 1, params.length);
+			mTask.execute(args);
+		}
 	}
 }

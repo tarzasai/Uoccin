@@ -96,7 +96,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_coll.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final boolean flag = series.episodeCollected() < series.episodeCount();
+				final boolean flag = series.episodeCollected(null) < series.episodeCount(null);
 				int msg = flag ? R.string.ask_set_series_coll_true : R.string.ask_set_series_coll_false;
 				new AlertDialog.Builder(getActivity()).setTitle(series.name).setMessage(msg).
 					setIcon(R.drawable.ic_active_storage).setNegativeButton(R.string.dlg_btn_cancel, null).
@@ -112,7 +112,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_seen.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final boolean flag = series.episodeWatched() < series.episodeCount();
+				final boolean flag = series.episodeWatched(null) < series.episodeCount(null);
 				int msg = flag ? R.string.ask_set_series_seen_true : R.string.ask_set_series_seen_false;
 				new AlertDialog.Builder(getActivity()).setTitle(series.name).setMessage(msg).
 					setIcon(R.drawable.ic_active_seen).setNegativeButton(R.string.dlg_btn_cancel, null).
@@ -185,7 +185,7 @@ public class SeriesInfoFragment extends BaseFragment {
 						public void run() {
 							if (state.equals(OnTitleListener.NOTFOUND)) {
 								showHourGlass(false);
-								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_LONG).show();
+								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
 							} else if (state.equals(OnTitleListener.WORKING)) {
 								showHourGlass(true);
 							} else if (state.equals(OnTitleListener.ERROR)) {
@@ -225,11 +225,11 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_ratd.setText(series.rated());
 		txt_wlst.setCompoundDrawablesWithIntrinsicBounds(0, series.inWatchlist() ?
 			R.drawable.ic_active_loved : R.drawable.ic_action_loved, 0, 0);
-		txt_coll.setCompoundDrawablesWithIntrinsicBounds(0, (series.episodeCount() > 0 &&
-			series.episodeCollected() == series.episodeCount()) ? R.drawable.ic_active_storage :
+		txt_coll.setCompoundDrawablesWithIntrinsicBounds(0, (series.episodeCount(null) > 0 &&
+			series.episodeCollected(null) == series.episodeCount(null)) ? R.drawable.ic_active_storage :
 			R.drawable.ic_action_storage, 0, 0);
-		txt_seen.setCompoundDrawablesWithIntrinsicBounds(0, (series.episodeCount() > 0 &&
-			series.episodeWatched() == series.episodeCount()) ? R.drawable.ic_active_seen :
+		txt_seen.setCompoundDrawablesWithIntrinsicBounds(0, (series.episodeCount(null) > 0 &&
+			series.episodeWatched(null) == series.episodeCount(null)) ? R.drawable.ic_active_seen :
 			R.drawable.ic_action_seen, 0, 0);
 		txt_plot.setText(series.plot());
 

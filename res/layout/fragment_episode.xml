@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:drawableLeft="@drawable/ic_small_news"
-                android:text="@string/lbl_epinf_seas"
+                android:text="@string/lbl_comm_seas"
                 android:textAllCaps="true"
                 android:textColor="@android:color/darker_gray" />
 
@@ -40,7 +40,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/lbl_epinf_epis"
+                android:text="@string/lbl_comm_epis"
                 android:textAllCaps="true"
                 android:textColor="@android:color/darker_gray" />
 

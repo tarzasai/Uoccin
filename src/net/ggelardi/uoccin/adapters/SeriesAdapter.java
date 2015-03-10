@@ -108,8 +108,8 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.box_ser_stat.setVisibility(View.VISIBLE);
 			vh.box_ser_epis.setVisibility(View.GONE);
 			//
-			vh.txt_ser_coll.setText(String.format(session.getString(R.string.fmt_nums_coll), ser.episodeCollected(), ser.episodeCount()));
-			vh.txt_ser_seen.setText(String.format(session.getString(R.string.fmt_nums_seen), ser.episodeWatched(), ser.episodeCount()));
+			vh.txt_ser_coll.setText(String.format(session.getString(R.string.fmt_nums_coll), ser.episodeCollected(null), ser.episodeCount(null)));
+			vh.txt_ser_seen.setText(String.format(session.getString(R.string.fmt_nums_seen), ser.episodeWatched(null), ser.episodeCount(null)));
 		} else {
 			vh.txt_ser_plot.setVisibility(View.GONE);
 			vh.box_ser_stat.setVisibility(View.GONE);

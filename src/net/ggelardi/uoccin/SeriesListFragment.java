@@ -115,17 +115,17 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 						@Override
 						public void run() {
 							if (state.equals(OnTitleListener.NOTFOUND)) {
-								//showHourGlass(false);
+								showHourGlass(false);
 								mAdapter.notifyDataSetChanged();
-								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_LONG).show();
+								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
 							} else if (state.equals(OnTitleListener.WORKING)) {
-								//showHourGlass(true);
+								showHourGlass(true);
 							} else if (state.equals(OnTitleListener.ERROR)) {
-								//showHourGlass(false);
+								showHourGlass(false);
 								mAdapter.notifyDataSetChanged();
 								Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
 							} else if (state.equals(OnTitleListener.READY)) {
-								//showHourGlass(false);
+								showHourGlass(false);
 								mAdapter.notifyDataSetChanged();
 							}
 						}

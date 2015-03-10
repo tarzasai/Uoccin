@@ -183,7 +183,7 @@ public class EpisodeInfoFragment extends BaseFragment {
 						public void run() {
 							if (state.equals(OnTitleListener.NOTFOUND)) {
 								showHourGlass(false);
-								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_LONG).show();
+								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
 							} else if (state.equals(OnTitleListener.WORKING)) {
 								showHourGlass(true);
 							} else if (state.equals(OnTitleListener.ERROR)) {

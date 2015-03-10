@@ -79,7 +79,7 @@ public class Episode extends Title {
 		Episode res = new Episode(context, series, season, episode);
 		cache.add(eid, res);
 		Cursor cur = Session.getInstance(context).getDB().query("episode", null, "series=? and season=? and episode=?",
-				new String[] { series, Integer.toString(season), Integer.toString(episode) }, null, null, null);
+			new String[] { series, Integer.toString(season), Integer.toString(episode) }, null, null, null);
 		try {
 			if (cur.moveToFirst()) {
 				res.load(cur);

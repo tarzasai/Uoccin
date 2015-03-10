@@ -25,13 +25,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.SparseIntArray;
 import android.widget.Toast;
 
 public class Series extends Title {
     private static final String TAG = "Series";
 	private static final String TABLE = "series";
-
+	
 	public static final String ACTIVE = "Continuing";
 	public static final String ENDED = "Ended";
 	
@@ -43,13 +42,20 @@ public class Series extends Title {
 	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;
 	
-	private boolean noRecalc = false;;
-	private Episode lastep = null;
-	private Episode nextep = null;
-	private SparseIntArray seasons = new SparseIntArray();
-	private int epcount = 0;
-	private int epscoll = 0;
-	private int epsseen = 0;
+	private boolean noRecalc = false;
+	
+	public List<Episode> episodes = new ArrayList<Episode>();
+	/*
+	private SparseIntArray seasTots = new SparseIntArray();
+	private SparseIntArray seasColl = new SparseIntArray();
+	private SparseIntArray seasSeen = new SparseIntArray();
+	private Episode lastAir = null;
+	private Episode nextAir = null;
+	private Episode lastCol = null;
+	private Episode nextCol = null;
+	private Episode lastSaw = null;
+	private Episode nextSee = null;
+	*/
 	
 	public String tvdb_id;
 	public String name;
@@ -86,7 +92,7 @@ public class Series extends Title {
 		Series res = new Series(context, tvdb_id);
 		cache.add(tvdb_id, res);
 		Cursor cur = Session.getInstance(context).getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
-				null, null, null);
+			null, null, null);
 		try {
 			if (cur.moveToFirst()) {
 				res.load(cur);
@@ -363,7 +369,7 @@ public class Series extends Title {
 			tags = Arrays.asList(cr.getString(ci).split(","));
 		watchlist = cr.getInt(cr.getColumnIndex("watchlist")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
-		recalc();
+		reloadEpisodes();
 	}
 	
 	protected void save(boolean isnew) {
@@ -456,80 +462,16 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	private void recalc() {
+	private synchronized void reloadEpisodes() {
 		if (noRecalc)
 			return;
 		dispatch(OnTitleListener.WORKING, null);
-		String sql;
-		String[] key = new String[] { tvdb_id };
-		Cursor cur;
-		// seasons list
-		seasons = new SparseIntArray();
-		sql = "select season, max(episode) from episode where series = ? group by season";
-		cur = session.getDB().rawQuery(sql, key);
-		try {
-			while (cur.moveToNext())
-				seasons.put(cur.getInt(0), cur.getInt(1));
-		} finally {
-			cur.close();
-		}
-		// episodes count
-		epcount = 0;
-		sql = "select count(*) from episode where series = ?";
-		cur = session.getDB().rawQuery(sql, key);
-		try {
-			if (cur.moveToNext())
-				epcount = cur.getInt(0);
-		} finally {
-			cur.close();
-		}
-		// collected episodes
-		epscoll = 0;
-		sql = "select count(*) from episode where series = ? and collected = 1";
-		cur = session.getDB().rawQuery(sql, key);
-		try {
-			if (cur.moveToNext())
-				epscoll = cur.getInt(0);
-		} finally {
-			cur.close();
-		}
-		// watched episodes
-		epsseen = 0;
-		sql = "select count(*) from episode where series = ? and watched = 1";
-		cur = session.getDB().rawQuery(sql, key);
-		try {
-			if (cur.moveToNext())
-				epsseen = cur.getInt(0);
-		} finally {
-			cur.close();
-		}
-		// last episode
-		lastep = null;
-		sql = "select season, episode from episode where series = ? and " +
-			"datetime(firstAired/1000, 'unixepoch') <= datetime('now') order by firstAired desc, episode desc limit 1";
-		cur = session.getDB().rawQuery(sql, key);
-		try {
-			if (cur.moveToNext())
-				lastep = Episode.get(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1));
-		} finally {
-			cur.close();
-		}
-		// next episode
-		nextep = null;
-		sql = "select season, episode from episode where series = ? and " +
-			"datetime(firstAired/1000, 'unixepoch') > datetime('now') order by firstAired, episode limit 1";
-		cur = session.getDB().rawQuery(sql, key);
-		try {
-			if (cur.moveToNext())
-				nextep = Episode.get(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1));
-		} finally {
-			cur.close();
-		}
-		//
+		episodes = Episode.get(session.getContext(), "select series, season, episode from episode " +
+			"where series = ? order by season, episode", new String[] { tvdb_id });
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public void refresh() {
+	public synchronized void refresh() {
 		Log.v(TAG, "Refreshing series " + tvdb_id);
 		dispatch(OnTitleListener.WORKING, null);
 		final boolean needCommit = isNew() && (watchlist || rating > 0 || !tags.isEmpty());
@@ -539,41 +481,18 @@ public class Series extends Title {
 				Document doc = Commons.XML.str2xml(result);
 				load((Element) doc.getElementsByTagName("Series").item(0));
 				// episodes
-				noRecalc = true;
-				try {
-					seasons = new SparseIntArray();
-					epcount = 0;
-					epscoll = 0;
-					epsseen = 0;
-					lastep = null;
-					nextep = null;
-					long now = System.currentTimeMillis();
-					NodeList lst = doc.getElementsByTagName("Episode");
-					if (lst != null && lst.getLength() > 0) {
-						Episode ep;
-						for (int i = 0; i < lst.getLength(); i++) {
-							ep = Episode.get(session.getContext(), (Element) lst.item(i));
-							if (ep != null) {
-								int en = seasons.get(ep.season);
-								if (ep.episode > en)
-									seasons.put(ep.season, ep.episode);
-								epcount++;
-								if (ep.firstAired <= 0)
-									continue;
-								if (ep.firstAired < now && (lastep == null || ep.firstAired > lastep.firstAired ||
-									ep.episode > lastep.episode))
-									lastep = ep;
-								else if (ep.firstAired > now && (nextep == null || ep.firstAired < lastep.firstAired ||
-									ep.episode < lastep.episode))
-									nextep = ep;
-							}
-						}
+				episodes = new ArrayList<Episode>();
+				NodeList lst = doc.getElementsByTagName("Episode");
+				if (lst != null && lst.getLength() > 0) {
+					Episode ep;
+					for (int i = 0; i < lst.getLength(); i++) {
+						ep = Episode.get(session.getContext(), (Element) lst.item(i));
+						if (ep != null)
+							episodes.add(ep);
 					}
-				} finally {
-					noRecalc = false;
-					if (!isNew() || needCommit)
-						commit();
 				}
+				if (!isNew() || needCommit)
+					commit();
 				dispatch(OnTitleListener.READY, null);
 			}
 			@Override
@@ -609,7 +528,7 @@ public class Series extends Title {
 			for (Episode ep: eps)
 				ep.modified = false;
 			if (changes > 0)
-				recalc();
+				reloadEpisodes();
 		} finally {
 			db.endTransaction();
 		}
@@ -747,85 +666,63 @@ public class Series extends Title {
 	}
 	
 	public Episode lastEpisode() {
-		return lastep;
+		for (int i = episodes.size() - 1; i >= 0; i--)
+			if (episodes.get(i).firstAired < System.currentTimeMillis())
+				return episodes.get(i);
+		return null;
 	}
 	
 	public Episode nextEpisode() {
-		return nextep;
+		for (Episode ep: episodes)
+			if (ep.firstAired >= System.currentTimeMillis())
+				return ep;
+		return null;
 	}
 	
 	public Episode whatsBefore(int season, int episode) {
-		if (isNew()) {
-			List<Episode> lst = Episode.cached(tvdb_id, -1);
-			Episode ep;
-			for (int i = 1; i < lst.size(); i++) {
-				ep = lst.get(i);
-				if (ep.season == season && ep.episode == episode)
-					return lst.get(i - 1);
-			}
-		} else {
-			String sql = "select season, episode from episode where series = ? and season <= ? " +
-				"order by season desc, episode desc";
-			String[] flt = new String[] { tvdb_id, Integer.toString(season) };
-			Cursor cr = session.getDB().rawQuery(sql, flt);
-			try {
-				while (cr.moveToNext()) {
-					if (cr.getInt(0) == season && cr.getInt(1) >= episode)
-						continue;
-					return Episode.get(session.getContext(), tvdb_id, cr.getInt(0), cr.getInt(1));
-				}
-			} finally {
-				cr.close();
-			}
-		}
+		for (int i = episodes.size() - 1; i >= 0; i--)
+			if (episodes.get(i).isBefore(season, episode))
+				return episodes.get(i);
 		return null;
 	}
 	
 	public Episode whatsAfter(int season, int episode) {
-		if (isNew()) {
-			List<Episode> lst = Episode.cached(tvdb_id, -1);
-			Episode ep;
-			for (int i = 0; i < lst.size() - 1; i++) {
-				ep = lst.get(i);
-				if (ep.season == season && ep.episode == episode)
-					return lst.get(i + 1);
-			}
-		} else {
-			String sql = "select season, episode from episode where series = ? and season >= ? " +
-				"order by season, episode";
-			String[] flt = new String[] { tvdb_id, Integer.toString(season) };
-			Cursor cr = session.getDB().rawQuery(sql, flt);
-			try {
-				while (cr.moveToNext()) {
-					if (cr.getInt(0) == season && cr.getInt(1) <= episode)
-						continue;
-					return Episode.get(session.getContext(), tvdb_id, cr.getInt(0), cr.getInt(1));
-				}
-			} finally {
-				cr.close();
-			}
-		}
+		for (Episode ep: episodes)
+			if (ep.isAfter(season, episode))
+				return ep;
 		return null;
 	}
 	
-	public int seasonCount() {
-		return seasons.size();
+	public List<Integer> seasons() {
+		List<Integer> res = new ArrayList<Integer>();
+		for (Episode ep: episodes)
+			if (!res.contains(ep.season))
+				res.add(ep.season);
+		return res;
 	}
 	
-	public int episodeCount() {
-		return epcount;
+	public int episodeCount(Integer season) {
+		int res = 0;
+		for (Episode ep: episodes)
+			if (season == null || ep.season == season)
+				res++;
+		return res;
 	}
 	
-	public int episodeCount(int season) {
-		return seasons.get(season);
+	public int episodeCollected(Integer season) {
+		int res = 0;
+		for (Episode ep: episodes)
+			if (ep.inCollection() && (season == null || ep.season == season))
+				res++;
+		return res;
 	}
 	
-	public int episodeCollected() {
-		return epscoll;
-	}
-	
-	public int episodeWatched() {
-		return epsseen;
+	public int episodeWatched(Integer season) {
+		int res = 0;
+		for (Episode ep: episodes)
+			if (ep.isWatched() && (season == null || ep.season == season))
+				res++;
+		return res;
 	}
 	
 	public void setCollected(boolean flag, int season) {
@@ -849,11 +746,13 @@ public class Series extends Title {
 			} finally {
 				db.endTransaction();
 			}
-			recalc();
+			reloadEpisodes();
 		}
 		Episode.setDirtyFlags(tvdb_id, season, flag, null);
 		if (isNew())
 			commit();
+		else
+			dispatch(OnTitleListener.READY, null);
 	}
 	
 	public void setWatched(boolean flag, int season) {
@@ -877,10 +776,12 @@ public class Series extends Title {
 			} finally {
 				db.endTransaction();
 			}
-			recalc();
+			reloadEpisodes();
 		}
 		Episode.setDirtyFlags(tvdb_id, season, null, flag);
 		if (isNew())
 			commit();
+		else
+			dispatch(OnTitleListener.READY, null);
 	}
 }

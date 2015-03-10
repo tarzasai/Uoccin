@@ -1,9 +1,6 @@
 package net.ggelardi.uoccin;
 
-import java.util.Locale;
-
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
-import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.serv.Commons.PK;
 import net.ggelardi.uoccin.serv.Session;
 import android.annotation.SuppressLint;
@@ -156,15 +153,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	
 	@Override
 	public void openSeriesSeason(String tvdb_id, int season) {
-		String title = Series.get(this, tvdb_id).name + " - " + String.format(Locale.getDefault(), "S%1$02d", season);
-		EpisodeListFragment f;
-		Series series = Series.get(this, tvdb_id);
-		if (series.isNew())
-			f = EpisodeListFragment.newList(title, tvdb_id, season);
-		else {
-			String sql = "select series, season, episode from episode where series = ? and season = ? order by episode";
-			f = EpisodeListFragment.newQuery(title, sql, tvdb_id, Integer.toString(season));
-		}
+		EpisodeListFragment f = EpisodeListFragment.newList(tvdb_id, season);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
 	}
 	

@@ -25,17 +25,17 @@ public class SeasonAdapter extends BaseAdapter {
 	
 	@Override
 	public int getCount() {
-		return series.seasonCount();
+		return series.seasons().size();
 	}
 	
 	@Override
 	public Integer getItem(int position) {
-		return position + 1;
+		return series.seasons().get(position);
 	}
 	
 	@Override
 	public long getItemId(int position) {
-		return position + 1;
+		return position;
 	}
 	
 	@Override
