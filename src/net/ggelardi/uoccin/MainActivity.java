@@ -42,7 +42,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_main);
 		
 		session = Session.getInstance(this);
@@ -52,8 +52,14 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		
 		mStoredTitle = getTitle();
 		
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-		getActionBar().setHomeButtonEnabled(true);
+		ActionBar ab = getSupportActionBar();
+		ab.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO);
+		//ab.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_USE_LOGO);
+		//ab.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
+		//ab.setDisplayHomeAsUpEnabled(true);
+		//ab.setDisplayUseLogoEnabled(true);
+		//ab.setHomeButtonEnabled(true);
+		ab.setIcon(R.mipmap.ic_launcher);
 
 		if (savedInstanceState != null)
 			lastView = savedInstanceState.getString("lastView", session.getPrefs().getString(PK.STARTUP, "sernext"));

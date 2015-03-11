@@ -383,10 +383,10 @@ public class Episode extends Title {
 		}
 		Log.v(TAG, "Refreshing episode " + tvdb_id);
 		dispatch(OnTitleListener.WORKING, null);
-		Callback<String> callback = new Callback<String>() {
+		Callback<Document> callback = new Callback<Document>() {
 			@Override
-			public void success(String result, Response response) {
-				Document doc = Commons.XML.str2xml(result);
+			public void success(Document result, Response response) {
+				Document doc = result;//Commons.XML.str2xml(result);
 				load((Element) doc.getElementsByTagName("Episode").item(0));
 				commit();
 				//dispatch(OnTitleListener.READY, null);

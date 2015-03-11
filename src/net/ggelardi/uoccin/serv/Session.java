@@ -40,9 +40,9 @@ public class Session implements OnSharedPreferenceChangeListener {
 		
 		dbhlp = new Storage(appContext);
 		
-		long now = System.currentTimeMillis();
+		/*long now = System.currentTimeMillis();
 		long cleaning = prefs.getLong(PK.CLEANING, now);
-		if ((now - cleaning)/(1000 * 60 * 60) > 4) {
+		if ((now - cleaning)/(1000 * 60 * 60) > 4)*/ {
 			dbconn = dbhlp.getWritableDatabase();
 			dbconn.execSQL("delete from series where watchlist = 0 and (rating is null or rating = 0) and " +
 				"tvdb_id in (select distinct series from episode where collected = 0 and watched = 0)");

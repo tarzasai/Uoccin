@@ -24,9 +24,10 @@ import android.widget.TextView;
 public class SeriesAdapter extends BaseAdapter {
 	public static final String SERIES_PLOT = "SERIES_PLOT";
 	public static final String SERIES_STATS = "SERIES_STATS";
+	public static final String NEAR_EPISODE = "NEAR_EPISODE";
+	public static final String NEXT_EP_2SEE = "NEXT_EPISODE";
 	public static final String LAST_EPISODE = "LAST_EPISODE";
 	public static final String NEXT_EPISODE = "NEXT_EPISODE";
-	public static final String NEAR_EPISODE = "NEAR_EPISODE";
 	
 	private final Session session;
 	private final OnClickListener listener;

@@ -66,7 +66,7 @@ where datetime(e.firstAired/1000, \'unixepoch\') >= datetime(\'now\')
 and e.season = 1 and e.episode = 1 order by e.firstAired
         </item>
         <item>
-select tvdb_id from series where watchlist = 1 order by name
+select tvdb_id from series where watchlist = 1 order by name collate nocase
         </item>
         <item>
 select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
@@ -74,11 +74,11 @@ where e.collected = 1 and e.watched = 0 order by e.firstAired
         </item>
         <item>
 select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where e.collected = 1 order by s.name
+where e.collected = 1 order by s.name collate nocase
         </item>
         <item>
 select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where e.watched = 1 order by s.name
+where e.watched = 1 order by s.name collate nocase
         </item>
     </string-array>
     

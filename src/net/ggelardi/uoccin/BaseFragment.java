@@ -4,6 +4,7 @@ import net.ggelardi.uoccin.serv.Session;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -12,6 +13,8 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 	
 	protected Session session;
 	protected OnFragmentListener mListener;
+	
+	private int hgCount = 0;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -82,7 +85,11 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 	}
 	
 	protected void showHourGlass(boolean value) {
-		getActivity().setProgressBarIndeterminateVisibility(value);
+		if (value)
+			hgCount++;
+		else
+			hgCount--;
+		((ActionBarActivity) getActivity()).setSupportProgressBarIndeterminateVisibility(hgCount > 0);
 	}
 	
 	public interface OnFragmentListener {

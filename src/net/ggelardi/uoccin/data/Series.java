@@ -145,6 +145,7 @@ public class Series extends Title {
 	
 	public static List<Series> find(Context context, String text) {
 		List<Series> res = new ArrayList<Series>();
+		/*
 		String response;
 		try {
 			response = TVDB.getInstance().findSeries(text, "en");
@@ -154,6 +155,15 @@ public class Series extends Title {
 			return res;
 		}
 		Document doc = Commons.XML.str2xml(response);
+		*/
+		Document doc = null;
+		try {
+			doc = TVDB.getInstance().findSeries(text, "en");
+		} catch (Exception err) {
+			Log.e(TAG, "find", err);
+			dispatch(OnTitleListener.ERROR, null);
+			return res;
+		}
 		if (doc != null) {
 			List<String> ids = new ArrayList<String>();
 			NodeList lst = doc.getElementsByTagName("Series");
@@ -475,10 +485,10 @@ public class Series extends Title {
 		Log.v(TAG, "Refreshing series " + tvdb_id);
 		dispatch(OnTitleListener.WORKING, null);
 		final boolean needCommit = isNew() && (watchlist || rating > 0 || !tags.isEmpty());
-		Callback<String> callback = new Callback<String>() {
+		Callback<Document> callback = new Callback<Document>() {
 			@Override
-			public void success(String result, Response response) {
-				Document doc = Commons.XML.str2xml(result);
+			public void success(Document result, Response response) {
+				Document doc = result;//Commons.XML.str2xml(result);
 				load((Element) doc.getElementsByTagName("Series").item(0));
 				// episodes
 				episodes = new ArrayList<Episode>();

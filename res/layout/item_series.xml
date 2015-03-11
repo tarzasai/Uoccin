@@ -3,7 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/item_frame"
-    android:orientation="horizontal" >
+    android:orientation="horizontal"
+    android:paddingTop="1dp"
+    android:paddingBottom="1dp" >
 
     <ImageView
         android:id="@+id/img_seritm_poster"
