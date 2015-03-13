@@ -23,14 +23,14 @@
         android:layout_weight="1"
         android:divider="@drawable/divider_2dp"
         android:orientation="vertical"
-        android:padding="5dp"
-        android:showDividers="beginning|middle|end" >
+        android:padding="5dp" >
 
         <TextView
             android:id="@+id/txt_epitm_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/ic_small_news"
+            android:drawableLeft="@drawable/ics_active_news"
+            android:drawablePadding="3dp"
             android:ellipsize="end"
             android:gravity="center_vertical"
             android:maxLines="1"
@@ -41,7 +41,8 @@
             android:id="@+id/txt_epitm_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/ic_small_calendar"
+            android:drawableLeft="@drawable/ics_active_calendar"
+            android:drawablePadding="3dp"
             android:ellipsize="end"
             android:gravity="center_vertical"
             android:maxLines="1"
@@ -53,34 +54,37 @@
             android:id="@+id/txt_epitm_subs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/ic_small_subtitles"
+            android:drawableLeft="@drawable/ics_active_subtitles"
+            android:drawablePadding="3dp"
             android:ellipsize="end"
             android:gravity="center_vertical"
             android:maxLines="1"
             android:text="@string/sample_subs"
             android:textColor="@android:color/darker_gray" />
+
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:divider="@drawable/divider_4dp"
+        android:divider="@drawable/divider_2dp"
         android:gravity="center_vertical"
         android:orientation="vertical"
         android:paddingLeft="0dp"
-        android:paddingRight="10dp" >
+        android:paddingRight="10dp"
+        android:showDividers="middle" >
 
         <ImageView
             android:id="@+id/img_epitm_coll"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:contentDescription="@string/empty_text"
             android:src="@drawable/ic_action_storage" />
 
         <ImageView
             android:id="@+id/img_epitm_seen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:contentDescription="@string/empty_text"
             android:src="@drawable/ic_action_seen" />
     </LinearLayout>

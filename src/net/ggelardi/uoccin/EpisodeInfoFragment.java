@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -212,28 +213,27 @@ public class EpisodeInfoFragment extends BaseFragment {
 		if (txt_seas == null)
 			return;
 		getActivity().setTitle(episode.getSeries().name);
-		lbl_seas.setCompoundDrawablesWithIntrinsicBounds(episode.isPilot() ? R.drawable.ic_small_news : 0, 0, 0, 0);
+		lbl_seas.setCompoundDrawablesWithIntrinsicBounds(episode.isPilot() ? R.drawable.ics_active_news : 0, 0, 0, 0);
 		txt_seas.setText(Integer.toString(episode.season));
 		txt_epis.setText(Integer.toString(episode.episode));
+		txt_time.setText(episode.firstAired());
+		txt_time.setCompoundDrawablesWithIntrinsicBounds(0, 0, DateUtils.isToday(episode.firstAired) ?
+			R.drawable.ics_active_calendar : 0, 0);
+		img_scrn.setImageBitmap(null);
+		session.picasso(episode.poster).resize(pstWidth, pstHeight).into(img_scrn);
+		txt_name.setText(episode.name());
 		if (!episode.hasSubtitles())
 			txt_subs.setVisibility(View.GONE);
 		else {
 			txt_subs.setVisibility(View.VISIBLE);
 			txt_subs.setText(episode.subtitles());
 		}
-		txt_time.setText(episode.firstAired());
-		img_scrn.setImageBitmap(null);
-		session.picasso(episode.poster).resize(pstWidth, pstHeight).into(img_scrn);
-		txt_name.setText(episode.name());
-		//
 		Episode ep = episode.getPrior();
 		txt_prev.setEnabled(ep != null);
 		txt_prev.setText(ep != null ? ep.simpleEID() : session.getString(R.string.none_text));
-		//
 		ep = episode.getNext();
 		txt_next.setEnabled(ep != null);
 		txt_next.setText(ep != null ? ep.simpleEID() : session.getString(R.string.none_text));
-		//
 		txt_coll.setCompoundDrawablesWithIntrinsicBounds(0, episode.inCollection() ?
 			R.drawable.ic_active_storage : R.drawable.ic_action_storage, 0, 0);
 		txt_seen.setCompoundDrawablesWithIntrinsicBounds(0, episode.isWatched() ?

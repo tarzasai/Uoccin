@@ -27,8 +27,9 @@
     <string name="fmt_airdate">EEE dd, yyyy</string>
     <string name="fmt_airday">EEE</string>
     <string name="fmt_airtime">EEE hh:mm a</string>
-    <string name="fmt_nums_coll">%1$d collected on %2$d</string>
-    <string name="fmt_nums_seen">%1$d watched on %2$d</string>
+    <string name="fmt_nums_done">%d (completed)</string>
+    <string name="fmt_nums_coll">%1$d (%2$d missing)</string>
+    <string name="fmt_nums_seen">%1$d (%2$d to watch)</string>
     
     <string name="lbl_comm_wlst">Watchlist</string>
     <string name="lbl_comm_coll">Library</string>

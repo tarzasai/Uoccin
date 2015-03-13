@@ -221,7 +221,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_netw.setText(series.network());
 		txt_airt.setText(series.airTime());
 		txt_airt.setTextColor(getResources().getColor(series.isEnded() ? android.R.color.holo_red_dark :
-			android.R.color.black));
+			R.color.textColorNormal));
 		txt_ratd.setText(series.rated());
 		txt_wlst.setCompoundDrawablesWithIntrinsicBounds(0, series.inWatchlist() ?
 			R.drawable.ic_active_loved : R.drawable.ic_action_loved, 0, 0);
@@ -232,11 +232,8 @@ public class SeriesInfoFragment extends BaseFragment {
 			series.episodeWatched(null) == series.episodeCount(null)) ? R.drawable.ic_active_seen :
 			R.drawable.ic_action_seen, 0, 0);
 		txt_plot.setText(series.plot());
-
 		txt_acts.setText(series.actors());
 		txt_gens.setText(series.genres());
-		
-		grd_seas.setNumColumns(Math.round(pstWidth/140));
 		grd_seas.setAdapter(new SeasonAdapter(getActivity(), series));
 		txt_imdb.setEnabled(!TextUtils.isEmpty(series.imdb_id));
 	}

@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/list_foreground" >
+    android:background="@color/windowBackground" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,9 +12,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
+            android:background="@color/contentBackground"
             android:divider="@drawable/divider_2dp"
-            android:paddingBottom="5dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
             android:paddingTop="5dp"
@@ -24,10 +23,10 @@
                 android:id="@+id/lbl_epinf_seas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_small_news"
+                android:drawableLeft="@drawable/ics_active_news"
                 android:text="@string/lbl_comm_seas"
                 android:textAllCaps="true"
-                android:textColor="@android:color/darker_gray" />
+                android:textColor="@color/textColorSecondary" />
 
             <TextView
                 android:id="@+id/txt_epinf_seas"
@@ -42,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/lbl_comm_epis"
                 android:textAllCaps="true"
-                android:textColor="@android:color/darker_gray" />
+                android:textColor="@color/textColorSecondary" />
 
             <TextView
                 android:id="@+id/txt_epinf_epis"
@@ -53,50 +52,58 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/txt_epinf_subs"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_small_subtitles"
-                android:drawableStart="@drawable/ic_small_subtitles"
-                android:text="@string/sample_subs"
-                android:textAllCaps="true"
-                android:textColor="@android:color/darker_gray" />
-
-            <TextView
                 android:id="@+id/txt_epinf_time"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:drawableRight="@drawable/ics_active_calendar"
                 android:gravity="right"
                 android:text="@string/sample_time1"
                 android:textAllCaps="true"
                 android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/contentBackground"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp" >
+
+            <TextView
+                android:id="@+id/txt_epinf_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/sample_title2"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_epinf_subs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableRight="@drawable/ics_active_subtitles"
+                android:text="@string/sample_subs"
+                android:textAllCaps="true"
+                android:textColor="@color/textColorSecondary" />
+
         </LinearLayout>
 
         <ImageView
             android:id="@+id/img_epinf_scrn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
+            android:background="@color/contentBackground"
             android:contentDescription="@string/empty_text"
             android:src="@drawable/ic_action_image" />
-
-        <TextView
-            android:id="@+id/txt_epinf_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:paddingBottom="5dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:paddingTop="5dp"
-            android:text="@string/sample_title2"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/contentBackground"
             android:gravity="center_horizontal"
             android:padding="10dp" >
 
@@ -153,13 +160,11 @@
                 android:drawableTop="@drawable/ic_action_forward"
                 android:gravity="center_horizontal"
                 android:text="@string/sample_epnum" />
-
         </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
             android:paddingBottom="2dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
@@ -171,6 +176,7 @@
             android:id="@+id/txt_epinf_plot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@color/contentBackground"
             android:paddingBottom="10dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
@@ -186,7 +192,6 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
                 android:paddingBottom="2dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
@@ -198,11 +203,13 @@
                 android:id="@+id/txt_epinf_gues"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/contentBackground"
                 android:paddingBottom="10dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
                 android:paddingTop="5dp"
                 android:text="@string/sample_people" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -214,7 +221,6 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
                 android:paddingBottom="2dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
@@ -226,11 +232,13 @@
                 android:id="@+id/txt_epinf_writ"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/contentBackground"
                 android:paddingBottom="10dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
                 android:paddingTop="5dp"
                 android:text="@string/sample_people" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -242,7 +250,6 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
                 android:paddingBottom="2dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
@@ -254,17 +261,19 @@
                 android:id="@+id/txt_epinf_dire"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/contentBackground"
                 android:paddingBottom="10dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
                 android:paddingTop="5dp"
                 android:text="@string/sample_guy" />
+
         </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
+            android:background="@color/windowBackground"
             android:paddingBottom="2dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
@@ -275,6 +284,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/contentBackground"
             android:padding="10dp" >
 
             <TextView
@@ -294,10 +304,7 @@
                 android:drawableTop="@drawable/ic_action_link"
                 android:gravity="center_horizontal"
                 android:text="@string/lbl_comm_imdb" />
-
         </LinearLayout>
-
     </LinearLayout>
-    
 
 </ScrollView>

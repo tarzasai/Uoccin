@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/list_foreground" >
+    android:background="@color/windowBackground" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,13 +13,13 @@
             android:id="@+id/img_serinf_bann"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/contentBackground"
             android:contentDescription="@string/empty_text"
             android:src="@drawable/ic_action_image" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
             android:paddingBottom="5dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
@@ -48,16 +48,17 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
                 android:layout_centerVertical="true" >
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="2dp"
                     android:layout_marginEnd="2dp"
-                    android:text="@string/lbl_serinf_ratd" />
+                    android:layout_marginRight="2dp"
+                    android:text="@string/lbl_serinf_ratd"
+                    android:textColor="@color/textColorSecondary" />
 
                 <TextView
                     android:id="@+id/txt_serinf_ratd"
@@ -65,13 +66,13 @@
                     android:layout_height="wrap_content"
                     android:text="@string/sample_rated"
                     android:textStyle="bold" />
-
             </LinearLayout>
         </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/contentBackground"
             android:gravity="center_horizontal"
             android:padding="10dp" >
 
@@ -119,13 +120,11 @@
                 android:drawableTop="@drawable/ic_action_refresh"
                 android:gravity="center_horizontal"
                 android:text="@string/lbl_comm_refr" />
-
         </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
             android:paddingBottom="2dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
@@ -137,79 +136,105 @@
             android:id="@+id/txt_serinf_plot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@color/contentBackground"
             android:paddingBottom="10dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
             android:paddingTop="5dp"
             android:text="@string/sample_plot1" />
 
-        <TextView
+        <LinearLayout
+            android:id="@+id/box_serinf_acts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:paddingBottom="2dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:text="@string/lbl_serinf_with"
-            android:textSize="@dimen/mini_section_title"
-            android:textStyle="bold" />
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="2dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:text="@string/lbl_serinf_with"
+                android:textSize="@dimen/mini_section_title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_serinf_acts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/contentBackground"
+                android:paddingBottom="10dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingTop="5dp"
+                android:text="@string/sample_people" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/box_serinf_gens"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="2dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:text="@string/lbl_serinf_gens"
+                android:textSize="@dimen/mini_section_title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_serinf_gens"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/contentBackground"
+                android:paddingBottom="10dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingTop="5dp"
+                android:text="@string/sample_genres" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/box_serinf_seas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="2dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:text="@string/lbl_serinf_seas"
+                android:textSize="@dimen/mini_section_title"
+                android:textStyle="bold" />
+
+            <net.ggelardi.uoccin.comp.ExpandableHeightGridView
+                android:id="@+id/grd_serinf_seas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/contentBackground"
+                android:columnWidth="40dp"
+                android:horizontalSpacing="5dp"
+                android:numColumns="auto_fit"
+                android:paddingBottom="10dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingTop="5dp"
+                android:stretchMode="columnWidth"
+                android:verticalSpacing="5dp" />
+
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/txt_serinf_acts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="10dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:paddingTop="5dp"
-            android:text="@string/sample_people" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:paddingBottom="2dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:text="@string/lbl_serinf_gens"
-            android:textSize="@dimen/mini_section_title"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/txt_serinf_gens"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="10dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:paddingTop="5dp"
-            android:text="@string/sample_genres" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:paddingBottom="2dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:text="@string/lbl_serinf_seas"
-            android:textSize="@dimen/mini_section_title"
-            android:textStyle="bold" />
-
-        <net.ggelardi.uoccin.comp.ExpandableHeightGridView
-            android:id="@+id/grd_serinf_seas"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:numColumns="5"
-            android:paddingBottom="10dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:paddingTop="5dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
             android:paddingBottom="2dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
@@ -220,6 +245,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/contentBackground"
             android:padding="10dp" >
 
             <TextView
@@ -239,7 +265,6 @@
                 android:drawableTop="@drawable/ic_action_link"
                 android:gravity="center_horizontal"
                 android:text="@string/lbl_comm_imdb" />
-
         </LinearLayout>
     </LinearLayout>
 

@@ -109,8 +109,13 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.box_ser_stat.setVisibility(View.VISIBLE);
 			vh.box_ser_epis.setVisibility(View.GONE);
 			//
-			vh.txt_ser_coll.setText(String.format(session.getString(R.string.fmt_nums_coll), ser.episodeCollected(null), ser.episodeCount(null)));
-			vh.txt_ser_seen.setText(String.format(session.getString(R.string.fmt_nums_seen), ser.episodeWatched(null), ser.episodeCount(null)));
+			int n = ser.episodeCount(null);
+			int m = ser.episodeCollected(null);
+			vh.txt_ser_coll.setText(m == n ? String.format(session.getString(R.string.fmt_nums_done), m) :
+				String.format(session.getString(R.string.fmt_nums_coll), m, n - m));
+			m = ser.episodeWatched(null);
+			vh.txt_ser_seen.setText(m == n ? String.format(session.getString(R.string.fmt_nums_done), m) :
+				String.format(session.getString(R.string.fmt_nums_seen), m, n - m));
 		} else {
 			vh.txt_ser_plot.setVisibility(View.GONE);
 			vh.box_ser_stat.setVisibility(View.GONE);
@@ -141,10 +146,10 @@ public class SeriesAdapter extends BaseAdapter {
 				vh.txt_ser_date.setText("N/A");
 			} else {
 				vh.txt_ser_epis.setText(ep.simpleEID() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
-				vh.txt_ser_epis.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ? R.drawable.ic_small_news : 0,
-					0, 0, 0);
+				vh.txt_ser_epis.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ?
+					R.drawable.ics_action_news : 0, 0, 0, 0);
 				vh.txt_ser_date.setCompoundDrawablesWithIntrinsicBounds(DateUtils.isToday(ep.firstAired) ?
-					R.drawable.ic_small_calendar : 0, 0, 0, 0);
+					R.drawable.ics_action_calendar : 0, 0, 0, 0);
 				vh.txt_ser_date.setText(ep.firstAired());
 			}
 		}
