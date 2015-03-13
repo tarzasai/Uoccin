@@ -23,7 +23,8 @@
         android:layout_weight="1"
         android:divider="@drawable/divider_2dp"
         android:orientation="vertical"
-        android:padding="5dp" >
+        android:padding="5dp"
+        android:showDividers="beginning|middle|end" >
 
         <TextView
             android:id="@+id/txt_epitm_name"
@@ -37,31 +38,37 @@
             android:text="@string/sample_episode"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/txt_epitm_date"
+        <LinearLayout
+            android:id="@+id/asdsad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/ics_active_calendar"
-            android:drawablePadding="3dp"
-            android:ellipsize="end"
-            android:gravity="center_vertical"
-            android:maxLines="1"
-            android:text="@string/sample_date1"
-            android:textColor="@android:color/darker_gray"
-            android:textStyle="bold" />
+            android:divider="@drawable/divider_16dp"
+            android:showDividers="middle" >
 
-        <TextView
-            android:id="@+id/txt_epitm_subs"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/ics_active_subtitles"
-            android:drawablePadding="3dp"
-            android:ellipsize="end"
-            android:gravity="center_vertical"
-            android:maxLines="1"
-            android:text="@string/sample_subs"
-            android:textColor="@android:color/darker_gray" />
+            <TextView
+                android:id="@+id/txt_epitm_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ics_action_calendar"
+                android:drawablePadding="3dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:text="@string/sample_date1"
+                android:textColor="@color/textColorSecondary"
+                android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/txt_epitm_subs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ics_action_subtitles"
+                android:drawablePadding="3dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:text="@string/sample_subs" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -76,17 +83,17 @@
 
         <ImageView
             android:id="@+id/img_epitm_coll"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:contentDescription="@string/empty_text"
-            android:src="@drawable/ic_action_storage" />
+            android:src="@drawable/ics_action_storage" />
 
         <ImageView
             android:id="@+id/img_epitm_seen"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:contentDescription="@string/empty_text"
-            android:src="@drawable/ic_action_seen" />
+            android:src="@drawable/ics_action_seen" />
     </LinearLayout>
 
 </LinearLayout>

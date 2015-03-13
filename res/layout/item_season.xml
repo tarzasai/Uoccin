@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical|center_horizontal"
     android:text="@string/sample_season"
-    android:textColor="@color/accent"
+    android:textColor="@color/colorAccent"
     android:textSize="@dimen/big_season_title"
     android:textStyle="bold" />
+

@@ -91,7 +91,7 @@ public class EpisodeAdapter extends BaseAdapter {
 			vh.img_scrn.setVisibility(View.VISIBLE);
 			session.picasso(scrn).resize(pstWidth, pstHeight).into(vh.img_scrn);
 		}
-		vh.txt_name.setText(ep.simpleEID() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
+		vh.txt_name.setText(Integer.toString(ep.episode) + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
 		vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ? R.drawable.ics_active_news : 0,
 			0, 0, 0);
 		vh.txt_date.setText(ep.firstAired());
@@ -104,8 +104,8 @@ public class EpisodeAdapter extends BaseAdapter {
 			vh.txt_subs.setText(R.string.empty_text);
 			vh.txt_subs.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 		}
-		vh.img_coll.setImageResource(ep.inCollection() ? R.drawable.ic_active_storage : R.drawable.ic_action_storage);
-		vh.img_seen.setImageResource(ep.isWatched() ? R.drawable.ic_active_seen : R.drawable.ic_action_seen);
+		vh.img_coll.setImageResource(ep.inCollection() ? R.drawable.ics_active_storage : R.drawable.ics_action_storage);
+		vh.img_seen.setImageResource(ep.isWatched() ? R.drawable.ics_active_seen : R.drawable.ics_action_seen);
 		return view;
 	}
 	

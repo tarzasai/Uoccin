@@ -77,7 +77,7 @@ public class EpisodeInfoFragment extends BaseFragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_episode, container, false);
+		View view = inflater.inflate(R.layout.fragment_episode_info, container, false);
 		
 		lbl_seas = (TextView) view.findViewById(R.id.lbl_epinf_seas);
 		txt_seas = (TextView) view.findViewById(R.id.txt_epinf_seas);

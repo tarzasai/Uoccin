@@ -68,7 +68,7 @@ public class SeriesInfoFragment extends BaseFragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_series, container, false);
+		View view = inflater.inflate(R.layout.fragment_series_info, container, false);
 		
 		img_bann = (ImageView) view.findViewById(R.id.img_serinf_bann);
 		txt_netw = (TextView) view.findViewById(R.id.txt_serinf_netw);
