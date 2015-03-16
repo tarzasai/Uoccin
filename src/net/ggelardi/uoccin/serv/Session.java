@@ -39,17 +39,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 		prefs.registerOnSharedPreferenceChangeListener(this);
 		
 		dbhlp = new Storage(appContext);
-		
-		/*long now = System.currentTimeMillis();
-		long cleaning = prefs.getLong(PK.CLEANING, now);
-		if ((now - cleaning)/(1000 * 60 * 60) > 4)*/ {
-			dbconn = dbhlp.getWritableDatabase();
-			dbconn.execSQL("delete from series where watchlist = 0 and (rating is null or rating = 0) and " +
-				"tvdb_id in (select distinct series from episode where collected = 0 and watched = 0)");
-			SharedPreferences.Editor editor = prefs.edit();
-			editor.putLong(PK.CLEANING, System.currentTimeMillis());
-			editor.commit();
-		}
 	}
 	
 	@Override
@@ -91,6 +80,12 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
 	}
 	
+	public void registerAlarms() {
+		//
+	}
+	
+	// preferences
+	
 	public String language() {
 		return prefs.getString(PK.LOCALE, Locale.getDefault().getLanguage());
 	}
@@ -98,6 +93,8 @@ public class Session implements OnSharedPreferenceChangeListener {
 	public boolean specials() {
 		return prefs.getBoolean(PK.SPECIALS, false);
 	}
+	
+	// utilities
 	
 	public Picasso picasso() {
 		// @formatter:off

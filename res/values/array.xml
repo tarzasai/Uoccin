@@ -62,8 +62,8 @@ and datetime(\'now\', \'+6 days\') order by e.firstAired
         </item>
         <item>
 select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where datetime(e.firstAired/1000, \'unixepoch\') >= datetime(\'now\') 
-and e.season = 1 and e.episode = 1 order by e.firstAired
+where datetime(e.firstAired/1000, \'unixepoch\') between datetime(\'now\', \'-2 days\') 
+and datetime(\'now\', \'+2 days\') and e.season = 1 and e.episode = 1 order by e.firstAired
         </item>
         <item>
 select tvdb_id from series where watchlist = 1 order by name collate nocase
