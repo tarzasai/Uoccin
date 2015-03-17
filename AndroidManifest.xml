@@ -51,7 +51,7 @@
         </receiver>
         
         <service
-            android:name=".Service"
+            android:name="net.ggelardi.uoccin.serv.Service"
             android:exported="false" >
         </service>
         

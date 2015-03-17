@@ -1,6 +1,5 @@
-package net.ggelardi.uoccin;
+package net.ggelardi.uoccin.serv;
 
-import net.ggelardi.uoccin.serv.Session;
 import android.app.IntentService;
 import android.content.Intent;
 import android.text.TextUtils;
