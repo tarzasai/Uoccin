@@ -67,6 +67,9 @@ public class XML {
 			 */
 			@GET("/" + apiKey + "/episodes/{tvdb_id}/{language}.xml")
 			void getEpisodeById(@Path("tvdb_id") String tvdb_id, @Path("language") String language, Callback<Document> callback);
+			// sync version
+			@GET("/" + apiKey + "/episodes/{tvdb_id}/en.xml")
+			Document getEpByIdSync(@Path("tvdb_id") String tvdb_id);
 		}
 		
 		public static API getInstance() {

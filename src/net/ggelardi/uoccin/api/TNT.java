@@ -2,6 +2,8 @@ package net.ggelardi.uoccin.api;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +35,7 @@ public class TNT {
 			}
 	}
 	
-	private String readEntryLink(XmlPullParser parser) throws XmlPullParserException, IOException {
+	private String readLink(XmlPullParser parser) throws XmlPullParserException, IOException {
 		parser.require(XmlPullParser.START_TAG, ns, "item");
 		String link = null;
 		while (parser.next() != XmlPullParser.END_TAG) {
@@ -49,29 +51,36 @@ public class TNT {
 	
 	private List<String> readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
 		List<String> links = new ArrayList<String>();
-		
 		parser.require(XmlPullParser.START_TAG, ns, "rss");
 		while (parser.next() != XmlPullParser.END_TAG) {
 			if (parser.getEventType() != XmlPullParser.START_TAG)
 				continue;
-			if (parser.getName().equals("item")) {
-				links.add(readEntryLink(parser));
-			} else {
+			if (parser.getName().equals("item"))
+				links.add(readLink(parser));
+			else
 				skip(parser);
-			}
 		}
 		return links;
 	}
 	
-	public List<String> parse(InputStream in) throws XmlPullParserException, IOException {
+	public List<String> getLinks() throws IOException, XmlPullParserException {
+		URL url = new URL("http://thetvdb.com/rss/newtoday.php");
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setReadTimeout(15000 /* milliseconds */);
+		conn.setConnectTimeout(30000 /* milliseconds */);
+		conn.setRequestMethod("GET");
+		conn.setDoInput(true);
+		// Starts the query
+		conn.connect();
+		InputStream stream = conn.getInputStream();
 		try {
 			XmlPullParser parser = Xml.newPullParser();
 			parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-			parser.setInput(in, null);
+			parser.setInput(stream, null);
 			parser.nextTag();
 			return readFeed(parser);
 		} finally {
-			in.close();
+			stream.close();
 		}
 	}
 }

@@ -105,7 +105,6 @@ public class Series extends Title {
 	
 	public static Series get(Context context, String tvdb_id) {
 		Series res = Series.getInstance(context, tvdb_id);
-		//if (res.isNew() || res.isOld())
 		if (res.isOld())
 			res.refresh();
 		return res;
