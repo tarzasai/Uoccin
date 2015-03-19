@@ -9,6 +9,7 @@ import java.util.Locale;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.TVDB;
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import net.ggelardi.uoccin.serv.SimpleCache;
 
@@ -16,11 +17,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
@@ -45,17 +44,6 @@ public class Series extends Title {
 	private boolean noRecalc = false;
 	
 	public List<Episode> episodes = new ArrayList<Episode>();
-	/*
-	private SparseIntArray seasTots = new SparseIntArray();
-	private SparseIntArray seasColl = new SparseIntArray();
-	private SparseIntArray seasSeen = new SparseIntArray();
-	private Episode lastAir = null;
-	private Episode nextAir = null;
-	private Episode lastCol = null;
-	private Episode nextCol = null;
-	private Episode lastSaw = null;
-	private Episode nextSee = null;
-	*/
 	
 	public String tvdb_id;
 	public String name;
@@ -106,7 +94,7 @@ public class Series extends Title {
 	public static Series get(Context context, String tvdb_id) {
 		Series res = Series.getInstance(context, tvdb_id);
 		if (res.isOld())
-			res.refresh();
+			res.refresh(false);
 		return res;
 	}
 	
@@ -471,7 +459,7 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	private synchronized void reloadEpisodes() {
+	public synchronized void reloadEpisodes() {
 		if (noRecalc)
 			return;
 		dispatch(OnTitleListener.WORKING, null);
@@ -480,40 +468,13 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public synchronized void refresh() {
-		Log.v(TAG, "Refreshing series " + tvdb_id);
-		dispatch(OnTitleListener.WORKING, null);
-		final boolean needCommit = isNew() && (watchlist || rating > 0 || !tags.isEmpty());
-		Callback<Document> callback = new Callback<Document>() {
-			@Override
-			public void success(Document result, Response response) {
-				Document doc = result;//Commons.XML.str2xml(result);
-				load((Element) doc.getElementsByTagName("Series").item(0));
-				// episodes
-				episodes = new ArrayList<Episode>();
-				NodeList lst = doc.getElementsByTagName("Episode");
-				if (lst != null && lst.getLength() > 0) {
-					Episode ep;
-					for (int i = 0; i < lst.getLength(); i++) {
-						ep = Episode.get(session.getContext(), (Element) lst.item(i));
-						if (ep != null)
-							episodes.add(ep);
-					}
-				}
-				if (!isNew() || needCommit)
-					commit();
-				dispatch(OnTitleListener.READY, null);
-			}
-			@Override
-			public void failure(RetrofitError error) {
-				Log.e(TAG, "refresh", error);
-				
-				plot = error.getLocalizedMessage();
-				
-				dispatch(OnTitleListener.ERROR, error);
-			}
-		};
-		TVDB.getInstance().getFullSeries(tvdb_id, session.language(), callback);
+	public void refresh(boolean force) {
+		if (force)
+			timestamp = 100;
+		Intent si = new Intent(session.getContext(), Service.class);
+		si.setAction(Service.REFRESH_SERIES);
+		si.putExtra("tvdb_id", tvdb_id);
+		session.getContext().startService(si);
 	}
 	
 	public final synchronized void commit() {
@@ -561,7 +522,7 @@ public class Series extends Title {
 			watchlist = value;
 			modified = true;
 			if (TextUtils.isEmpty(status))
-				refresh();
+				refresh(false);
 			else
 				commit();
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_ser : R.string.msg_wlst_del_ser);
@@ -579,7 +540,7 @@ public class Series extends Title {
 			rating = value;
 			modified = true;
 			if (TextUtils.isEmpty(status))
-				refresh();
+				refresh(false);
 			else
 				commit();
 		}
@@ -587,6 +548,10 @@ public class Series extends Title {
 	
 	public List<String> getTags() {
 		return new ArrayList<String>(tags);
+	}
+	
+	public boolean hasTags() {
+		return !tags.isEmpty();
 	}
 	
 	public boolean hasTag(String tag) {
@@ -599,7 +564,7 @@ public class Series extends Title {
 			tags.add(tag);
 			modified = true;
 			if (TextUtils.isEmpty(status))
-				refresh();
+				refresh(false);
 			else
 				commit();
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
@@ -613,7 +578,7 @@ public class Series extends Title {
 			tags.remove(tag);
 			modified = true;
 			if (TextUtils.isEmpty(status))
-				refresh();
+				refresh(false);
 			else
 				commit();
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);

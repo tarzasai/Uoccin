@@ -13,7 +13,6 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -141,7 +140,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_refr.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				series.refresh();
+				series.refresh(true);
 			}
 		});
 		
@@ -177,7 +176,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		Series.addOnTitleEventListener(new OnTitleListener() {
 			@Override
 			public void changed(final String state, final Throwable error) {
-				Log.v(logTag(), state);
+				//Log.v(logTag(), state);
 				final Activity context = getActivity();
 				if (context != null)
 					context.runOnUiThread(new Runnable() {
@@ -208,7 +207,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		
 		series = Series.get(getActivity(), tvdb_id);
 		if (series.isNew())
-			series.refresh();
+			series.refresh(false);
 		else
 			showInfo();
 	}

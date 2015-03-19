@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -148,7 +147,7 @@ public class EpisodeInfoFragment extends BaseFragment {
 		txt_refr.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				episode.refresh();
+				episode.refresh(true);
 			}
 		});
 		
@@ -176,7 +175,7 @@ public class EpisodeInfoFragment extends BaseFragment {
 		Episode.addOnTitleEventListener(new OnTitleListener() {
 			@Override
 			public void changed(final String state, final Throwable error) {
-				Log.v(logTag(), state);
+				//Log.v(logTag(), state);
 				final Activity context = getActivity();
 				if (context != null)
 					context.runOnUiThread(new Runnable() {

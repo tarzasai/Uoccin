@@ -11,7 +11,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,7 +107,7 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 		Series.addOnTitleEventListener(new OnTitleListener() {
 			@Override
 			public void changed(final String state, final Throwable error) {
-				Log.v(logTag(), state);
+				//Log.v(logTag(), state);
 				final Activity context = getActivity();
 				if (context != null)
 					context.runOnUiThread(new Runnable() {

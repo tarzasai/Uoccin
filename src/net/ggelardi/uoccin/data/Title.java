@@ -7,14 +7,14 @@ public class Title {
 	
 	protected static final List<OnTitleListener> listeners = new ArrayList<OnTitleListener>();
 	
-	protected static void dispatch(String state, Throwable error) {
+	public static void addOnTitleEventListener(OnTitleListener aListener) {
+		listeners.add(aListener);
+	}
+	
+	public static void dispatch(String state, Throwable error) {
 		for (OnTitleListener listener: listeners)
 			//if (listener != null)
 				listener.changed(state, error);
-	}
-	
-	public static void addOnTitleEventListener(OnTitleListener aListener) {
-		listeners.add(aListener);
 	}
 	
 	public interface OnTitleListener {

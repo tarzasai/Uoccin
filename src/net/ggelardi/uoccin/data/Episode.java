@@ -8,19 +8,16 @@ import java.util.List;
 import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
-import net.ggelardi.uoccin.api.XML.TVDB;
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import net.ggelardi.uoccin.serv.SimpleCache;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -33,7 +30,6 @@ public class Episode extends Title {
 	
 	private static final SimpleCache cache = new SimpleCache(1000);
 	
-	private final Context context;
 	private final Session session;
 	
 	private Episode epprev = null;
@@ -58,7 +54,6 @@ public class Episode extends Title {
 	public boolean modified = false;
 	
 	public Episode(Context context, String series, int season, int episode) {
-		this.context = context;
 		this.session = Session.getInstance(context);
 		this.series = series;
 		this.season = season;
@@ -93,7 +88,7 @@ public class Episode extends Title {
 	public static Episode get(Context context, String series, int season, int episode) {
 		Episode res = Episode.getInstance(context, series, season, episode);
 		if (res.isNew() || res.isOld())
-			res.refresh();
+			res.refresh(false);
 		return res;
 	}
 	
@@ -376,34 +371,19 @@ public class Episode extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public void refresh() {
+	public void refresh(boolean force) {
 		if (TextUtils.isEmpty(tvdb_id) && (TextUtils.isEmpty(series) || season <= 0 || episode <= 0)) {
 			Log.v(TAG, "Missing tvdb_id/series/season/episode, cannot update...");
 			return;
 		}
-		Log.v(TAG, "Refreshing episode " + tvdb_id);
-		dispatch(OnTitleListener.WORKING, null);
-		Callback<Document> callback = new Callback<Document>() {
-			@Override
-			public void success(Document result, Response response) {
-				Document doc = result;//Commons.XML.str2xml(result);
-				load((Element) doc.getElementsByTagName("Episode").item(0));
-				commit();
-				//dispatch(OnTitleListener.READY, null);
-			}
-			@Override
-			public void failure(RetrofitError error) {
-				Log.e(TAG, "refresh", error);
-				
-				plot = error.getLocalizedMessage();
-
-				dispatch(OnTitleListener.ERROR, error);
-			}
-		};
-		if (!TextUtils.isEmpty(tvdb_id))
-			TVDB.getInstance().getEpisodeById(tvdb_id, Locale.getDefault().getLanguage(), callback);
-		else
-			TVDB.getInstance().getEpisode(series, season, episode, session.language(), callback);
+		if (force)
+			timestamp = 100;
+		Intent si = new Intent(session.getContext(), Service.class);
+		si.setAction(Service.REFRESH_EPISODE);
+		si.putExtra("series", series);
+		si.putExtra("season", season);
+		si.putExtra("episode", episode);
+		session.getContext().startService(si);
 	}
 	
 	public final void commit() {
@@ -515,7 +495,7 @@ public class Episode extends Title {
 	}
 	
 	public Series getSeries() {
-		return Series.get(context, series);
+		return Series.get(session.getContext(), series);
 	}
 	
 	public Episode getPrior() {
@@ -546,7 +526,7 @@ public class Episode extends Title {
 		return isBefore(ep.season, ep.episode);
 	}
 	
-	static class EpisodeComparator implements Comparator<Episode> {
+	public static class EpisodeComparator implements Comparator<Episode> {
 	    @Override
 	    public int compare(Episode o1, Episode o2) {
 	    	int res = o1.season - o2.season;

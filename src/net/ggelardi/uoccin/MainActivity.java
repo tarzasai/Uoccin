@@ -60,9 +60,10 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		//ab.setDisplayUseLogoEnabled(true);
 		//ab.setHomeButtonEnabled(true);
 		ab.setIcon(R.mipmap.ic_launcher);
-
+		
+		lastView = session.getPrefs().getString(PK.STARTUP, "sernext");
 		if (savedInstanceState != null)
-			lastView = savedInstanceState.getString("lastView", session.getPrefs().getString(PK.STARTUP, "sernext"));
+			lastView = savedInstanceState.getString("lastView", lastView);
 	}
 	
 	@Override

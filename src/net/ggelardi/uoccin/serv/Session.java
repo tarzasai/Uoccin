@@ -39,6 +39,9 @@ public class Session implements OnSharedPreferenceChangeListener {
 		prefs.registerOnSharedPreferenceChangeListener(this);
 		
 		dbhlp = new Storage(appContext);
+		
+		//getDB().execSQL("update series set timestamp = 100");
+		
 	}
 	
 	@Override
