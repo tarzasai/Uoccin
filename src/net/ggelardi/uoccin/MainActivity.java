@@ -7,11 +7,13 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,11 +25,21 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.drive.Drive;
+
 public class MainActivity extends ActionBarActivity implements DrawerFragment.NavigationDrawerCallbacks,
-		BaseFragment.OnFragmentListener {
+	BaseFragment.OnFragmentListener, ConnectionCallbacks, OnConnectionFailedListener {
+	private static final String TAG = "MainActivity";
 	
 	private Session session;
 	private String lastView;
+	
+	private GoogleApiClient mGoogleApiClient;
 	
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -79,11 +91,23 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		super.onResume();
 		
 		mDrawerFragment.selectItem(lastView);
+		
+		if (session.gDriveBackup()) {
+			if (mGoogleApiClient == null)
+				mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Drive.API).addScope(Drive.SCOPE_FILE).
+					addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
+			mGoogleApiClient.connect();
+		} else if (mGoogleApiClient != null) {
+			mGoogleApiClient.disconnect();
+		}
 	}
 	
 	@Override
 	protected void onPause() {
 		super.onPause();
+		
+		if (mGoogleApiClient != null)
+            mGoogleApiClient.disconnect();
 	}
 	
 	@Override
@@ -153,6 +177,32 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	}
 	
 	@Override
+	public void onConnected(Bundle connectionHint) {
+        Log.i(TAG, "GoogleApiClient connected.");
+	}
+	
+	@Override
+	public void onConnectionSuspended(int cause) {
+        Log.i(TAG, "GoogleApiClient connection suspended.");
+	}
+	
+	@Override
+	public void onConnectionFailed(ConnectionResult result) {
+        Log.i(TAG, "GoogleApiClient connection failed: " + result.toString());
+        if (!result.hasResolution()) {
+            // show the localized error dialog.
+            GooglePlayServicesUtil.getErrorDialog(result.getErrorCode(), this, 0).show();
+            return;
+        }
+        // the failure has a resolution (typically the app is not yet authorized).
+        try {
+            result.startResolutionForResult(this, 1);
+        } catch (SendIntentException e) {
+            Log.e(TAG, "Exception while starting resolution activity", e);
+        }
+	}
+	
+	@Override
 	public void openSeriesInfo(String tvdb_id) {
 		getSupportFragmentManager().beginTransaction().replace(R.id.container,
 			SeriesInfoFragment.newInstance(tvdb_id)).addToBackStack(null).commit();
@@ -172,7 +222,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	
 	private void restoreActionBar() {
 		ActionBar actionBar = getSupportActionBar();
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		//actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setTitle(mStoredTitle);
 	}

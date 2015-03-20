@@ -86,6 +86,8 @@
 
     <!-- settings -->
     <string name="settings_title">Uoccin settings</string>
+    <string name="pk_gdrvbak_title">Backup to Google Drive</string>
+    <string name="pk_gdrvbak_summ">Backup watchlist/collection/watched titles in your .</string>
     <string name="pk_startup_title">Startup view</string>
     <string name="pk_startup_summ">The first view you want to see on startup.</string>
     <string name="pk_locale_title">Localization</string>

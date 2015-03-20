@@ -21,16 +21,27 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class Service extends IntentService {
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.query.Filters;
+import com.google.android.gms.drive.query.Query;
+import com.google.android.gms.drive.query.SearchableField;
+
+public class Service extends IntentService implements ConnectionCallbacks, OnConnectionFailedListener {
 	private static final String TAG = "Service";
 	
 	public static final String CLEAN_DB_CACHE = "net.ggelardi.uoccin.CLEAN_DB_CACHE";
-	public static final String CHECK_TVDB_RSS = "net.ggelardi.uoccin.CHECK_TVDB_RSS";
 	public static final String REFRESH_MOVIE = "net.ggelardi.uoccin.REFRESH_MOVIE";
 	public static final String REFRESH_SERIES = "net.ggelardi.uoccin.REFRESH_SERIES";
 	public static final String REFRESH_EPISODE = "net.ggelardi.uoccin.REFRESH_EPISODE";
+	public static final String CHECK_TVDB_RSS = "net.ggelardi.uoccin.CHECK_TVDB_RSS";
+	public static final String RESTORE_BACKUP = "net.ggelardi.uoccin.RESTORE_BACKUP";
 	
 	private Session session;
+	private GoogleApiClient gdClient;
 	
 	public Service() {
 		super("Service");
@@ -49,8 +60,6 @@ public class Service extends IntentService {
 			session.getDB().execSQL("delete from series where watchlist = 0 and tags is null and " +
 				"(rating is null or rating = 0) and not tvdb_id in (select distinct series from " +
 				"episode where collected = 1 or watched = 1)");
-		} else if (act.equals(CHECK_TVDB_RSS)) {
-			checkTVdbNews();
 		} else if (act.equals(REFRESH_MOVIE)) {
 			refreshMovie(intent.getExtras().getString("imdb_id"));
 		} else if (act.equals(REFRESH_SERIES)) {
@@ -61,8 +70,40 @@ public class Service extends IntentService {
 			int season = extra.getInt("season");
 			int episode = extra.getInt("episode");
 			refreshEpisode(series, season, episode);
+		} else if (act.equals(CHECK_TVDB_RSS)) {
+			checkTVdbNews();
+		} else if (act.equals(RESTORE_BACKUP) && session.gDriveBackup()) {
+			if (gdClient == null)
+				gdClient = new GoogleApiClient.Builder(this).addApi(Drive.API).addScope(Drive.SCOPE_FILE).
+					addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
+			gdClient.connect();
 		}
 		stopSelf();
+	}
+	
+	@Override
+	public void onConnected(Bundle connectionHint) {
+        Log.i(TAG, "GoogleApiClient connected.");
+        try {
+			restoreMovieWatchlist();
+			restoreMovieCollection();
+			restoreMovieWatched();
+			restoreSeriesWatchlist();
+			restoreEpisodesCollection();
+			restoreEpisodesWatched();
+        } finally {
+        	gdClient.disconnect();
+        }
+	}
+	
+	@Override
+	public void onConnectionSuspended(int cause) {
+        Log.i(TAG, "GoogleApiClient connection suspended.");
+	}
+	
+	@Override
+	public void onConnectionFailed(ConnectionResult result) {
+        Log.i(TAG, "GoogleApiClient connection failed: " + result.toString());
 	}
 	
 	private void refreshMovie(String imdb_id) {
@@ -128,9 +169,8 @@ public class Service extends IntentService {
 					NodeList lst = doc.getElementsByTagName("Episode");
 					if (lst != null && lst.getLength() > 0) {
 						Episode ep = Episode.get(session.getContext(), (Element) lst.item(0));
-						if (ep != null && ep.season == 1 && ep.episode == 1) {
-							
-						}
+						if (ep != null && ep.season == 1 && ep.episode == 1 && !ep.getSeries().inWatchlist())
+							ep.getSeries().addTag("premiere");
 					}
 				} catch (Exception err) {
 					Log.e(TAG, url, err);
@@ -140,5 +180,33 @@ public class Service extends IntentService {
 			Log.e(TAG, "checkTVDB_NewsFeed", err);
 			// ???
 		}
+	}
+	
+	private void restoreMovieWatchlist() {
+		
+		// http://stackoverflow.com/questions/27108178/google-drive-api-android-how-to-obtain-a-drive-file-id
+		// https://developers.google.com/drive/android/queries
+		
+		Query query = new Query.Builder().addFilter(Filters.eq(SearchableField.TITLE, "movies.watchlist.json")).build();
+	}
+	
+	private void restoreMovieCollection() {
+		
+	}
+	
+	private void restoreMovieWatched() {
+		
+	}
+	
+	private void restoreSeriesWatchlist() {
+		
+	}
+	
+	private void restoreEpisodesCollection() {
+		
+	}
+	
+	private void restoreEpisodesWatched() {
+		
 	}
 }

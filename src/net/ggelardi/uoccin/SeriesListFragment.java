@@ -11,6 +11,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -115,8 +116,11 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 						public void run() {
 							if (state.equals(OnTitleListener.NOTFOUND)) {
 								showHourGlass(false);
-								mAdapter.notifyDataSetChanged();
 								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
+								if (type.equals(SeriesTask.SEARCH))
+									((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
+								else
+									mAdapter.notifyDataSetChanged();
 							} else if (state.equals(OnTitleListener.WORKING)) {
 								showHourGlass(true);
 							} else if (state.equals(OnTitleListener.ERROR)) {

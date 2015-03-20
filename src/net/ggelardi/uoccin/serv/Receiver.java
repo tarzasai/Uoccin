@@ -6,12 +6,13 @@ import android.content.Intent;
 import android.util.Log;
 
 public class Receiver extends BroadcastReceiver {
+	private static final String TAG = "Receiver";
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Session session = Session.getInstance(context);
 		String act = intent.getAction();
-		Log.v(getClass().getSimpleName(), act);
+		Log.v(TAG, act);
 		if (act.equals(Intent.ACTION_BOOT_COMPLETED)) {
 			session.registerAlarms();
 		}

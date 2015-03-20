@@ -89,6 +89,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	// preferences
 	
+	public boolean gDriveBackup() {
+		return prefs.getBoolean(PK.GDRVBAK, false);
+	}
+	
 	public String language() {
 		return prefs.getString(PK.LOCALE, Locale.getDefault().getLanguage());
 	}
