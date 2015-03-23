@@ -5,6 +5,7 @@ import java.util.Locale;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons.PK;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Resources;
@@ -46,7 +47,13 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		//
+		if (key.equals(PK.GDRVBAK)) {
+			if (gDriveBackup()) {
+				Intent si = new Intent(getContext(), Service.class);
+				si.setAction(Service.RESTORE_BACKUP);
+				getContext().startService(si);
+			}
+		}
 	}
 	
 	public Context getContext() {

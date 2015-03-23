@@ -1,5 +1,8 @@
 package net.ggelardi.uoccin.serv;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,33 +24,42 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi.DriveContentsResult;
+import com.google.android.gms.drive.DriveApi.MetadataBufferResult;
+import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveFile;
+import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveFolder.DriveFileResult;
+import com.google.android.gms.drive.DriveFolder.DriveFolderResult;
+import com.google.android.gms.drive.DriveResource.MetadataResult;
+import com.google.android.gms.drive.Metadata;
+import com.google.android.gms.drive.MetadataBuffer;
+import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
-public class Service extends IntentService implements ConnectionCallbacks, OnConnectionFailedListener {
+public class Service extends IntentService {
 	private static final String TAG = "Service";
-	
+
 	public static final String CLEAN_DB_CACHE = "net.ggelardi.uoccin.CLEAN_DB_CACHE";
+	public static final String CHECK_GD_FOLDER = "net.ggelardi.uoccin.CHECK_GD_FOLDER";
 	public static final String REFRESH_MOVIE = "net.ggelardi.uoccin.REFRESH_MOVIE";
 	public static final String REFRESH_SERIES = "net.ggelardi.uoccin.REFRESH_SERIES";
 	public static final String REFRESH_EPISODE = "net.ggelardi.uoccin.REFRESH_EPISODE";
 	public static final String CHECK_TVDB_RSS = "net.ggelardi.uoccin.CHECK_TVDB_RSS";
+	public static final String CREATE_BACKUP = "net.ggelardi.uoccin.CREATE_BACKUP";
 	public static final String RESTORE_BACKUP = "net.ggelardi.uoccin.RESTORE_BACKUP";
 	
 	private Session session;
 	private GoogleApiClient gdClient;
+	private DriveFolder gdFolder;
 	
 	public Service() {
 		super("Service");
 	}
-	
-	// https://developers.google.com/drive/android/events
 	
 	@Override
 	protected void onHandleIntent(Intent intent) {
@@ -60,6 +72,8 @@ public class Service extends IntentService implements ConnectionCallbacks, OnCon
 			session.getDB().execSQL("delete from series where watchlist = 0 and tags is null and " +
 				"(rating is null or rating = 0) and not tvdb_id in (select distinct series from " +
 				"episode where collected = 1 or watched = 1)");
+		} else if (act.equals(CHECK_GD_FOLDER)) {
+			
 		} else if (act.equals(REFRESH_MOVIE)) {
 			refreshMovie(intent.getExtras().getString("imdb_id"));
 		} else if (act.equals(REFRESH_SERIES)) {
@@ -72,38 +86,25 @@ public class Service extends IntentService implements ConnectionCallbacks, OnCon
 			refreshEpisode(series, season, episode);
 		} else if (act.equals(CHECK_TVDB_RSS)) {
 			checkTVdbNews();
+		} else if (act.equals(CREATE_BACKUP)) {
+			//
 		} else if (act.equals(RESTORE_BACKUP) && session.gDriveBackup()) {
-			if (gdClient == null)
-				gdClient = new GoogleApiClient.Builder(this).addApi(Drive.API).addScope(Drive.SCOPE_FILE).
-					addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
-			gdClient.connect();
-		}
-		stopSelf();
-	}
-	
-	@Override
-	public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "GoogleApiClient connected.");
-        try {
 			restoreMovieWatchlist();
 			restoreMovieCollection();
 			restoreMovieWatched();
 			restoreSeriesWatchlist();
 			restoreEpisodesCollection();
 			restoreEpisodesWatched();
-        } finally {
-        	gdClient.disconnect();
-        }
+		}
+		stopSelf();
 	}
 	
 	@Override
-	public void onConnectionSuspended(int cause) {
-        Log.i(TAG, "GoogleApiClient connection suspended.");
-	}
-	
-	@Override
-	public void onConnectionFailed(ConnectionResult result) {
-        Log.i(TAG, "GoogleApiClient connection failed: " + result.toString());
+	public void onDestroy() {
+		super.onDestroy();
+		
+		if (gdClient != null)
+			gdClient.disconnect();
 	}
 	
 	private void refreshMovie(String imdb_id) {
@@ -182,31 +183,146 @@ public class Service extends IntentService implements ConnectionCallbacks, OnCon
 		}
 	}
 	
+	private boolean initDriveAPI() {
+		if (gdClient == null) {
+			gdClient = new GoogleApiClient.Builder(session.getContext()).addApi(Drive.API).
+				addScope(Drive.SCOPE_FILE).build();
+			if (!gdClient.blockingConnect().isSuccess()) {
+				// notify error
+				return false;
+			}
+		}
+		if (gdFolder == null) {
+			MetadataBufferResult br = Drive.DriveApi.query(gdClient, new Query.Builder().addFilter(
+				Filters.eq(SearchableField.TITLE, Commons.DRIVE.FOLDER)).build()).await();
+			if (!br.getStatus().isSuccess()) {
+				// notify error
+				return false;
+			}
+			MetadataBuffer mb = br.getMetadataBuffer();
+			if (mb.getCount() > 0) {
+				gdFolder = Drive.DriveApi.getFolder(gdClient, mb.get(0).getDriveId());
+				// check if trashed
+				MetadataResult mr = gdFolder.getMetadata(gdClient).await();
+				if (!mr.getStatus().isSuccess()) {
+					// notify error
+					return false;
+				}
+				Metadata md = mr.getMetadata();
+				if (!md.isTrashed())
+					gdFolder = null;
+			}
+			if (gdFolder == null) {
+				MetadataChangeSet cs = new MetadataChangeSet.Builder().setTitle(Commons.DRIVE.FOLDER).build();
+				DriveFolderResult fr = Drive.DriveApi.getRootFolder(gdClient).createFolder(gdClient, cs).await();
+				if (!fr.getStatus().isSuccess()) {
+					// notify error
+					return false;
+				}
+				gdFolder = fr.getDriveFolder();
+			}
+		}
+		return true;
+	}
+	
+	private DriveFile getDriveFile(String name, boolean create) {
+		MetadataBufferResult br = gdFolder.queryChildren(gdClient, new Query.Builder().addFilter(
+			Filters.eq(SearchableField.TITLE, name)).build()).await();
+		if (!br.getStatus().isSuccess()) {
+			// notify error
+			return null;
+		}
+		MetadataBuffer mb = br.getMetadataBuffer();
+		if (mb.getCount() > 0)
+			return Drive.DriveApi.getFile(gdClient, mb.get(0).getDriveId());
+		if (!create)
+			return null;
+		// new file
+		MetadataChangeSet cs = new MetadataChangeSet.Builder().setTitle(name).
+			setMimeType("application/json").build();
+		DriveContentsResult cr = Drive.DriveApi.newDriveContents(gdClient).await();
+		DriveFileResult fr = gdFolder.createFile(gdClient, cs, cr.getDriveContents()).await();
+		if (!fr.getStatus().isSuccess()) {
+			// notify error
+			return null;
+		}
+		return fr.getDriveFile();
+	}
+	
+	private String readDriveContent(DriveFile df) {
+		DriveContentsResult cr = df.open(gdClient, DriveFile.MODE_READ_ONLY, null).await();
+		if (!cr.getStatus().isSuccess()) {
+			// notify error
+			return null;
+		}
+		DriveContents dc = cr.getDriveContents();
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(dc.getInputStream()));
+			StringBuilder builder = new StringBuilder();
+			String line;
+			try {
+				while ((line = reader.readLine()) != null) {
+					builder.append(line);
+				}
+				return builder.toString();
+			} catch (IOException err) {
+				Log.e(TAG, "Error while reading " + df.getDriveId().encodeToString(), err);
+				return null;
+			}
+		} finally {
+			dc.discard(gdClient);
+		}
+	}
+	
+	private void writeDriveContent(DriveFile df, String content) {
+		//
+	}
+	
+	private void backupMovieWatchlist() {
+		if (!initDriveAPI())
+			return;
+		DriveFile df = getDriveFile(Commons.DRIVE.MOV_WLST, true);
+		if (df == null)
+			return;
+		String content = null;
+		
+		// ???
+		
+		writeDriveContent(df, content);
+	}
+	
 	private void restoreMovieWatchlist() {
+		if (!initDriveAPI())
+			return;
+		DriveFile df = getDriveFile(Commons.DRIVE.MOV_WLST, false);
+		if (df == null) {
+			Log.i(TAG, "File " + Commons.DRIVE.MOV_WLST + " does not exists, skipping...");
+			return;
+		}
+		String content = readDriveContent(df);
+		if (TextUtils.isEmpty(content)) {
+			Log.i(TAG, "File " + Commons.DRIVE.MOV_WLST + " is empty, skipping...");
+			return;
+		}
+
 		
-		// http://stackoverflow.com/questions/27108178/google-drive-api-android-how-to-obtain-a-drive-file-id
-		// https://developers.google.com/drive/android/queries
+		// http://stackoverflow.com/questions/16590377/custom-json-deserializer-using-gson
 		
-		Query query = new Query.Builder().addFilter(Filters.eq(SearchableField.TITLE, "movies.watchlist.json")).build();
+		
 	}
 	
 	private void restoreMovieCollection() {
-		
 	}
 	
 	private void restoreMovieWatched() {
-		
 	}
 	
 	private void restoreSeriesWatchlist() {
-		
 	}
 	
 	private void restoreEpisodesCollection() {
-		
 	}
 	
 	private void restoreEpisodesWatched() {
-		
 	}
 }

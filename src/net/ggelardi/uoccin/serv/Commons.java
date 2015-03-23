@@ -61,6 +61,17 @@ public class Commons {
 		*/
 	}
 	
+	public static class DRIVE {
+		public static final String FOLDER = "uoccin";
+		//public static final String FOLDER = "uoccin_test";
+		public static final String MOV_WLST = "movies.watchlist.json";
+		public static final String MOV_COLL = "movies.collected.json";
+		public static final String MOV_SEEN = "movies.watched.json";
+		public static final String SER_WLST = "series.watchlist.json";
+		public static final String SER_COLL = "series.collected.json";
+		public static final String SER_SEEN = "series.watched.json";
+	}
+	
 	public static long convertTZ(long timestamp, String fromTimeZone, String toTimeZone) {
 		Calendar fromCal = new GregorianCalendar(TimeZone.getTimeZone(fromTimeZone));
 		fromCal.setTimeInMillis(timestamp);
