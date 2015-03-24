@@ -39,6 +39,13 @@ public class Commons {
 		public static final String STARTUP = "pk_startup";
 		public static final String LOCALE = "pk_locale";
 		public static final String SPECIALS = "pk_specials";
+		//
+		public static final String TSYNCMW = "pk_tsyncmw";
+		public static final String TSYNCMC = "pk_tsyncmc";
+		public static final String TSYNCMS = "pk_tsyncms";
+		public static final String TSYNCSW = "pk_tsyncsw";
+		public static final String TSYNCSC = "pk_tsyncsc";
+		public static final String TSYNCSS = "pk_tsyncss";
 		/*
 		public static final String USERNAME = "Username";
 		public static final String REMOTEKEY = "RemoteKey";

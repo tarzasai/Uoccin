@@ -3,14 +3,18 @@ package net.ggelardi.uoccin.serv;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.ggelardi.uoccin.api.TNT;
 import net.ggelardi.uoccin.api.XML;
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.data.Series.JsonWlst;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 
 import org.w3c.dom.Document;
@@ -19,12 +23,14 @@ import org.w3c.dom.NodeList;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi.DriveContentsResult;
 import com.google.android.gms.drive.DriveApi.MetadataBufferResult;
@@ -40,6 +46,7 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
+import com.owlike.genson.Genson;
 
 public class Service extends IntentService {
 	private static final String TAG = "Service";
@@ -50,12 +57,13 @@ public class Service extends IntentService {
 	public static final String REFRESH_SERIES = "net.ggelardi.uoccin.REFRESH_SERIES";
 	public static final String REFRESH_EPISODE = "net.ggelardi.uoccin.REFRESH_EPISODE";
 	public static final String CHECK_TVDB_RSS = "net.ggelardi.uoccin.CHECK_TVDB_RSS";
-	public static final String CREATE_BACKUP = "net.ggelardi.uoccin.CREATE_BACKUP";
-	public static final String RESTORE_BACKUP = "net.ggelardi.uoccin.RESTORE_BACKUP";
+	public static final String GDRIVE_BACKUP = "net.ggelardi.uoccin.GDRIVE_BACKUP";
+	public static final String GDRIVE_RESTORE = "net.ggelardi.uoccin.GDRIVE_RESTORE";
 	
 	private Session session;
 	private GoogleApiClient gdClient;
 	private DriveFolder gdFolder;
+	private Genson genson;
 	
 	public Service() {
 		super("Service");
@@ -86,12 +94,14 @@ public class Service extends IntentService {
 			refreshEpisode(series, season, episode);
 		} else if (act.equals(CHECK_TVDB_RSS)) {
 			checkTVdbNews();
-		} else if (act.equals(CREATE_BACKUP)) {
-			//
-		} else if (act.equals(RESTORE_BACKUP) && session.gDriveBackup()) {
-			restoreMovieWatchlist();
-			restoreMovieCollection();
-			restoreMovieWatched();
+		} else if (act.equals(GDRIVE_BACKUP) && session.gDriveBackup()) {
+			
+			backupSeriesWatchlist();
+			
+		} else if (act.equals(GDRIVE_RESTORE) && session.gDriveBackup()) {
+			//restoreMovieWatchlist();
+			//restoreMovieCollection();
+			//restoreMovieWatched();
 			restoreSeriesWatchlist();
 			restoreEpisodesCollection();
 			restoreEpisodesWatched();
@@ -200,17 +210,21 @@ public class Service extends IntentService {
 				return false;
 			}
 			MetadataBuffer mb = br.getMetadataBuffer();
-			if (mb.getCount() > 0) {
-				gdFolder = Drive.DriveApi.getFolder(gdClient, mb.get(0).getDriveId());
-				// check if trashed
-				MetadataResult mr = gdFolder.getMetadata(gdClient).await();
-				if (!mr.getStatus().isSuccess()) {
-					// notify error
-					return false;
+			try {
+				if (mb.getCount() > 0) {
+					gdFolder = Drive.DriveApi.getFolder(gdClient, mb.get(0).getDriveId());
+					// check if trashed
+					MetadataResult mr = gdFolder.getMetadata(gdClient).await();
+					if (!mr.getStatus().isSuccess()) {
+						// notify error
+						return false;
+					}
+					Metadata md = mr.getMetadata();
+					if (!md.isTrashed())
+						gdFolder = null;
 				}
-				Metadata md = mr.getMetadata();
-				if (!md.isTrashed())
-					gdFolder = null;
+			} finally {
+				mb.release();
 			}
 			if (gdFolder == null) {
 				MetadataChangeSet cs = new MetadataChangeSet.Builder().setTitle(Commons.DRIVE.FOLDER).build();
@@ -225,7 +239,8 @@ public class Service extends IntentService {
 		return true;
 	}
 	
-	private DriveFile getDriveFile(String name, boolean create) {
+	private DriveFileCombo getDriveFile(String name, boolean create) {
+		DriveFileCombo res = new DriveFileCombo();
 		MetadataBufferResult br = gdFolder.queryChildren(gdClient, new Query.Builder().addFilter(
 			Filters.eq(SearchableField.TITLE, name)).build()).await();
 		if (!br.getStatus().isSuccess()) {
@@ -233,8 +248,15 @@ public class Service extends IntentService {
 			return null;
 		}
 		MetadataBuffer mb = br.getMetadataBuffer();
-		if (mb.getCount() > 0)
-			return Drive.DriveApi.getFile(gdClient, mb.get(0).getDriveId());
+		try {
+			if (mb.getCount() > 0) {
+				res.driveFile = Drive.DriveApi.getFile(gdClient, mb.get(0).getDriveId());
+				res.metadata = mb.get(0);
+				return res;
+			}
+		} finally {
+			mb.release();
+		}
 		if (!create)
 			return null;
 		// new file
@@ -246,7 +268,9 @@ public class Service extends IntentService {
 			// notify error
 			return null;
 		}
-		return fr.getDriveFile();
+		res.driveFile = fr.getDriveFile();
+		res.metadata = null;
+		return res;
 	}
 	
 	private String readDriveContent(DriveFile df) {
@@ -261,12 +285,11 @@ public class Service extends IntentService {
 			StringBuilder builder = new StringBuilder();
 			String line;
 			try {
-				while ((line = reader.readLine()) != null) {
+				while ((line = reader.readLine()) != null)
 					builder.append(line);
-				}
 				return builder.toString();
 			} catch (IOException err) {
-				Log.e(TAG, "Error while reading " + df.getDriveId().encodeToString(), err);
+				Log.e(TAG, "Error reading " + df.getDriveId().encodeToString(), err);
 				return null;
 			}
 		} finally {
@@ -275,40 +298,29 @@ public class Service extends IntentService {
 	}
 	
 	private void writeDriveContent(DriveFile df, String content) {
-		//
+        DriveContentsResult cr = df.open(gdClient, DriveFile.MODE_WRITE_ONLY, null).await();
+        if (!cr.getStatus().isSuccess()) {
+			// notify error
+            return;
+        }
+        DriveContents dc = cr.getDriveContents();
+        try {
+            OutputStream stream = dc.getOutputStream();
+            stream.write(content.getBytes());
+            Status status = dc.commit(gdClient, null).await();
+            if (!status.getStatus().isSuccess()) {
+    			// notify error
+                return;
+            }
+        } catch (IOException err) {
+			Log.e(TAG, "Error writing " + df.getDriveId().encodeToString(), err);
+        }
 	}
 	
 	private void backupMovieWatchlist() {
-		if (!initDriveAPI())
-			return;
-		DriveFile df = getDriveFile(Commons.DRIVE.MOV_WLST, true);
-		if (df == null)
-			return;
-		String content = null;
-		
-		// ???
-		
-		writeDriveContent(df, content);
 	}
 	
 	private void restoreMovieWatchlist() {
-		if (!initDriveAPI())
-			return;
-		DriveFile df = getDriveFile(Commons.DRIVE.MOV_WLST, false);
-		if (df == null) {
-			Log.i(TAG, "File " + Commons.DRIVE.MOV_WLST + " does not exists, skipping...");
-			return;
-		}
-		String content = readDriveContent(df);
-		if (TextUtils.isEmpty(content)) {
-			Log.i(TAG, "File " + Commons.DRIVE.MOV_WLST + " is empty, skipping...");
-			return;
-		}
-
-		
-		// http://stackoverflow.com/questions/16590377/custom-json-deserializer-using-gson
-		
-		
 	}
 	
 	private void restoreMovieCollection() {
@@ -317,12 +329,67 @@ public class Service extends IntentService {
 	private void restoreMovieWatched() {
 	}
 	
+	private void backupSeriesWatchlist() {
+		if (!initDriveAPI())
+			return;
+		DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_WLST, true);
+		if (dc == null)
+			return;
+		Map<String, JsonWlst> map = new HashMap<String, JsonWlst>();
+		Cursor cur = session.getDB().query("series", new String[] { "tvdb_id" }, "watchlist = 1", null, null, null,
+			"name collate nocase", null);
+		try {
+			Series ser;
+			JsonWlst obj;
+			while (cur.moveToNext()) {
+				ser = Series.get(this, cur.getString(0));
+				obj = new JsonWlst();
+				obj.name = ser.name;
+				obj.tags = ser.getTags().toArray(new String[ser.getTags().size()]);
+				map.put(ser.tvdb_id, obj);
+			}
+		} finally {
+			cur.close();
+		}
+		String content = "{}";
+		if (!map.isEmpty()) {
+			if (genson == null)
+				genson = new Genson();
+			content = genson.serialize(map);
+		}
+		Log.i(TAG, "Saving " + Commons.DRIVE.SER_WLST + " (" + content.getBytes().length + " bytes)...");
+		writeDriveContent(dc.driveFile, content);
+	}
+	
 	private void restoreSeriesWatchlist() {
+		/*
+		if (!initDriveAPI())
+			return;
+		DriveFile df = getDriveFile(Commons.DRIVE.SER_WLST, false);
+		if (df == null) {
+			Log.i(TAG, "File " + Commons.DRIVE.SER_WLST + " does not exists, skipping...");
+			return;
+		}
+		String content = readDriveContent(df);
+		if (TextUtils.isEmpty(content)) {
+			Log.i(TAG, "File " + Commons.DRIVE.SER_WLST + " is empty, skipping...");
+			return;
+		}
+
+		
+		// http://stackoverflow.com/questions/16590377/custom-json-deserializer-using-gson
+		
+		*/
 	}
 	
 	private void restoreEpisodesCollection() {
 	}
 	
 	private void restoreEpisodesWatched() {
+	}
+	
+	static class DriveFileCombo {
+		DriveFile driveFile;
+		Metadata metadata;
 	}
 }

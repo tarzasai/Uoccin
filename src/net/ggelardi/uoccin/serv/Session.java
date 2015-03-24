@@ -50,7 +50,8 @@ public class Session implements OnSharedPreferenceChangeListener {
 		if (key.equals(PK.GDRVBAK)) {
 			if (gDriveBackup()) {
 				Intent si = new Intent(getContext(), Service.class);
-				si.setAction(Service.RESTORE_BACKUP);
+				//si.setAction(Service.GDRIVE_RESTORE);
+				si.setAction(Service.GDRIVE_BACKUP);
 				getContext().startService(si);
 			}
 		}
@@ -106,6 +107,30 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	public boolean specials() {
 		return prefs.getBoolean(PK.SPECIALS, false);
+	}
+	
+	public long lastSyncMovieWatchlist() {
+		return prefs.getLong(PK.TSYNCMW, 0);
+	}
+	
+	public long lastSyncMovieCollected() {
+		return prefs.getLong(PK.TSYNCMC, 0);
+	}
+	
+	public long lastSyncMovieWatched() {
+		return prefs.getLong(PK.TSYNCMS, 0);
+	}
+	
+	public long lastSyncSeriesWatchlist() {
+		return prefs.getLong(PK.TSYNCSW, 0);
+	}
+	
+	public long lastSyncSeriesCollected() {
+		return prefs.getLong(PK.TSYNCSC, 0);
+	}
+	
+	public long lastSyncSeriesWatched() {
+		return prefs.getLong(PK.TSYNCSS, 0);
 	}
 	
 	// utilities

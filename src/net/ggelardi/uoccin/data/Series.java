@@ -114,6 +114,7 @@ public class Series extends Title {
 		return res;
 	}
 	
+	/*
 	public static List<Series> get(Context context, String query, String ... args) {
 		List<Series> res = new ArrayList<Series>();
 		Cursor cur = Session.getInstance(context).getDB().rawQuery(query, args);
@@ -129,20 +130,10 @@ public class Series extends Title {
 		}
 		return res;
 	}
+	*/
 	
 	public static List<Series> find(Context context, String text) {
 		List<Series> res = new ArrayList<Series>();
-		/*
-		String response;
-		try {
-			response = TVDB.getInstance().findSeries(text, "en");
-		} catch (Exception err) {
-			Log.e(TAG, "find", err);
-			dispatch(OnTitleListener.ERROR, null);
-			return res;
-		}
-		Document doc = Commons.XML.str2xml(response);
-		*/
 		Document doc = null;
 		try {
 			doc = TVDB.getInstance().findSeries(text, "en");
@@ -758,4 +749,21 @@ public class Series extends Title {
 		else
 			dispatch(OnTitleListener.READY, null);
 	}
+	
+	public static class JsonWlst {
+		public String name;
+		public String[] tags;
+	}
+	
+	/*
+	public static class JsonColl {
+		public String name;
+		public String[] tags;
+	}
+	
+	public static class JsonSeen {
+		public String name;
+		public String[] tags;
+	}
+	*/
 }
