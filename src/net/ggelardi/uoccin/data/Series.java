@@ -114,24 +114,6 @@ public class Series extends Title {
 		return res;
 	}
 	
-	/*
-	public static List<Series> get(Context context, String query, String ... args) {
-		List<Series> res = new ArrayList<Series>();
-		Cursor cur = Session.getInstance(context).getDB().rawQuery(query, args);
-		try {
-			int ci = cur.getColumnIndex("tvdb_id");
-			String tvdb_id;
-			while (cur.moveToNext()) {
-				tvdb_id = cur.getString(ci);
-				res.add(Series.get(context, tvdb_id));
-			}
-		} finally {
-			cur.close();
-		}
-		return res;
-	}
-	*/
-	
 	public static List<Series> find(Context context, String text) {
 		List<Series> res = new ArrayList<Series>();
 		Document doc = null;
@@ -748,11 +730,6 @@ public class Series extends Title {
 			commit();
 		else
 			dispatch(OnTitleListener.READY, null);
-	}
-	
-	public static class JsonWlst {
-		public String name;
-		public String[] tags;
 	}
 	
 	/*

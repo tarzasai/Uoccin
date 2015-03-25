@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +15,6 @@ import net.ggelardi.uoccin.api.XML;
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.data.Series;
-import net.ggelardi.uoccin.data.Series.JsonWlst;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 
 import org.w3c.dom.Document;
@@ -47,6 +47,7 @@ import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 import com.owlike.genson.Genson;
+import com.owlike.genson.GensonBuilder;
 
 public class Service extends IntentService {
 	private static final String TAG = "Service";
@@ -95,16 +96,23 @@ public class Service extends IntentService {
 		} else if (act.equals(CHECK_TVDB_RSS)) {
 			checkTVdbNews();
 		} else if (act.equals(GDRIVE_BACKUP) && session.gDriveBackup()) {
-			
+			/*
+			backupMovieWatchlist();
+			backupMovieCollection();
+			backupMovieWatched();
+			*/
 			backupSeriesWatchlist();
-			
+			backupSeriesCollection();
+			backupSeriesWatched();
 		} else if (act.equals(GDRIVE_RESTORE) && session.gDriveBackup()) {
-			//restoreMovieWatchlist();
-			//restoreMovieCollection();
-			//restoreMovieWatched();
+			/*
+			restoreMovieWatchlist();
+			restoreMovieCollection();
+			restoreMovieWatched();
 			restoreSeriesWatchlist();
-			restoreEpisodesCollection();
-			restoreEpisodesWatched();
+			restoreSeriesCollection();
+			restoreSeriesWatched();
+			*/
 		}
 		stopSelf();
 	}
@@ -193,6 +201,12 @@ public class Service extends IntentService {
 		}
 	}
 	
+	private void initGenson() {
+		if (genson != null)
+			return;
+		genson = new GensonBuilder().useIndentation(true).create();
+	}
+	
 	private boolean initDriveAPI() {
 		if (gdClient == null) {
 			gdClient = new GoogleApiClient.Builder(session.getContext()).addApi(Drive.API).
@@ -220,7 +234,7 @@ public class Service extends IntentService {
 						return false;
 					}
 					Metadata md = mr.getMetadata();
-					if (!md.isTrashed())
+					if (md.isTrashed())
 						gdFolder = null;
 				}
 			} finally {
@@ -335,15 +349,15 @@ public class Service extends IntentService {
 		DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_WLST, true);
 		if (dc == null)
 			return;
-		Map<String, JsonWlst> map = new HashMap<String, JsonWlst>();
+		Map<String, JsonSerWlst> map = new HashMap<String, JsonSerWlst>();
 		Cursor cur = session.getDB().query("series", new String[] { "tvdb_id" }, "watchlist = 1", null, null, null,
 			"name collate nocase", null);
 		try {
 			Series ser;
-			JsonWlst obj;
+			JsonSerWlst obj;
 			while (cur.moveToNext()) {
 				ser = Series.get(this, cur.getString(0));
-				obj = new JsonWlst();
+				obj = new JsonSerWlst();
 				obj.name = ser.name;
 				obj.tags = ser.getTags().toArray(new String[ser.getTags().size()]);
 				map.put(ser.tvdb_id, obj);
@@ -353,8 +367,7 @@ public class Service extends IntentService {
 		}
 		String content = "{}";
 		if (!map.isEmpty()) {
-			if (genson == null)
-				genson = new Genson();
+			initGenson();
 			content = genson.serialize(map);
 		}
 		Log.i(TAG, "Saving " + Commons.DRIVE.SER_WLST + " (" + content.getBytes().length + " bytes)...");
@@ -362,34 +375,108 @@ public class Service extends IntentService {
 	}
 	
 	private void restoreSeriesWatchlist() {
-		/*
+	}
+	
+	private void backupSeriesCollection() {
 		if (!initDriveAPI())
 			return;
-		DriveFile df = getDriveFile(Commons.DRIVE.SER_WLST, false);
-		if (df == null) {
-			Log.i(TAG, "File " + Commons.DRIVE.SER_WLST + " does not exists, skipping...");
+		DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_COLL, true);
+		if (dc == null)
 			return;
+		Map<String, String[]> map = new HashMap<String, String[]>();
+		Cursor cur = session.getDB().query("episode", new String[] { "series", "season", "episode" },
+			"collected = 1", null, null, null, "series, season, episode");
+		try {
+			Episode ep;
+			while (cur.moveToNext()) {
+				ep = Episode.get(this, cur.getString(0), cur.getInt(1), cur.getInt(2));
+				if (ep != null)
+					map.put(ep.extendedEID(), ep.subtitles.toArray(new String[ep.subtitles.size()]));
+			}
+		} finally {
+			cur.close();
 		}
-		String content = readDriveContent(df);
-		if (TextUtils.isEmpty(content)) {
-			Log.i(TAG, "File " + Commons.DRIVE.SER_WLST + " is empty, skipping...");
-			return;
+		String content = "{}";
+		if (!map.isEmpty()) {
+			initGenson();
+			content = genson.serialize(map);
 		}
-
-		
-		// http://stackoverflow.com/questions/16590377/custom-json-deserializer-using-gson
-		
-		*/
+		Log.i(TAG, "Saving " + Commons.DRIVE.SER_COLL + " (" + content.getBytes().length + " bytes)...");
+		writeDriveContent(dc.driveFile, content);
 	}
 	
-	private void restoreEpisodesCollection() {
+	private void restoreSeriesCollection() {
 	}
 	
-	private void restoreEpisodesWatched() {
+	private void backupSeriesWatched() {
+		if (!initDriveAPI())
+			return;
+		DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_SEEN, true);
+		if (dc == null)
+			return;
+		Map<String, Map<String, Object>> map = new HashMap<String, Map<String, Object>>();
+		Cursor cur = session.getDB().query("episode", new String[] { "series", "season", "episode" },
+			"watched = 1", null, null, null, "series, season, episode");
+		try {
+			Episode ep;
+			String sid = null;
+			int sno = -1;
+			List<Integer> eps = null;
+			Map<String, Object> ser = null;
+			while (cur.moveToNext()) {
+				ep = Episode.get(this, cur.getString(0), cur.getInt(1), cur.getInt(2));
+				if (ep == null)
+					continue;
+				if (!TextUtils.isEmpty(sid)) {
+					if (sno != ep.season) {
+						ser.put(Integer.toString(sno), eps);
+						sno = ep.season;
+						eps = new ArrayList<Integer>();
+					}
+					if (!ep.series.equals(sid)) {
+						ser.put(Integer.toString(sno), eps);
+						map.put(sid, ser);
+						ser = new HashMap<String, Object>();
+						ser.put("name", ep.getSeries().name);
+						sid = ep.series;
+						sno = ep.season;
+						eps = new ArrayList<Integer>();
+					}
+				} else {
+					ser = new HashMap<String, Object>();
+					ser.put("name", ep.getSeries().name);
+					sid = ep.series;
+					sno = ep.season;
+					eps = new ArrayList<Integer>();
+				}
+				eps.add(ep.episode);
+			}
+			if (ser != null) {
+				ser.put(Integer.toString(sno), eps);
+				map.put(sid, ser);
+			}
+		} finally {
+			cur.close();
+		}
+		String content = "{}";
+		if (!map.isEmpty()) {
+			initGenson();
+			content = genson.serialize(map);
+		}
+		Log.i(TAG, "Saving " + Commons.DRIVE.SER_SEEN + " (" + content.getBytes().length + " bytes)...");
+		writeDriveContent(dc.driveFile, content);
+	}
+	
+	private void restoreSeriesWatched() {
 	}
 	
 	static class DriveFileCombo {
 		DriveFile driveFile;
 		Metadata metadata;
+	}
+	
+	static class JsonSerWlst {
+		public String name;
+		public String[] tags;
 	}
 }
