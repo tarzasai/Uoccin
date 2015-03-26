@@ -46,29 +46,9 @@ public class Commons {
 		public static final String TSYNCSW = "pk_tsyncsw";
 		public static final String TSYNCSC = "pk_tsyncsc";
 		public static final String TSYNCSS = "pk_tsyncss";
-		/*
-		public static final String USERNAME = "Username";
-		public static final String REMOTEKEY = "RemoteKey";
-		public static final String PROF_INFO = "pk_prof_info";
-		public static final String PROF_LIST = "pk_prof_list";
-		public static final String FEED_UPD = "pk_feed_upd";
-		public static final String FEED_FOF = "pk_feed_fof";
-		public static final String FEED_HID = "pk_feed_hid";
-		public static final String FEED_ELC = "pk_feed_elc";
-		public static final String FEED_HBK = "pk_feed_hbk";
-		public static final String FEED_HBF = "pk_feed_hbf";
-		public static final String FEED_SPO = "pk_feed_spo";
-		public static final String ENTR_IMCO = "pk_entry_imco";
-		public static final String SERV_PROF = "pk_serv_prof";
-		public static final String SERV_NOTF = "pk_serv_notf";
-		public static final String SERV_MSGS = "pk_serv_msgs";
-		//
-		public static final String SERV_MSGS_TIME = "pk_serv_msgs_time";
-		public static final String SERV_MSGS_CURS = "pk_serv_msgs_cursor";
-		*/
 	}
 	
-	public static class DRIVE {
+	public static class GD {
 		public static final String FOLDER = "uoccin";
 		//public static final String FOLDER = "uoccin_test";
 		public static final String MOV_WLST = "movies.watchlist.json";
@@ -77,6 +57,10 @@ public class Commons {
 		public static final String SER_WLST = "series.watchlist.json";
 		public static final String SER_COLL = "series.collected.json";
 		public static final String SER_SEEN = "series.watched.json";
+	}
+	
+	public static class SN {
+		public static final String GAC_CONNECT_FAIL = "net.ggelardi.uoccin.GAC_CONNECT_FAIL";
 	}
 	
 	public static long convertTZ(long timestamp, String fromTimeZone, String toTimeZone) {

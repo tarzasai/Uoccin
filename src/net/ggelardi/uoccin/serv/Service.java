@@ -102,32 +102,32 @@ public class Service extends IntentService {
 		} else if (act.equals(GDRIVE_BACKUP) && session.gDriveBackup()) {
 			Bundle extra = intent.getExtras();
 			String what = extra == null ? "*" : extra.getString("what");
-			if (what.equals("*") || what.equals(Commons.DRIVE.MOV_WLST))
+			if (what.equals("*") || what.equals(Commons.GD.MOV_WLST))
 				backupMovieWatchlist();
-			if (what.equals("*") || what.equals(Commons.DRIVE.MOV_COLL))
+			if (what.equals("*") || what.equals(Commons.GD.MOV_COLL))
 				backupMovieCollection();
-			if (what.equals("*") || what.equals(Commons.DRIVE.MOV_SEEN))
+			if (what.equals("*") || what.equals(Commons.GD.MOV_SEEN))
 				backupMovieWatched();
-			if (what.equals("*") || what.equals(Commons.DRIVE.SER_WLST))
+			if (what.equals("*") || what.equals(Commons.GD.SER_WLST))
 				backupSeriesWatchlist();
-			if (what.equals("*") || what.equals(Commons.DRIVE.SER_COLL))
+			if (what.equals("*") || what.equals(Commons.GD.SER_COLL))
 				backupSeriesCollection();
-			if (what.equals("*") || what.equals(Commons.DRIVE.SER_SEEN))
+			if (what.equals("*") || what.equals(Commons.GD.SER_SEEN))
 				backupSeriesWatched();
 		} else if (act.equals(GDRIVE_RESTORE) && session.gDriveBackup()) {
 			Bundle extra = intent.getExtras();
 			String what = extra == null ? "*" : extra.getString("what");
-			if (what.equals("*") || what.equals(Commons.DRIVE.MOV_WLST))
+			if (what.equals("*") || what.equals(Commons.GD.MOV_WLST))
 				restoreMovieWatchlist();
-			if (what.equals("*") || what.equals(Commons.DRIVE.MOV_COLL))
+			if (what.equals("*") || what.equals(Commons.GD.MOV_COLL))
 				restoreMovieCollection();
-			if (what.equals("*") || what.equals(Commons.DRIVE.MOV_SEEN))
+			if (what.equals("*") || what.equals(Commons.GD.MOV_SEEN))
 				restoreMovieWatched();
-			if (what.equals("*") || what.equals(Commons.DRIVE.SER_WLST))
+			if (what.equals("*") || what.equals(Commons.GD.SER_WLST))
 				restoreSeriesWatchlist();
-			if (what.equals("*") || what.equals(Commons.DRIVE.SER_COLL))
+			if (what.equals("*") || what.equals(Commons.GD.SER_COLL))
 				restoreSeriesCollection();
-			if (what.equals("*") || what.equals(Commons.DRIVE.SER_SEEN))
+			if (what.equals("*") || what.equals(Commons.GD.SER_SEEN))
 				restoreSeriesWatched();
 		}
 		stopSelf();
@@ -222,7 +222,9 @@ public class Service extends IntentService {
 	private void initGenson() {
 		if (genson != null)
 			return;
-		genson = new GensonBuilder().useIndentation(true).create();
+		genson = new GensonBuilder().
+			useIndentation(true). // DEBUG ONLY!
+			create();
 	}
 	
 	private void initDriveAPI() throws Exception {
@@ -235,7 +237,7 @@ public class Service extends IntentService {
 		}
 		if (gdFolder == null) {
 			MetadataBufferResult br = Drive.DriveApi.query(gdClient, new Query.Builder().addFilter(
-				Filters.eq(SearchableField.TITLE, Commons.DRIVE.FOLDER)).build()).await();
+				Filters.eq(SearchableField.TITLE, Commons.GD.FOLDER)).build()).await();
 			if (!br.getStatus().isSuccess())
 				throw new Exception(br.getStatus().getStatusMessage());
 			MetadataBuffer mb = br.getMetadataBuffer();
@@ -249,7 +251,7 @@ public class Service extends IntentService {
 				mb.release();
 			}
 			if (gdFolder == null) {
-				MetadataChangeSet cs = new MetadataChangeSet.Builder().setTitle(Commons.DRIVE.FOLDER).build();
+				MetadataChangeSet cs = new MetadataChangeSet.Builder().setTitle(Commons.GD.FOLDER).build();
 				DriveFolderResult fr = Drive.DriveApi.getRootFolder(gdClient).createFolder(gdClient, cs).await();
 				if (!fr.getStatus().isSuccess())
 					throw new Exception(fr.getStatus().getStatusMessage());
@@ -338,7 +340,7 @@ public class Service extends IntentService {
 	private void backupSeriesWatchlist() {
 		try {
 			initDriveAPI();
-			DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_WLST, true);
+			DriveFileCombo dc = getDriveFile(Commons.GD.SER_WLST, true);
 			if (dc == null)
 				return;
 			Map<String, JsonSerWlst> map = new HashMap<String, JsonSerWlst>();
@@ -363,7 +365,7 @@ public class Service extends IntentService {
 				initGenson();
 				content = genson.serialize(map);
 			}
-			Log.i(TAG, "Saving " + Commons.DRIVE.SER_WLST + " (" + content.getBytes().length + " bytes)...");
+			Log.i(TAG, "Saving " + Commons.GD.SER_WLST + " (" + content.getBytes().length + " bytes)...");
 			writeDriveContent(dc.driveFile, content);
 		} catch (Exception err) {
 			Log.e(TAG, "backupSeriesWatchlist", err);
@@ -374,7 +376,7 @@ public class Service extends IntentService {
 	private void restoreSeriesWatchlist() {
 		try {
 			initDriveAPI();
-			DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_WLST, true);
+			DriveFileCombo dc = getDriveFile(Commons.GD.SER_WLST, true);
 			if (dc == null)
 				return;
 			String content = readDriveContent(dc.driveFile);
@@ -427,7 +429,7 @@ public class Service extends IntentService {
 	private void backupSeriesCollection() {
 		try {
 			initDriveAPI();
-			DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_COLL, true);
+			DriveFileCombo dc = getDriveFile(Commons.GD.SER_COLL, true);
 			if (dc == null)
 				return;
 			Map<String, String[]> map = new HashMap<String, String[]>();
@@ -448,7 +450,7 @@ public class Service extends IntentService {
 				initGenson();
 				content = genson.serialize(map);
 			}
-			Log.i(TAG, "Saving " + Commons.DRIVE.SER_COLL + " (" + content.getBytes().length + " bytes)...");
+			Log.i(TAG, "Saving " + Commons.GD.SER_COLL + " (" + content.getBytes().length + " bytes)...");
 			writeDriveContent(dc.driveFile, content);
 		} catch (Exception err) {
 			Log.e(TAG, "backupSeriesCollection", err);
@@ -459,7 +461,7 @@ public class Service extends IntentService {
 	private void restoreSeriesCollection() {
 		try {
 			initDriveAPI();
-			DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_COLL, true);
+			DriveFileCombo dc = getDriveFile(Commons.GD.SER_COLL, true);
 			if (dc == null)
 				return;
 			String content = readDriveContent(dc.driveFile);
@@ -522,7 +524,7 @@ public class Service extends IntentService {
 	private void backupSeriesWatched() {
 		try {
 			initDriveAPI();
-			DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_SEEN, true);
+			DriveFileCombo dc = getDriveFile(Commons.GD.SER_SEEN, true);
 			if (dc == null)
 				return;
 			Map<String, Map<String, Object>> map = new HashMap<String, Map<String, Object>>();
@@ -574,7 +576,7 @@ public class Service extends IntentService {
 				initGenson();
 				content = genson.serialize(map);
 			}
-			Log.i(TAG, "Saving " + Commons.DRIVE.SER_SEEN + " (" + content.getBytes().length + " bytes)...");
+			Log.i(TAG, "Saving " + Commons.GD.SER_SEEN + " (" + content.getBytes().length + " bytes)...");
 			writeDriveContent(dc.driveFile, content);
 		} catch (Exception err) {
 			Log.e(TAG, "backupSeriesWatched", err);
@@ -585,7 +587,7 @@ public class Service extends IntentService {
 	private void restoreSeriesWatched() {
 		try {
 			initDriveAPI();
-			DriveFileCombo dc = getDriveFile(Commons.DRIVE.SER_SEEN, true);
+			DriveFileCombo dc = getDriveFile(Commons.GD.SER_SEEN, true);
 			if (dc == null)
 				return;
 			String content = readDriveContent(dc.driveFile);
