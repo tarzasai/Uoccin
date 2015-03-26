@@ -2,6 +2,7 @@ package net.ggelardi.uoccin;
 
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
 import net.ggelardi.uoccin.serv.Commons.PK;
+import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -40,6 +41,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	private String lastView;
 	
 	private GoogleApiClient mGoogleApiClient;
+	private boolean notYetAuthorized = false;
 	
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -179,6 +181,12 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	@Override
 	public void onConnected(Bundle connectionHint) {
         Log.i(TAG, "GoogleApiClient connected.");
+        if (notYetAuthorized) {
+			Intent si = new Intent(this, Service.class);
+			si.setAction(Service.GDRIVE_RESTORE);
+			//si.setAction(Service.GDRIVE_BACKUP);
+			startService(si);
+        }
 	}
 	
 	@Override
@@ -196,6 +204,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
         }
         // the failure has a resolution (typically the app is not yet authorized).
         try {
+        	notYetAuthorized = true;
             result.startResolutionForResult(this, 1);
         } catch (SendIntentException e) {
             Log.e(TAG, "Exception while starting resolution activity", e);

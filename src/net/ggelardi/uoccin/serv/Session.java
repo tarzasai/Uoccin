@@ -41,7 +41,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		
 		dbhlp = new Storage(appContext);
 		
-		//getDB().execSQL("update series set timestamp = 100");
+		//getDB().execSQL("update series set timestamp = 1");
 		
 	}
 	
@@ -50,8 +50,8 @@ public class Session implements OnSharedPreferenceChangeListener {
 		if (key.equals(PK.GDRVBAK)) {
 			if (gDriveBackup()) {
 				Intent si = new Intent(getContext(), Service.class);
-				//si.setAction(Service.GDRIVE_RESTORE);
-				si.setAction(Service.GDRIVE_BACKUP);
+				si.setAction(Service.GDRIVE_RESTORE);
+				//si.setAction(Service.GDRIVE_BACKUP);
 				getContext().startService(si);
 			}
 		}

@@ -406,7 +406,10 @@ public class Episode extends Title {
 		if (value != collected) {
 			collected = value;
 			modified = true;
-			commit();
+			if (TextUtils.isEmpty(tvdb_id))
+				refresh(false);
+			else
+				commit();
 			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_epi : R.string.msg_coll_del_epi);
 			msg = String.format(msg, simpleEID());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -421,7 +424,10 @@ public class Episode extends Title {
 		if (value != watched) {
 			watched = value;
 			modified = true;
-			commit();
+			if (TextUtils.isEmpty(tvdb_id))
+				refresh(false);
+			else
+				commit();
 			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_epi : R.string.msg_seen_del_epi);
 			msg = String.format(msg, simpleEID());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();

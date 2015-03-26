@@ -79,6 +79,8 @@ public class Series extends Title {
 		}
 		Series res = new Series(context, tvdb_id);
 		cache.add(tvdb_id, res);
+		res.reload();
+		/*
 		Cursor cur = Session.getInstance(context).getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
 			null, null, null);
 		try {
@@ -88,6 +90,7 @@ public class Series extends Title {
 		} finally {
 			cur.close();
 		}
+		*/
 		return res;
 	}
 	
@@ -140,6 +143,17 @@ public class Series extends Title {
 		}
 		if (res.isEmpty())
 			dispatch(OnTitleListener.NOTFOUND, null);
+		return res;
+	}
+	
+	public static List<Series> cached() {
+		List<Series> res = new ArrayList<Series>();
+		Object ser;
+		for (String k: cache.getKeys()) {
+			ser = cache.get(k);
+			if (ser != null)
+				res.add((Series) ser);
+		}
 		return res;
 	}
 	
@@ -432,6 +446,19 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
+	public synchronized void reload() {
+		//dispatch(OnTitleListener.WORKING, null);
+		Cursor cur = session.getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
+			null, null, null);
+		try {
+			if (cur.moveToFirst())
+				load(cur);
+		} finally {
+			cur.close();
+		}
+		//dispatch(OnTitleListener.READY, null);
+	}
+	
 	public synchronized void reloadEpisodes() {
 		if (noRecalc)
 			return;
@@ -531,6 +558,15 @@ public class Series extends Title {
 		return tags.contains(tag);
 	}
 	
+	public void setTags(String[] values) {
+		tags = new ArrayList<String>(Arrays.asList(values));
+		modified = true;
+		if (TextUtils.isEmpty(status))
+			refresh(false);
+		else
+			commit();
+	}
+	
 	public void addTag(String tag) {
 		tag = tag.toLowerCase(Locale.getDefault());
 		if (!hasTag(tag)) {
@@ -540,7 +576,7 @@ public class Series extends Title {
 				refresh(false);
 			else
 				commit();
-			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
+			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
@@ -554,7 +590,7 @@ public class Series extends Title {
 				refresh(false);
 			else
 				commit();
-			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
+			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}

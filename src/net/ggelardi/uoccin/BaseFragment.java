@@ -4,6 +4,7 @@ import net.ggelardi.uoccin.serv.Session;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
@@ -89,7 +90,9 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 			hgCount++;
 		else
 			hgCount--;
-		((ActionBarActivity) getActivity()).setSupportProgressBarIndeterminateVisibility(hgCount > 0);
+		FragmentActivity activity = getActivity();
+		if (activity != null)
+			((ActionBarActivity) activity).setSupportProgressBarIndeterminateVisibility(hgCount > 0);
 	}
 	
 	public interface OnFragmentListener {
