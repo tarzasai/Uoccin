@@ -386,8 +386,8 @@ public class Episode extends Title {
 		session.getContext().startService(si);
 	}
 	
-	public final void commit() {
-		getSeries().commit();
+	public final void commit(String what) {
+		getSeries().commit(what);
 	}
 	
 	public boolean isNew() {
@@ -409,7 +409,7 @@ public class Episode extends Title {
 			if (TextUtils.isEmpty(tvdb_id))
 				refresh(false);
 			else
-				commit();
+				commit(Commons.GD.SER_COLL);
 			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_epi : R.string.msg_coll_del_epi);
 			msg = String.format(msg, simpleEID());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -427,7 +427,7 @@ public class Episode extends Title {
 			if (TextUtils.isEmpty(tvdb_id))
 				refresh(false);
 			else
-				commit();
+				commit(Commons.GD.SER_SEEN);
 			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_epi : R.string.msg_seen_del_epi);
 			msg = String.format(msg, simpleEID());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();

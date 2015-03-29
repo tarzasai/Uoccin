@@ -39,13 +39,16 @@ public class Commons {
 		public static final String STARTUP = "pk_startup";
 		public static final String LOCALE = "pk_locale";
 		public static final String SPECIALS = "pk_specials";
-		//
+		public static final String PINNGDFS = "pk_pinn_gdfiles";
+		public static final String NOTIFSND = "pk_notif_sound";
+		/*
 		public static final String TSYNCMW = "pk_tsyncmw";
 		public static final String TSYNCMC = "pk_tsyncmc";
 		public static final String TSYNCMS = "pk_tsyncms";
 		public static final String TSYNCSW = "pk_tsyncsw";
 		public static final String TSYNCSC = "pk_tsyncsc";
 		public static final String TSYNCSS = "pk_tsyncss";
+		*/
 	}
 	
 	public static class GD {
@@ -60,7 +63,9 @@ public class Commons {
 	}
 	
 	public static class SN {
-		public static final String GAC_CONNECT_FAIL = "net.ggelardi.uoccin.GAC_CONNECT_FAIL";
+		public static final String CONNECT_FAIL = "net.ggelardi.uoccin.CONNECT_FAIL";
+		public static final String GENERAL_FAIL = "net.ggelardi.uoccin.GENERAL_FAIL";
+		public static final String GENERAL_INFO = "net.ggelardi.uoccin.GENERAL_INFO";
 	}
 	
 	public static long convertTZ(long timestamp, String fromTimeZone, String toTimeZone) {

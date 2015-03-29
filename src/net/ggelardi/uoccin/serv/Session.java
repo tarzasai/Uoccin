@@ -32,6 +32,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 	private final SharedPreferences prefs;
 	private final Storage dbhlp;
 	private SQLiteDatabase dbconn;
+	private SyncGAC gac;
 	
 	public Session(Context context) {
 		appContext = context.getApplicationContext();
@@ -47,13 +48,11 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (key.equals(PK.GDRVBAK)) {
-			if (gDriveBackup()) {
-				Intent si = new Intent(getContext(), Service.class);
-				si.setAction(Service.GDRIVE_RESTORE);
-				//si.setAction(Service.GDRIVE_BACKUP);
-				getContext().startService(si);
-			}
+		if (key.equals(PK.GDRVBAK) && backup()) {
+			Intent si = new Intent(getContext(), Service.class);
+			si.setAction(Service.GDRIVE_RESTORE);
+			getContext().startService(si);
+			return;
 		}
 	}
 	
@@ -79,6 +78,14 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return dbconn;
 	}
 	
+	public SyncGAC getGAC() {
+		if (!backup())
+			return null;
+		if (gac == null)
+			gac = new SyncGAC(this);
+		return gac;
+	}
+	
 	public boolean isConnected() {
 		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = cm.getActiveNetworkInfo();
@@ -97,7 +104,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	// preferences
 	
-	public boolean gDriveBackup() {
+	public boolean backup() {
 		return prefs.getBoolean(PK.GDRVBAK, false);
 	}
 	
@@ -107,30 +114,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	public boolean specials() {
 		return prefs.getBoolean(PK.SPECIALS, false);
-	}
-	
-	public long lastSyncMovieWatchlist() {
-		return prefs.getLong(PK.TSYNCMW, 0);
-	}
-	
-	public long lastSyncMovieCollected() {
-		return prefs.getLong(PK.TSYNCMC, 0);
-	}
-	
-	public long lastSyncMovieWatched() {
-		return prefs.getLong(PK.TSYNCMS, 0);
-	}
-	
-	public long lastSyncSeriesWatchlist() {
-		return prefs.getLong(PK.TSYNCSW, 0);
-	}
-	
-	public long lastSyncSeriesCollected() {
-		return prefs.getLong(PK.TSYNCSC, 0);
-	}
-	
-	public long lastSyncSeriesWatched() {
-		return prefs.getLong(PK.TSYNCSS, 0);
 	}
 	
 	// utilities

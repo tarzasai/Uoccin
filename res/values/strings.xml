@@ -83,6 +83,8 @@
     <string name="msg_seen_del_epi">Episode \"%s\" set to be watched</string>
     <string name="msg_tags_add">Tag \"%s\" added</string>
     <string name="msg_tags_del">Tag \"%s\" removed</string>
+    
+    <string name="notif_srv_gac_conn_fail">Authorization required</string>
 
     <!-- settings -->
     <string name="settings_title">Uoccin settings</string>

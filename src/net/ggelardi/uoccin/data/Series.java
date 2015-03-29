@@ -80,17 +80,6 @@ public class Series extends Title {
 		Series res = new Series(context, tvdb_id);
 		cache.add(tvdb_id, res);
 		res.reload();
-		/*
-		Cursor cur = Session.getInstance(context).getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
-			null, null, null);
-		try {
-			if (cur.moveToFirst()) {
-				res.load(cur);
-			}
-		} finally {
-			cur.close();
-		}
-		*/
 		return res;
 	}
 	
@@ -106,7 +95,7 @@ public class Series extends Title {
 		Series res = Series.getInstance(context, tvdb_id);
 		res.load(xml);
 		if (!res.isNew())
-			res.commit();
+			res.commit(null);
 		return res;
 	}
 	
@@ -477,7 +466,7 @@ public class Series extends Title {
 		session.getContext().startService(si);
 	}
 	
-	public final synchronized void commit() {
+	public final synchronized void commit(String what) {
 		dispatch(OnTitleListener.WORKING, null);
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
@@ -499,6 +488,12 @@ public class Series extends Title {
 				ep.modified = false;
 			if (changes > 0)
 				reloadEpisodes();
+			if (what != null) {
+				Intent si = new Intent(session.getContext(), Service.class);
+				si.setAction(Service.GDRIVE_BACKUP);
+				si.putExtra("what", what);
+				session.getContext().startService(si);
+			}
 		} finally {
 			db.endTransaction();
 		}
@@ -524,7 +519,7 @@ public class Series extends Title {
 			if (TextUtils.isEmpty(status))
 				refresh(false);
 			else
-				commit();
+				commit(Commons.GD.SER_WLST);
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_ser : R.string.msg_wlst_del_ser);
 			msg = String.format(msg, name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -542,7 +537,7 @@ public class Series extends Title {
 			if (TextUtils.isEmpty(status))
 				refresh(false);
 			else
-				commit();
+				commit(Commons.GD.SER_WLST);
 		}
 	}
 	
@@ -564,7 +559,7 @@ public class Series extends Title {
 		if (TextUtils.isEmpty(status))
 			refresh(false);
 		else
-			commit();
+			commit(Commons.GD.SER_WLST);
 	}
 	
 	public void addTag(String tag) {
@@ -575,7 +570,7 @@ public class Series extends Title {
 			if (TextUtils.isEmpty(status))
 				refresh(false);
 			else
-				commit();
+				commit(Commons.GD.SER_WLST);
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
@@ -589,7 +584,7 @@ public class Series extends Title {
 			if (TextUtils.isEmpty(status))
 				refresh(false);
 			else
-				commit();
+				commit(Commons.GD.SER_WLST);
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
@@ -733,7 +728,7 @@ public class Series extends Title {
 		}
 		Episode.setDirtyFlags(tvdb_id, season, flag, null);
 		if (isNew())
-			commit();
+			commit(Commons.GD.SER_COLL);
 		else
 			dispatch(OnTitleListener.READY, null);
 	}
@@ -763,7 +758,7 @@ public class Series extends Title {
 		}
 		Episode.setDirtyFlags(tvdb_id, season, null, flag);
 		if (isNew())
-			commit();
+			commit(Commons.GD.SER_SEEN);
 		else
 			dispatch(OnTitleListener.READY, null);
 	}

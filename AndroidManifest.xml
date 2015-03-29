@@ -50,7 +50,9 @@
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="net.ggelardi.uoccin.GAC_CONNECT_FAIL" />
+                <action android:name="net.ggelardi.uoccin.CONNECT_FAIL" />
+                <action android:name="net.ggelardi.uoccin.GENERAL_FAIL" />
+                <action android:name="net.ggelardi.uoccin.GENERAL_INFO" />
             </intent-filter>
         </receiver>
 

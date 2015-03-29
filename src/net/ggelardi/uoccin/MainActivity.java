@@ -94,7 +94,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		
 		mDrawerFragment.selectItem(lastView);
 		
-		if (session.gDriveBackup()) {
+		if (session.backup()) {
 			if (mGoogleApiClient == null)
 				mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Drive.API).addScope(Drive.SCOPE_FILE).
 					addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
