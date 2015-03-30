@@ -64,6 +64,7 @@ public class Commons {
 	
 	public static class SN {
 		public static final String CONNECT_FAIL = "net.ggelardi.uoccin.CONNECT_FAIL";
+		public static final String UFOLDER_FAIL = "net.ggelardi.uoccin.UFOLDER_FAIL";
 		public static final String GENERAL_FAIL = "net.ggelardi.uoccin.GENERAL_FAIL";
 		public static final String GENERAL_INFO = "net.ggelardi.uoccin.GENERAL_INFO";
 	}

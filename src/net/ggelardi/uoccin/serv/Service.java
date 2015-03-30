@@ -47,6 +47,8 @@ public class Service extends IntentService {
 	public static final String GDRIVE_BACKUP = "net.ggelardi.uoccin.GDRIVE_BACKUP";
 	public static final String GDRIVE_RESTORE = "net.ggelardi.uoccin.GDRIVE_RESTORE";
 	
+	public static final String GDRIVE_TEST = "net.ggelardi.uoccin.GDRIVE_TEST";
+	
 	private Session session;
 	private Genson genson;
 	
@@ -111,6 +113,10 @@ public class Service extends IntentService {
 					restoreSeriesCollection();
 				if (what.equals("*") || what.equals(Commons.GD.SER_SEEN))
 					restoreSeriesWatched();
+			} else if (act.equals(GDRIVE_TEST) && session.backup()) {
+				
+				session.getGAC().listFiles();
+				
 			}
 		} catch (Exception err) {
 			sendNotification(err);

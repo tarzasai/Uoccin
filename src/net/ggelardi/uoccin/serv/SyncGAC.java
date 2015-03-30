@@ -75,6 +75,7 @@ public class SyncGAC {
 	}
 	
 	public void saveRID(String filename, String rid) {
+		Log.d(TAG, "Saving resource id for " + filename + ": " + rid);
 		SharedPreferences.Editor editor = session.getPrefs().edit();
 		editor.putString(getPK(filename), rid);
 		editor.commit();
@@ -113,9 +114,12 @@ public class SyncGAC {
 			}
 		}
 		if (rid == null) {
+			/*
 			res = findFolder();
 			if (res == null)
 				res = createFolder();
+			*/
+			throw new Exception(Commons.SN.UFOLDER_FAIL);
 		}
 		return res;
 	}
@@ -180,6 +184,36 @@ public class SyncGAC {
 				res = createFile(filename);
 		}
 		return res;
+	}
+	
+	public void listFiles() throws Exception {
+		Log.v(TAG, "Listing Uoccin files in folder");
+		MetadataBufferResult br = getFolder().queryChildren(gac, new Query.Builder().
+			addFilter(Filters.eq(SearchableField.TRASHED, false)).
+			//addFilter(Filters.eq(SearchableField.TITLE, filename)).
+			build()).await();
+		if (!br.getStatus().isSuccess())
+			throw new Exception(br.getStatus().getStatusMessage());
+		MetadataBuffer mb = br.getMetadataBuffer();
+		try {
+			Metadata md;
+			for (int i = 0; i < mb.getCount(); i++) {
+				md = mb.get(i);
+				
+				Log.v(TAG, "file found: " + md.getTitle());
+				
+				/*
+				if (md.isDataValid() && !md.isTrashed()) {
+					DriveId id = md.getDriveId();
+					if (!TextUtils.isEmpty(id.getResourceId()))
+						saveRID(filename, id.getResourceId());
+					return Drive.DriveApi.getFile(gac, id);
+				}
+				*/
+			}
+		} finally {
+			mb.release();
+		}
 	}
 	
 	public Metadata getMetadata(DriveFile df) throws Exception {
@@ -273,7 +307,6 @@ public class SyncGAC {
 	private DriveFile findFile(String filename) throws Exception {
 		Log.v(TAG, "Finding Uoccin file " + filename);
 		MetadataBufferResult br = getFolder().queryChildren(gac, new Query.Builder().
-		//MetadataBufferResult br = Drive.DriveApi.query(gac, new Query.Builder().
 			addFilter(Filters.eq(SearchableField.TRASHED, false)).
 			addFilter(Filters.eq(SearchableField.TITLE, filename)).
 			build()).await();
