@@ -1,17 +1,15 @@
 package net.ggelardi.uoccin;
 
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
-import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.PK;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
-import net.ggelardi.uoccin.serv.SyncGAC;
+import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.content.IntentSender.SendIntentException;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -29,25 +27,16 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveFolder;
-import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.OpenFileActivityBuilder;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.common.AccountPicker;
 
 public class MainActivity extends ActionBarActivity implements DrawerFragment.NavigationDrawerCallbacks,
-	BaseFragment.OnFragmentListener, ConnectionCallbacks, OnConnectionFailedListener {
+	BaseFragment.OnFragmentListener {
 	private static final String TAG = "MainActivity";
+	private static final int PICK_ACCOUNT_REQUEST = 99;
 	
 	private Session session;
 	private String lastView;
-	
-	private GoogleApiClient mGoogleApiClient;
-	private boolean notYetAuthorized = false;
 	
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -104,6 +93,13 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 			//
 		}
 		
+		if (session.backup() && TextUtils.isEmpty(session.driveAccount())) {
+			Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null,
+				new String[]{GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE},true,null,null,null,null) ;
+			startActivityForResult(googlePicker, PICK_ACCOUNT_REQUEST);
+		}
+		
+		/*
 		if (session.backup()) {
 			if (mGoogleApiClient == null)
 				mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Drive.API).addScope(Drive.SCOPE_FILE).
@@ -112,14 +108,17 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		} else if (mGoogleApiClient != null) {
 			mGoogleApiClient.disconnect();
 		}
+		*/
 	}
 	
 	@Override
 	protected void onPause() {
 		super.onPause();
 		
+		/*
 		if (mGoogleApiClient != null)
             mGoogleApiClient.disconnect();
+		*/
 	}
 	
 	@Override
@@ -174,6 +173,22 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	}
 	
 	@Override
+	protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+		if (requestCode == PICK_ACCOUNT_REQUEST && resultCode == RESULT_OK) {
+			//
+			String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+			Log.i(TAG, "Account name: " + accountName);
+			SharedPreferences.Editor editor = session.getPrefs().edit();
+			editor.putString(PK.GDRVNAME, accountName);
+			editor.commit();
+			//
+			Intent si = new Intent(this, Service.class);
+			si.setAction(Service.GDRIVE_RESTORE);
+			startService(si);
+		}
+	}
+	
+	@Override
 	public void onNavigationDrawerItemSelected(DrawerItem selection) {
 		if (selection.id.equals("settings")) {
 			return;
@@ -187,82 +202,6 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 			
 		}
 	}
-	
-	private static final int REQUEST_CODE_OPENER = 1;
-	
-	@Override
-	public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "GoogleApiClient connected.");
-        if (notYetAuthorized) {
-        	/*
-			Intent si = new Intent(this, Service.class);
-			si.setAction(Service.GDRIVE_RESTORE);
-			startService(si);
-			*/
-        	
-        	// select folder
-        	
-        	
-        	IntentSender intent = Drive.DriveApi.newOpenFileActivityBuilder()
-        		.setActivityTitle("Select the Uoccin folder")
-        		.setMimeType(new String[] { DriveFolder.MIME_TYPE, "application/vnd.google-apps.folder"})//, "application/json" })
-        		.build(mGoogleApiClient);
-        	try {
-				startIntentSenderForResult(intent, REQUEST_CODE_OPENER, null, 0, 0, 0);
-			} catch (SendIntentException e) {
-	            Log.e(TAG, "Exception while starting selection activity", e);
-			}
-        	
-        } else {
-        	
-        	Intent si = new Intent(this, Service.class);
-			si.setAction(Service.GDRIVE_TEST);
-			startService(si);
-        	
-        }
-	}
-	
-	@Override
-	public void onConnectionSuspended(int cause) {
-        Log.i(TAG, "GoogleApiClient connection suspended.");
-	}
-	
-	@Override
-	public void onConnectionFailed(ConnectionResult result) {
-        Log.i(TAG, "GoogleApiClient connection failed: " + result.toString());
-        if (!result.hasResolution()) {
-            // show the localized error dialog.
-            GooglePlayServicesUtil.getErrorDialog(result.getErrorCode(), this, 0).show();
-            return;
-        }
-        // the failure has a resolution (typically the app is not yet authorized).
-        try {
-        	notYetAuthorized = true;
-            result.startResolutionForResult(this, 1);
-        } catch (SendIntentException e) {
-            Log.e(TAG, "Exception while starting resolution activity", e);
-        }
-	}
-	
-	@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (data == null)
-			return;
-        switch(requestCode) {
-        case REQUEST_CODE_OPENER:
-            if (resultCode == RESULT_OK) {
-                DriveId driveId = (DriveId) data.getParcelableExtra(OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
-                
-                new SyncGAC(session).saveRID(Commons.GD.FOLDER, driveId.getResourceId());
-                
-            }
-            finish();
-            break;
-        default:
-            super.onActivityResult(requestCode, resultCode, data);
-            break;
-        }
-    }
 	
 	@Override
 	public void openSeriesInfo(String tvdb_id) {

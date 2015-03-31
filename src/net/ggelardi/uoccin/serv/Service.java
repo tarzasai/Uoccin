@@ -31,6 +31,7 @@ import android.util.Log;
 
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.Metadata;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.owlike.genson.GenericType;
 import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
@@ -46,8 +47,6 @@ public class Service extends IntentService {
 	public static final String CHECK_TVDB_RSS = "net.ggelardi.uoccin.CHECK_TVDB_RSS";
 	public static final String GDRIVE_BACKUP = "net.ggelardi.uoccin.GDRIVE_BACKUP";
 	public static final String GDRIVE_RESTORE = "net.ggelardi.uoccin.GDRIVE_RESTORE";
-	
-	public static final String GDRIVE_TEST = "net.ggelardi.uoccin.GDRIVE_TEST";
 	
 	private Session session;
 	private Genson genson;
@@ -113,11 +112,11 @@ public class Service extends IntentService {
 					restoreSeriesCollection();
 				if (what.equals("*") || what.equals(Commons.GD.SER_SEEN))
 					restoreSeriesWatched();
-			} else if (act.equals(GDRIVE_TEST) && session.backup()) {
-				
-				session.getGAC().listFiles();
-				
 			}
+		} catch (UserRecoverableAuthIOException err) {
+			Intent ei = err.getIntent();
+			ei.setAction(Commons.SN.CONNECT_FAIL);
+			sendBroadcast(ei);
 		} catch (Exception err) {
 			sendNotification(err);
 		} finally {
@@ -253,17 +252,23 @@ public class Service extends IntentService {
 			checkGenson();
 			content = genson.serialize(map);
 		}
+		/*
 		SyncGAC gdw = session.getGAC();
 		DriveFile gdf = gdw.getFile(Commons.GD.SER_WLST, true);
 		gdw.writeContent(gdf, content);
+		*/
+		new DriveCLJ(this).writeFile(Commons.GD.SER_WLST, content);
 	}
 	
 	private void restoreSeriesWatchlist() throws Exception {
+		/*
 		SyncGAC gdw = session.getGAC();
 		DriveFile gdf = gdw.getFile(Commons.GD.SER_WLST, false);
 		if (gdf == null)
 			return;
 		String content = gdw.readContent(gdf);
+		*/
+		String content = new DriveCLJ(this).readFile(Commons.GD.SER_WLST);
 		if (!TextUtils.isEmpty(content)) {
 			checkGenson();
 			Map<String, JsonSerWlst> map = genson.deserialize(content, new GenericType<Map<String, JsonSerWlst>>() {
@@ -326,17 +331,23 @@ public class Service extends IntentService {
 			checkGenson();
 			content = genson.serialize(map);
 		}
+		/*
 		SyncGAC gdw = session.getGAC();
 		DriveFile gdf = gdw.getFile(Commons.GD.SER_COLL, true);
 		gdw.writeContent(gdf, content);
+		*/
+		new DriveCLJ(this).writeFile(Commons.GD.SER_COLL, content);
 	}
 	
 	private void restoreSeriesCollection() throws Exception {
+		/*
 		SyncGAC gdw = session.getGAC();
 		DriveFile gdf = gdw.getFile(Commons.GD.SER_COLL, false);
 		if (gdf == null)
 			return;
 		String content = gdw.readContent(gdf);
+		*/
+		String content = new DriveCLJ(this).readFile(Commons.GD.SER_COLL);
 		if (!TextUtils.isEmpty(content)) {
 			checkGenson();
 			Map<String, String[]> map = genson.deserialize(content, new GenericType<Map<String, String[]>>() {
@@ -439,18 +450,24 @@ public class Service extends IntentService {
 			checkGenson();
 			content = genson.serialize(map);
 		}
+		/*
 		SyncGAC gdw = session.getGAC();
 		DriveFile gdf = gdw.getFile(Commons.GD.SER_SEEN, true);
 		gdw.writeContent(gdf, content);
+		*/
+		new DriveCLJ(this).writeFile(Commons.GD.SER_SEEN, content);
 	}
 	
 	@SuppressWarnings("unchecked")
 	private void restoreSeriesWatched() throws Exception {
+		/*
 		SyncGAC gdw = session.getGAC();
 		DriveFile gdf = gdw.getFile(Commons.GD.SER_SEEN, false);
 		if (gdf == null)
 			return;
 		String content = gdw.readContent(gdf);
+		*/
+		String content = new DriveCLJ(this).readFile(Commons.GD.SER_SEEN);
 		if (!TextUtils.isEmpty(content)) {
 			checkGenson();
 			Map<String, Map<String, Object>> map = genson.deserialize(content,

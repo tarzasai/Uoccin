@@ -46,6 +46,7 @@ public class Receiver extends BroadcastReceiver {
 	}
 	
 	private NotificationCompat.Builder getNotification(Session session) {
+		//Intent
 		PendingIntent pi = PendingIntent.getActivity(session.getContext(), 0, new Intent(session.getContext(),
 			MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 		NotificationCompat.Builder nb = new NotificationCompat.Builder(session.getContext()).setSmallIcon(

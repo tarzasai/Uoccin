@@ -5,6 +5,7 @@ import java.util.Locale;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons.PK;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Resources;
@@ -31,7 +32,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 	private final SharedPreferences prefs;
 	private final Storage dbhlp;
 	private SQLiteDatabase dbconn;
-	private SyncGAC gac;
+	//private SyncGAC gac;
 	
 	public Session(Context context) {
 		appContext = context.getApplicationContext();
@@ -47,14 +48,12 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		/*
 		if (key.equals(PK.GDRVBAK) && backup()) {
 			Intent si = new Intent(getContext(), Service.class);
 			si.setAction(Service.GDRIVE_RESTORE);
 			getContext().startService(si);
 			return;
 		}
-		*/
 	}
 	
 	public Context getContext() {
@@ -79,6 +78,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return dbconn;
 	}
 	
+	/*
 	public SyncGAC getGAC() {
 		if (!backup())
 			return null;
@@ -86,6 +86,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 			gac = new SyncGAC(this);
 		return gac;
 	}
+	*/
 	
 	public boolean isConnected() {
 		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -105,16 +106,20 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	// preferences
 	
-	public boolean backup() {
-		return prefs.getBoolean(PK.GDRVBAK, false);
-	}
-	
 	public String language() {
 		return prefs.getString(PK.LOCALE, Locale.getDefault().getLanguage());
 	}
 	
 	public boolean specials() {
 		return prefs.getBoolean(PK.SPECIALS, false);
+	}
+	
+	public boolean backup() {
+		return prefs.getBoolean(PK.GDRVBAK, false);
+	}
+	
+	public String driveAccount() {
+		return prefs.getString(PK.GDRVNAME, null);
 	}
 	
 	// utilities

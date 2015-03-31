@@ -1,15 +1,8 @@
 package net.ggelardi.uoccin.serv;
 
-import android.content.Intent;
-import android.text.TextUtils;
-import android.util.Log;
-
-import com.google.android.gms.drive.DriveFile;
-import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.events.ChangeEvent;
-import com.google.android.gms.drive.events.DriveEventService;
-
-public class DriveService extends DriveEventService {
+public class DriveService /*extends DriveEventService*/ {
+	// @formatter:off
+	/*
 	private static final String TAG = "DriveService";
 	
 	@Override
@@ -43,4 +36,6 @@ public class DriveService extends DriveEventService {
 			sendBroadcast(si);
 		}
 	}
+	*/
+	// @formatter:on
 }

@@ -1,37 +1,9 @@
 package net.ggelardi.uoccin.serv;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-
-import net.ggelardi.uoccin.serv.Commons.PK;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.text.TextUtils;
-import android.util.Log;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveApi.DriveContentsResult;
-import com.google.android.gms.drive.DriveApi.DriveIdResult;
-import com.google.android.gms.drive.DriveApi.MetadataBufferResult;
-import com.google.android.gms.drive.DriveContents;
-import com.google.android.gms.drive.DriveFile;
-import com.google.android.gms.drive.DriveFolder;
-import com.google.android.gms.drive.DriveFolder.DriveFileResult;
-import com.google.android.gms.drive.DriveFolder.DriveFolderResult;
-import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.DriveResource.MetadataResult;
-import com.google.android.gms.drive.Metadata;
-import com.google.android.gms.drive.MetadataBuffer;
-import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filters;
-import com.google.android.gms.drive.query.Query;
-import com.google.android.gms.drive.query.SearchableField;
 
 public class SyncGAC {
+	// @formatter:off
+	/*
 	private static final String TAG = "SyncGAC";
 	
 	private final Session session;
@@ -114,12 +86,9 @@ public class SyncGAC {
 			}
 		}
 		if (rid == null) {
-			/*
 			res = findFolder();
 			if (res == null)
 				res = createFolder();
-			*/
-			throw new Exception(Commons.SN.UFOLDER_FAIL);
 		}
 		return res;
 	}
@@ -184,36 +153,6 @@ public class SyncGAC {
 				res = createFile(filename);
 		}
 		return res;
-	}
-	
-	public void listFiles() throws Exception {
-		Log.v(TAG, "Listing Uoccin files in folder");
-		MetadataBufferResult br = getFolder().queryChildren(gac, new Query.Builder().
-			addFilter(Filters.eq(SearchableField.TRASHED, false)).
-			//addFilter(Filters.eq(SearchableField.TITLE, filename)).
-			build()).await();
-		if (!br.getStatus().isSuccess())
-			throw new Exception(br.getStatus().getStatusMessage());
-		MetadataBuffer mb = br.getMetadataBuffer();
-		try {
-			Metadata md;
-			for (int i = 0; i < mb.getCount(); i++) {
-				md = mb.get(i);
-				
-				Log.v(TAG, "file found: " + md.getTitle());
-				
-				/*
-				if (md.isDataValid() && !md.isTrashed()) {
-					DriveId id = md.getDriveId();
-					if (!TextUtils.isEmpty(id.getResourceId()))
-						saveRID(filename, id.getResourceId());
-					return Drive.DriveApi.getFile(gac, id);
-				}
-				*/
-			}
-		} finally {
-			mb.release();
-		}
 	}
 	
 	public Metadata getMetadata(DriveFile df) throws Exception {
@@ -343,4 +282,6 @@ public class SyncGAC {
 			throw new Exception(fr.getStatus().getStatusMessage());
 		return fr.getDriveFile();
 	}
+	*/
+	// @formatter:on
 }

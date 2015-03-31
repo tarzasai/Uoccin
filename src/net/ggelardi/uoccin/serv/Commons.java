@@ -35,10 +35,11 @@ public class Commons {
 	public static final String[] weekdays = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
 	
 	public static class PK {
-		public static final String GDRVBAK = "pk_gdrvbak";
 		public static final String STARTUP = "pk_startup";
 		public static final String LOCALE = "pk_locale";
 		public static final String SPECIALS = "pk_specials";
+		public static final String GDRVBAK = "pk_gdrvbak";
+		public static final String GDRVNAME = "pk_gdrv_account";
 		public static final String PINNGDFS = "pk_pinn_gdfiles";
 		public static final String NOTIFSND = "pk_notif_sound";
 		/*
