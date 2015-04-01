@@ -39,7 +39,7 @@ public class Commons {
 		public static final String LOCALE = "pk_locale";
 		public static final String SPECIALS = "pk_specials";
 		public static final String GDRVBAK = "pk_gdrvbak";
-		public static final String GDRVNAME = "pk_gdrv_account";
+		public static final String GDRVAUTH = "pk_gdrv_account";
 		public static final String PINNGDFS = "pk_pinn_gdfiles";
 		public static final String NOTIFSND = "pk_notif_sound";
 		/*
@@ -65,7 +65,6 @@ public class Commons {
 	
 	public static class SN {
 		public static final String CONNECT_FAIL = "net.ggelardi.uoccin.CONNECT_FAIL";
-		public static final String UFOLDER_FAIL = "net.ggelardi.uoccin.UFOLDER_FAIL";
 		public static final String GENERAL_FAIL = "net.ggelardi.uoccin.GENERAL_FAIL";
 		public static final String GENERAL_INFO = "net.ggelardi.uoccin.GENERAL_INFO";
 	}

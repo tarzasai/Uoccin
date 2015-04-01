@@ -31,24 +31,25 @@ public class Receiver extends BroadcastReceiver {
 		if (act.equals(Intent.ACTION_BOOT_COMPLETED)) {
 			session.registerAlarms();
 		} else if (act.equals(Commons.SN.CONNECT_FAIL)) {
-			NotificationCompat.Builder nb = getNotification(session).setContentText(
+			NotificationCompat.Builder nb = makeNotification(session, Commons.SN.CONNECT_FAIL).setContentText(
 				session.getString(R.string.notif_srv_gac_conn_fail));
 			nm.notify(NOTIF_CONNECT_FAIL, nb.build());
 		} else if (act.equals(Commons.SN.GENERAL_FAIL)) {
-			NotificationCompat.Builder nb = getNotification(session).setContentText(
+			NotificationCompat.Builder nb = makeNotification(session, null).setContentText(
 				intent.getExtras().getString("what"));
 			nm.notify(NOTIF_GENERAL_FAIL, nb.build());
 		} else if (act.equals(Commons.SN.GENERAL_INFO)) {
-			NotificationCompat.Builder nb = getNotification(session).setContentText(
+			NotificationCompat.Builder nb = makeNotification(session, null).setContentText(
 				intent.getExtras().getString("what"));
 			nm.notify(NOTIF_GENERAL_INFO, nb.build());
 		}
 	}
 	
-	private NotificationCompat.Builder getNotification(Session session) {
-		//Intent
-		PendingIntent pi = PendingIntent.getActivity(session.getContext(), 0, new Intent(session.getContext(),
-			MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+	private NotificationCompat.Builder makeNotification(Session session, String action) {
+		Intent ai = new Intent(session.getContext(), MainActivity.class);
+		if (action != null)
+			ai.setAction(action);
+		PendingIntent pi = PendingIntent.getActivity(session.getContext(), 0, ai, PendingIntent.FLAG_UPDATE_CURRENT);
 		NotificationCompat.Builder nb = new NotificationCompat.Builder(session.getContext()).setSmallIcon(
 			R.drawable.ic_notification).setContentTitle(session.getString(R.string.app_name)).setContentIntent(pi);
 		if (session.getPrefs().getBoolean(PK.NOTIFSND, true))

@@ -1,7 +1,9 @@
 package net.ggelardi.uoccin;
 
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
+import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.PK;
+import net.ggelardi.uoccin.serv.DriveCLJ;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import android.accounts.AccountManager;
@@ -29,11 +31,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 
 public class MainActivity extends ActionBarActivity implements DrawerFragment.NavigationDrawerCallbacks,
 	BaseFragment.OnFragmentListener {
 	private static final String TAG = "MainActivity";
-	private static final int PICK_ACCOUNT_REQUEST = 99;
+	private static final int REQUEST_ACCOUNT_PICKER = 1;
+	private static final int REQUEST_AUTHORIZATION = 2;
 	
 	private Session session;
 	private String lastView;
@@ -73,6 +77,18 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		lastView = session.getPrefs().getString(PK.STARTUP, "sernext");
 		if (savedInstanceState != null)
 			lastView = savedInstanceState.getString("lastView", lastView);
+		
+		Intent intent = getIntent();
+		String action = intent.getAction();
+		if (!TextUtils.isEmpty(action) && action.equals(Commons.SN.CONNECT_FAIL))
+			checkDrive();
+	}
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		String action = intent.getAction();
+		if (!TextUtils.isEmpty(action) && action.equals(Commons.SN.CONNECT_FAIL))
+			checkDrive();
 	}
 	
 	@Override
@@ -93,22 +109,11 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 			//
 		}
 		
-		if (session.backup() && TextUtils.isEmpty(session.driveAccount())) {
+		if (session.backup() && TextUtils.isEmpty(session.driveAuth())) {
 			Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null,
 				new String[]{GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE},true,null,null,null,null) ;
-			startActivityForResult(googlePicker, PICK_ACCOUNT_REQUEST);
+			startActivityForResult(googlePicker, REQUEST_ACCOUNT_PICKER);
 		}
-		
-		/*
-		if (session.backup()) {
-			if (mGoogleApiClient == null)
-				mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Drive.API).addScope(Drive.SCOPE_FILE).
-					addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
-			mGoogleApiClient.connect();
-		} else if (mGoogleApiClient != null) {
-			mGoogleApiClient.disconnect();
-		}
-		*/
 	}
 	
 	@Override
@@ -174,12 +179,12 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	
 	@Override
 	protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-		if (requestCode == PICK_ACCOUNT_REQUEST && resultCode == RESULT_OK) {
+		if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == RESULT_OK) {
 			//
-			String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-			Log.i(TAG, "Account name: " + accountName);
+			String authEmail = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+			Log.i(TAG, "Account name: " + authEmail);
 			SharedPreferences.Editor editor = session.getPrefs().edit();
-			editor.putString(PK.GDRVNAME, accountName);
+			editor.putString(PK.GDRVAUTH, authEmail);
 			editor.commit();
 			//
 			Intent si = new Intent(this, Service.class);
@@ -226,6 +231,22 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		//actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setTitle(mStoredTitle);
+	}
+	
+	private void checkDrive() {
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					new DriveCLJ(MainActivity.this).getFolder(true);
+				} catch (UserRecoverableAuthIOException e) {
+					startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+				} catch (Exception e) {
+					Toast.makeText(MainActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+				}
+			}
+		});
+		t.start();
 	}
 	
 	@SuppressLint("InflateParams")

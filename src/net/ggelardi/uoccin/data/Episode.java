@@ -387,7 +387,12 @@ public class Episode extends Title {
 	}
 	
 	public final void commit(String what) {
-		getSeries().commit(what);
+		if (isValid())
+			getSeries().commit(what);
+	}
+	
+	public boolean isValid() {
+		return !(TextUtils.isEmpty(tvdb_id) || TextUtils.isEmpty(series) || season < 0 || episode < 0);
 	}
 	
 	public boolean isNew() {

@@ -118,8 +118,8 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return prefs.getBoolean(PK.GDRVBAK, false);
 	}
 	
-	public String driveAccount() {
-		return prefs.getString(PK.GDRVNAME, null);
+	public String driveAuth() {
+		return prefs.getString(PK.GDRVAUTH, null);
 	}
 	
 	// utilities

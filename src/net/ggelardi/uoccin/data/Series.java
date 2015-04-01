@@ -467,6 +467,8 @@ public class Series extends Title {
 	}
 	
 	public final synchronized void commit(String what) {
+		if (!isValid())
+			return;
 		dispatch(OnTitleListener.WORKING, null);
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
@@ -488,16 +490,22 @@ public class Series extends Title {
 				ep.modified = false;
 			if (changes > 0)
 				reloadEpisodes();
-			if (what != null) {
+			if (!Title.ongoingBackupOperation && what != null) {
 				Intent si = new Intent(session.getContext(), Service.class);
 				si.setAction(Service.GDRIVE_BACKUP);
 				si.putExtra("what", what);
 				session.getContext().startService(si);
 			}
+		} catch (Exception err) {
+			Log.e(TAG, "commit", err);
 		} finally {
 			db.endTransaction();
 		}
 		dispatch(OnTitleListener.READY, null);
+	}
+	
+	public boolean isValid() {
+		return !(TextUtils.isEmpty(tvdb_id) || TextUtils.isEmpty(name) || TextUtils.isEmpty(status));
 	}
 	
 	public boolean isNew() {
