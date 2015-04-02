@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.ggelardi.uoccin.api.GSA;
 import net.ggelardi.uoccin.api.TNT;
 import net.ggelardi.uoccin.api.XML;
 import net.ggelardi.uoccin.data.Episode;
@@ -29,8 +30,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.gms.drive.DriveFile;
-import com.google.android.gms.drive.Metadata;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.owlike.genson.GenericType;
 import com.owlike.genson.Genson;
@@ -49,7 +48,7 @@ public class Service extends IntentService {
 	public static final String GDRIVE_RESTORE = "net.ggelardi.uoccin.GDRIVE_RESTORE";
 	
 	private Session session;
-	private DriveCLJ drive;
+	private GSA drive;
 	private Genson genson;
 	
 	public Service() {
@@ -235,11 +234,16 @@ public class Service extends IntentService {
 		}
 	}
 	
+	private void checkDrive() throws Exception {
+		if (drive == null)
+			drive = new GSA(this);
+	}
+	
 	private void checkGenson() {
-		if (genson != null)
-			return;
-		genson = new GensonBuilder().useIndentation(true). // DEBUG ONLY!
-		create();
+		if (genson == null)
+			genson = new GensonBuilder().
+				useIndentation(true). // DEBUG ONLY!
+				create();
 	}
 	
 	private void backupMovieWatchlist() {
@@ -262,15 +266,16 @@ public class Service extends IntentService {
 	
 	private void backupSeriesWatchlist() throws Exception {
 		try {
-			Map<String, JsonSerWlst> map = new HashMap<String, JsonSerWlst>();
+			checkDrive();
+			Map<String, JsonSeries> map = new HashMap<String, JsonSeries>();
 			Cursor cur = session.getDB().query("series", new String[] { "tvdb_id" }, "watchlist = 1", null, null,
 				null, "name collate nocase", null);
 			try {
 				Series ser;
-				JsonSerWlst obj;
+				JsonSeries obj;
 				while (cur.moveToNext()) {
 					ser = Series.get(this, cur.getString(0));
-					obj = new JsonSerWlst();
+					obj = new JsonSeries();
 					obj.name = ser.name;
 					obj.tags = ser.getTags().toArray(new String[ser.getTags().size()]);
 					obj.rating = ser.getRating();
@@ -284,9 +289,8 @@ public class Service extends IntentService {
 				checkGenson();
 				content = genson.serialize(map);
 			}
-			if (drive == null)
-				drive = new DriveCLJ(this);
 			drive.writeFile(Commons.GD.SER_WLST, content);
+			session.setDriveLastUpdate(Commons.GD.SER_WLST, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "backupSeriesWatchlist", err);
 			throw err;
@@ -295,13 +299,12 @@ public class Service extends IntentService {
 	
 	private void restoreSeriesWatchlist() throws Exception {
 		try {
-			if (drive == null)
-				drive = new DriveCLJ(this);
-			String content = drive.readFile(Commons.GD.SER_WLST);
+			checkDrive();
+			String content = drive.readFile(Commons.GD.SER_WLST, session.driveLastUpdateUTC(Commons.GD.SER_WLST));
 			if (!TextUtils.isEmpty(content)) {
 				checkGenson();
-				Map<String, JsonSerWlst> map = genson.deserialize(content,
-					new GenericType<Map<String, JsonSerWlst>>() {});
+				Map<String, JsonSeries> map = genson.deserialize(content,
+					new GenericType<Map<String, JsonSeries>>() {});
 				if (map.isEmpty())
 					return;
 				SQLiteDatabase db = session.getDB();
@@ -314,7 +317,7 @@ public class Service extends IntentService {
 					cv.putNull("tags");
 					db.update("series", cv, null, null);
 					// set new values
-					JsonSerWlst jsw;
+					JsonSeries jsw;
 					Series ser;
 					for (String tvdb_id : map.keySet()) {
 						jsw = map.get(tvdb_id);
@@ -339,6 +342,7 @@ public class Service extends IntentService {
 					db.endTransaction();
 				}
 			}
+			session.setDriveLastUpdate(Commons.GD.SER_WLST, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "restoreSeriesWatchlist", err);
 			throw err;
@@ -347,6 +351,7 @@ public class Service extends IntentService {
 	
 	private void backupSeriesCollection() throws Exception {
 		try {
+			checkDrive();
 			Map<String, String[]> map = new HashMap<String, String[]>();
 			Cursor cur = session.getDB().query("episode", new String[] { "series", "season", "episode" },
 				"collected = 1", null, null, null, "series, season, episode");
@@ -365,9 +370,8 @@ public class Service extends IntentService {
 				checkGenson();
 				content = genson.serialize(map);
 			}
-			if (drive == null)
-				drive = new DriveCLJ(this);
 			drive.writeFile(Commons.GD.SER_COLL, content);
+			session.setDriveLastUpdate(Commons.GD.SER_COLL, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "backupSeriesCollection", err);
 			throw err;
@@ -376,9 +380,8 @@ public class Service extends IntentService {
 	
 	private void restoreSeriesCollection() throws Exception {
 		try {
-			if (drive == null)
-				drive = new DriveCLJ(this);
-			String content = drive.readFile(Commons.GD.SER_COLL);
+			checkDrive();
+			String content = drive.readFile(Commons.GD.SER_COLL, session.driveLastUpdateUTC(Commons.GD.SER_COLL));
 			if (!TextUtils.isEmpty(content)) {
 				checkGenson();
 				Map<String, String[]> map = genson.deserialize(content, new GenericType<Map<String, String[]>>() {
@@ -429,6 +432,7 @@ public class Service extends IntentService {
 					db.endTransaction();
 				}
 			}
+			session.setDriveLastUpdate(Commons.GD.SER_COLL, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "restoreSeriesCollection", err);
 			throw err;
@@ -437,6 +441,7 @@ public class Service extends IntentService {
 	
 	private void backupSeriesWatched() throws Exception {
 		try {
+			checkDrive();
 			Map<String, Map<String, Object>> map = new HashMap<String, Map<String, Object>>();
 			Cursor cur = session.getDB().query("episode", new String[] { "series", "season", "episode" },
 				"watched = 1", null, null, null, "series, season, episode");
@@ -486,9 +491,8 @@ public class Service extends IntentService {
 				checkGenson();
 				content = genson.serialize(map);
 			}
-			if (drive == null)
-				drive = new DriveCLJ(this);
 			drive.writeFile(Commons.GD.SER_SEEN, content);
+			session.setDriveLastUpdate(Commons.GD.SER_SEEN, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "backupSeriesWatched", err);
 			throw err;
@@ -498,9 +502,8 @@ public class Service extends IntentService {
 	@SuppressWarnings("unchecked")
 	private void restoreSeriesWatched() throws Exception {
 		try {
-			if (drive == null)
-				drive = new DriveCLJ(this);
-			String content = drive.readFile(Commons.GD.SER_SEEN);
+			checkDrive();
+			String content = drive.readFile(Commons.GD.SER_SEEN, session.driveLastUpdateUTC(Commons.GD.SER_SEEN));
 			if (!TextUtils.isEmpty(content)) {
 				checkGenson();
 				Map<String, Map<String, Object>> map = genson.deserialize(content,
@@ -553,18 +556,14 @@ public class Service extends IntentService {
 					db.endTransaction();
 				}
 			}
+			session.setDriveLastUpdate(Commons.GD.SER_SEEN, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "restoreSeriesWatched", err);
 			throw err;
 		}
 	}
 	
-	static class DriveFileCombo {
-		DriveFile driveFile;
-		Metadata metadata;
-	}
-	
-	static class JsonSerWlst {
+	static class JsonSeries {
 		public String name;
 		public int rating;
 		public String[] tags;

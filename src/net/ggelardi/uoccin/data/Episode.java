@@ -271,7 +271,7 @@ public class Episode extends Title {
 	}
 
 	protected void load(Cursor cr) {
-		Log.v(TAG, "Loading episode " + tvdb_id);
+		Log.i(TAG, "Loading episode " + tvdb_id);
 		
 		int ci;
 		tvdb_id = cr.getString(cr.getColumnIndex("tvdb_id"));
@@ -311,7 +311,7 @@ public class Episode extends Title {
 	}
 	
 	protected void save(boolean isnew) {
-		Log.v(TAG, "Saving episode " + tvdb_id);
+		Log.i(TAG, "Saving episode " + tvdb_id);
 		
 		ContentValues cv = new ContentValues();
 		cv.put("tvdb_id", tvdb_id);
@@ -365,7 +365,7 @@ public class Episode extends Title {
 	}
 	
 	protected void delete() {
-		Log.v(TAG, "Deleting episode " + tvdb_id);
+		Log.i(TAG, "Deleting episode " + tvdb_id);
 		dispatch(OnTitleListener.WORKING, null);
 		session.getDB().delete(TABLE, "tvdb_id=?", new String[] { tvdb_id });
 		dispatch(OnTitleListener.READY, null);
@@ -373,7 +373,7 @@ public class Episode extends Title {
 	
 	public void refresh(boolean force) {
 		if (TextUtils.isEmpty(tvdb_id) && (TextUtils.isEmpty(series) || season <= 0 || episode <= 0)) {
-			Log.v(TAG, "Missing tvdb_id/series/season/episode, cannot update...");
+			Log.w(TAG, "Missing tvdb_id/series/season/episode, cannot update...");
 			return;
 		}
 		if (force)

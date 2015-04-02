@@ -1,5 +1,6 @@
 package net.ggelardi.uoccin.serv;
 
+import java.util.Calendar;
 import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
@@ -14,11 +15,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
 public class Session implements OnSharedPreferenceChangeListener {
+	private static final String TAG = "Session";
 	
 	private static Session singleton;
 	
@@ -104,7 +107,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		//
 	}
 	
-	// preferences
+	// user preferences
 	
 	public String language() {
 		return prefs.getString(PK.LOCALE, Locale.getDefault().getLanguage());
@@ -118,8 +121,34 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return prefs.getBoolean(PK.GDRVBAK, false);
 	}
 	
+	// app preferences / saved stuff
+	
 	public String driveAuth() {
 		return prefs.getString(PK.GDRVAUTH, null);
+	}
+	
+	public long driveLastUpdate(String filename) {
+		return prefs.getLong("pk_lastupd_" + filename, 0);
+	}
+	
+	public long driveLastUpdateUTC(String filename) {
+		long res = driveLastUpdate(filename);
+		if (res > 0 && !Calendar.getInstance().getTimeZone().getID().equals("UTC"))
+			res = Commons.convertTZ(res, Calendar.getInstance().getTimeZone().getID(), "UTC");
+		return res;
+	}
+	
+	public void setDriveAuth(String value) {
+		Log.v(TAG, "Account selected: " + value);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(PK.GDRVAUTH, value);
+		editor.commit();
+	}
+	
+	public void setDriveLastUpdate(String filename, long datetime) {
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putLong("pk_lastupd_" + filename, datetime);
+		editor.commit();
 	}
 	
 	// utilities

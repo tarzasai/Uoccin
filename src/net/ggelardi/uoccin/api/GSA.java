@@ -1,11 +1,14 @@
-package net.ggelardi.uoccin.serv;
+package net.ggelardi.uoccin.api;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Collections;
 
 import net.ggelardi.uoccin.R;
+import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -13,6 +16,7 @@ import android.util.Log;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.json.gson.GsonFactory;
@@ -20,27 +24,20 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.ParentReference;
 
-//http://stackoverflow.com/a/25871516/28852
-
-//http://developer.android.com/google/auth/http-auth.html
-//https://github.com/hanscappelle/more-android-examples/blob/master/DriveQuickstart/src/com/example/drivequickstart/MainActivity.java
-//https://github.com/gabrielemariotti/androiddev/tree/master/GoogleAccount/src/it/gmariotti/android/examples/googleaccount
-
-public class DriveCLJ {
-	private static final String TAG = "DriveCLJ";
+public class GSA {
+	private static final String TAG = "GSA";
 	
 	private final Session session;
-	private String account;
-	private GoogleAccountCredential credential;
-	private Drive service;
+	private final Drive service;
 	private File folder;
 	
-	public DriveCLJ(Context context) throws Exception {
+	public GSA(Context context) throws Exception {
 		session = Session.getInstance(context);
-		account = session.driveAuth();
-		credential = GoogleAccountCredential.usingOAuth2(context, Collections.singleton(DriveScopes.DRIVE));
-		credential.setSelectedAccountName(account);
+		GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(context,
+			Collections.singleton(DriveScopes.DRIVE));
+		credential.setSelectedAccountName(session.driveAuth());
 		service = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential).
 			setApplicationName(session.getString(R.string.app_name)).build();
 	}
@@ -65,7 +62,7 @@ public class DriveCLJ {
 		return folder;
 	}
 	
-	public String readFile(String filename) throws Exception {
+	public String readFile(String filename, long onlyAfterUTC) throws Exception {
 		Log.d(TAG, "Looking for file " + filename + "...");
 		FileList files = service.files().list().setQ("title = '" + filename + "' and trashed = false and '" +
 			getFolder(true).getId() + "' in parents").execute();
@@ -74,9 +71,13 @@ public class DriveCLJ {
 			return null;
 		}
 		File file = files.getItems().get(0);
+		if (onlyAfterUTC > 0 && file.getModifiedDate().getValue() < onlyAfterUTC) {
+			Log.d(TAG, "The file looks unchanged.");
+			return null;
+		}
 		String link = file.getDownloadUrl();
 		if (TextUtils.isEmpty(link)) {
-			Log.d(TAG, "The file doesn't have any content stored on Drive.");
+			Log.w(TAG, "The file doesn't have any content stored on Drive.");
 			return null;
 		}
 		Log.d(TAG, "Opening file at " + link);
@@ -96,7 +97,24 @@ public class DriveCLJ {
 		}
 	}
 	
-	public void writeFile(String filename, String content) {
-		//
+	public void writeFile(String filename, String content) throws Exception {
+		Log.d(TAG, "Looking for file " + filename + "...");
+		FileList files = service.files().list().setQ("title = '" + filename + "' and trashed = false and '" +
+			getFolder(true).getId() + "' in parents").execute();
+		String fileId = null;
+		if (files != null && !files.isEmpty() && files.getItems().size() > 0)
+			fileId = files.getItems().get(0).getId();
+		File body = new File();
+		body.setTitle(filename);
+		body.setMimeType("application/json");
+		body.setParents(Arrays.asList(new ParentReference().setId(getFolder(true).getId())));
+		ByteArrayContent bac = ByteArrayContent.fromString("text/plain", content);
+		if (TextUtils.isEmpty(fileId)) {
+			File file = service.files().insert(body, bac).execute();
+			Log.d(TAG, "Created file " + file.getId());
+		} else {
+			service.files().update(fileId, body, bac).execute();
+			Log.d(TAG, "Updated file " + fileId);
+		}
 	}
 }

@@ -284,7 +284,7 @@ public class Series extends Title {
 	}
 	
 	protected void load(Cursor cr) {
-		Log.v(TAG, "Loading series " + tvdb_id);
+		Log.i(TAG, "Loading series " + tvdb_id);
 		
 		int ci;
 		tvdb_id = cr.getString(cr.getColumnIndex("tvdb_id")); // it's already set btw...
@@ -346,7 +346,7 @@ public class Series extends Title {
 	}
 	
 	protected void save(boolean isnew) {
-		Log.v(TAG, "Saving series " + tvdb_id);
+		Log.i(TAG, "Saving series " + tvdb_id);
 		
 		ContentValues cv = new ContentValues();
 		cv.put("tvdb_id", tvdb_id);
@@ -429,7 +429,7 @@ public class Series extends Title {
 	}
 	
 	protected void delete() {
-		Log.v(TAG, "Deleting series " + tvdb_id);
+		Log.i(TAG, "Deleting series " + tvdb_id);
 		dispatch(OnTitleListener.WORKING, null);
 		session.getDB().delete(TABLE, "tvdb_id=?", new String[] { tvdb_id });
 		dispatch(OnTitleListener.READY, null);
@@ -732,6 +732,12 @@ public class Series extends Title {
 			} finally {
 				db.endTransaction();
 			}
+			if (!Title.ongoingBackupOperation) {
+				Intent si = new Intent(session.getContext(), Service.class);
+				si.setAction(Service.GDRIVE_BACKUP);
+				si.putExtra("what", Commons.GD.SER_COLL);
+				session.getContext().startService(si);
+			}
 			reloadEpisodes();
 		}
 		Episode.setDirtyFlags(tvdb_id, season, flag, null);
@@ -762,6 +768,12 @@ public class Series extends Title {
 			} finally {
 				db.endTransaction();
 			}
+			if (!Title.ongoingBackupOperation) {
+				Intent si = new Intent(session.getContext(), Service.class);
+				si.setAction(Service.GDRIVE_BACKUP);
+				si.putExtra("what", Commons.GD.SER_SEEN);
+				session.getContext().startService(si);
+			}
 			reloadEpisodes();
 		}
 		Episode.setDirtyFlags(tvdb_id, season, null, flag);
@@ -770,16 +782,4 @@ public class Series extends Title {
 		else
 			dispatch(OnTitleListener.READY, null);
 	}
-	
-	/*
-	public static class JsonColl {
-		public String name;
-		public String[] tags;
-	}
-	
-	public static class JsonSeen {
-		public String name;
-		public String[] tags;
-	}
-	*/
 }

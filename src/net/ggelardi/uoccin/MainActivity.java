@@ -1,9 +1,9 @@
 package net.ggelardi.uoccin;
 
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
+import net.ggelardi.uoccin.api.GSA;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.PK;
-import net.ggelardi.uoccin.serv.DriveCLJ;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import android.accounts.AccountManager;
@@ -11,13 +11,11 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -180,13 +178,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	@Override
 	protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
 		if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == RESULT_OK) {
-			//
-			String authEmail = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-			Log.i(TAG, "Account name: " + authEmail);
-			SharedPreferences.Editor editor = session.getPrefs().edit();
-			editor.putString(PK.GDRVAUTH, authEmail);
-			editor.commit();
-			//
+			session.setDriveAuth(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
 			Intent si = new Intent(this, Service.class);
 			si.setAction(Service.GDRIVE_RESTORE);
 			startService(si);
@@ -238,7 +230,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 			@Override
 			public void run() {
 				try {
-					new DriveCLJ(MainActivity.this).getFolder(true);
+					new GSA(MainActivity.this).getFolder(true);
 				} catch (UserRecoverableAuthIOException e) {
 					startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
 				} catch (Exception e) {
