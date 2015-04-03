@@ -95,7 +95,7 @@ public class SeriesAdapter extends BaseAdapter {
 		}
 		vh.img_ser_star.setTag(Integer.valueOf(position));
 		Series ser = getItem(position);
-		session.picasso(ser.poster).resize(pstWidth, pstHeight).into(vh.img_ser_pstr);
+		session.picasso(ser.poster, false).resize(pstWidth, pstHeight).into(vh.img_ser_pstr);
 		vh.img_ser_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
 		vh.txt_ser_name.setText(ser.name);
 		if (ser.isNew() || details.equals(SERIES_PLOT)) {

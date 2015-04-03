@@ -14,141 +14,140 @@
         android:contentDescription="@string/empty_text"
         android:src="@drawable/ic_action_image" />
 
-    <Space
-        android:layout_width="2dp"
-        android:layout_height="match_parent" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
 
-    <LinearLayout
-        android:id="@+id/box_seritm_size"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:padding="5dp" >
-
-        <TextView
-            android:id="@+id/txt_seritm_name"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:id="@+id/box_seritm_size"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lines="1"
-            android:text="@string/sample_title1"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textStyle="bold" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="5dp" >
 
             <TextView
-                android:id="@+id/txt_seritm_plot"
-                android:layout_width="match_parent"
+                android:id="@+id/txt_seritm_name"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
                 android:ellipsize="end"
-                android:lines="3"
-                android:text="@string/sample_plot1"
-                android:visibility="gone" />
+                android:lines="1"
+                android:text="@string/sample_title1"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
 
-            <LinearLayout
-                android:id="@+id/box_seritm_stat"
+            <RelativeLayout
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/txt_seritm_plot"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:ellipsize="end"
+                    android:lines="3"
+                    android:text="@string/sample_plot1"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/box_seritm_stat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/txt_seritm_coll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ics_action_storage"
+                        android:drawablePadding="4dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:lines="1"
+                        android:text="@string/sample_stat"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txt_seritm_seen"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ics_action_seen"
+                        android:drawablePadding="4dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:lines="1"
+                        android:text="@string/sample_stat"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/empty_text" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/box_seritm_epis"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:orientation="vertical"
+                    android:visibility="gone" >
+
+                    <TextView
+                        android:id="@+id/txt_seritm_epis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:text="@string/sample_episode"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txt_seritm_date"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:text="@string/sample_date1"
+                        android:textColor="@android:color/darker_gray"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/empty_text" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/txt_seritm_info"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:orientation="vertical" >
+                android:ellipsize="end"
+                android:gravity="end"
+                android:lines="1"
+                android:text="@string/sample_info"
+                android:textColor="@android:color/darker_gray" />
 
-                <TextView
-                    android:id="@+id/txt_seritm_coll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ics_action_storage"
-                    android:drawablePadding="4dp"
-                    android:ellipsize="end"
-                    android:gravity="center_vertical"
-                    android:lines="1"
-                    android:text="@string/sample_stat"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/txt_seritm_seen"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ics_action_seen"
-                    android:drawablePadding="4dp"
-                    android:ellipsize="end"
-                    android:gravity="center_vertical"
-                    android:lines="1"
-                    android:text="@string/sample_stat"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/empty_text" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/box_seritm_epis"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:orientation="vertical"
-                android:visibility="gone" >
-
-                <TextView
-                    android:id="@+id/txt_seritm_epis"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:lines="1"
-                    android:text="@string/sample_episode"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/txt_seritm_date"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:lines="1"
-                    android:text="@string/sample_date1"
-                    android:textColor="@android:color/darker_gray"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/empty_text" />
-
-            </LinearLayout>
-
-        </RelativeLayout>
-
-        <TextView
-            android:id="@+id/txt_seritm_info"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:gravity="end"
-            android:lines="1"
-            android:text="@string/sample_info"
-            android:textColor="@android:color/darker_gray" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
+        </LinearLayout>
 
         <ImageView
             android:id="@+id/img_seritm_star"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
             android:layout_margin="2dp"
             android:contentDescription="@string/empty_text"
             android:src="@drawable/ic_active_loved" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>
