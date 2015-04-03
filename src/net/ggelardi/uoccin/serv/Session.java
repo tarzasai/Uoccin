@@ -5,6 +5,8 @@ import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons.PK;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -103,8 +105,27 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
 	}
 	
+	private PendingIntent mkPI(String action) {
+		return PendingIntent.getBroadcast(appContext, 0, new Intent(appContext, Receiver.class).setAction(action),
+			PendingIntent.FLAG_UPDATE_CURRENT);
+	}
+	
 	public void registerAlarms() {
-		//
+		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+		// clean database cache a couple of times a day
+		PendingIntent cc = mkPI(Service.CLEAN_DB_CACHE);
+		am.cancel(cc);
+		am.setRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_DAY,
+			AlarmManager.INTERVAL_HALF_DAY, cc);
+		// check TVDB rss feed for premiers a couple of times a day
+		PendingIntent tv = mkPI(Service.CHECK_TVDB_RSS);
+		am.cancel(tv);
+		am.setRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_DAY,
+			AlarmManager.INTERVAL_HALF_DAY, tv);
+		
+		//https://developers.google.com/drive/web/manage-changes
+		//https://developers.google.com/drive/v2/reference/changes/list
+		
 	}
 	
 	// user preferences

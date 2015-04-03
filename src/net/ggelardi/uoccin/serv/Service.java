@@ -334,6 +334,7 @@ public class Service extends IntentService {
 						}
 					}
 					db.setTransactionSuccessful();
+					session.setDriveLastUpdate(Commons.GD.SER_WLST, System.currentTimeMillis());
 					// refresh in memory items
 					for (Series s : Series.cached())
 						s.reload();
@@ -342,7 +343,6 @@ public class Service extends IntentService {
 					db.endTransaction();
 				}
 			}
-			session.setDriveLastUpdate(Commons.GD.SER_WLST, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "restoreSeriesWatchlist", err);
 			throw err;
@@ -424,6 +424,7 @@ public class Service extends IntentService {
 						}
 					}
 					db.setTransactionSuccessful();
+					session.setDriveLastUpdate(Commons.GD.SER_COLL, System.currentTimeMillis());
 					// refresh in memory items
 					for (Series s : Series.cached())
 						s.reloadEpisodes();
@@ -432,7 +433,6 @@ public class Service extends IntentService {
 					db.endTransaction();
 				}
 			}
-			session.setDriveLastUpdate(Commons.GD.SER_COLL, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "restoreSeriesCollection", err);
 			throw err;
@@ -548,6 +548,7 @@ public class Service extends IntentService {
 							}
 					}
 					db.setTransactionSuccessful();
+					session.setDriveLastUpdate(Commons.GD.SER_SEEN, System.currentTimeMillis());
 					// refresh in memory items
 					for (Series s : Series.cached())
 						s.reloadEpisodes();
@@ -556,7 +557,6 @@ public class Service extends IntentService {
 					db.endTransaction();
 				}
 			}
-			session.setDriveLastUpdate(Commons.GD.SER_SEEN, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "restoreSeriesWatched", err);
 			throw err;
