@@ -13,6 +13,8 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
+
 public class Receiver extends BroadcastReceiver {
 	private static final String TAG = "Receiver";
 	
@@ -26,22 +28,27 @@ public class Receiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		Session session = Session.getInstance(context);
-		String act = intent.getAction();
-		Log.v(TAG, act);
-		if (act.equals(Intent.ACTION_BOOT_COMPLETED)) {
+		String action = intent.getAction();
+		Log.v(TAG, action);
+		if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
 			session.registerAlarms();
-		} else if (act.equals(Commons.SN.CONNECT_FAIL)) {
+		} else if (action.equals(Commons.SN.CONNECT_FAIL)) {
 			NotificationCompat.Builder nb = makeNotification(session, Commons.SN.CONNECT_FAIL).setContentText(
 				session.getString(R.string.notif_srv_gac_conn_fail));
 			nm.notify(NOTIF_CONNECT_FAIL, nb.build());
-		} else if (act.equals(Commons.SN.GENERAL_FAIL)) {
+		} else if (action.equals(Commons.SN.GENERAL_FAIL)) {
 			NotificationCompat.Builder nb = makeNotification(session, null).setContentText(
 				intent.getExtras().getString("what"));
 			nm.notify(NOTIF_GENERAL_FAIL, nb.build());
-		} else if (act.equals(Commons.SN.GENERAL_INFO)) {
+		} else if (action.equals(Commons.SN.GENERAL_INFO)) {
 			NotificationCompat.Builder nb = makeNotification(session, null).setContentText(
 				intent.getExtras().getString("what"));
 			nm.notify(NOTIF_GENERAL_INFO, nb.build());
+		} else if (action.equals(Service.CLEAN_DB_CACHE) || action.equals(Service.GDRIVE_CHECK)) {
+			Intent si = new Intent(context, Service.class);
+			si.setAction(action);
+			//context.startService(si);
+			WakefulIntentService.sendWakefulWork(context, si);
 		}
 	}
 	

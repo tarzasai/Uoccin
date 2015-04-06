@@ -176,7 +176,6 @@ public class SeriesInfoFragment extends BaseFragment {
 		Series.addOnTitleEventListener(new OnTitleListener() {
 			@Override
 			public void changed(final String state, final Throwable error) {
-				//Log.v(logTag(), state);
 				final Activity context = getActivity();
 				if (context != null)
 					context.runOnUiThread(new Runnable() {
@@ -206,8 +205,8 @@ public class SeriesInfoFragment extends BaseFragment {
 		pstHeight = Math.round((pstWidth*140)/758);
 		
 		series = Series.get(getActivity(), tvdb_id);
-		if (series.isNew())
-			series.refresh(false);
+		if (series.episodes == null || series.episodes.isEmpty())
+			series.refresh(true);
 		else
 			showInfo();
 	}

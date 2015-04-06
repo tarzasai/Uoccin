@@ -19,6 +19,7 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -37,7 +38,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 	private final SharedPreferences prefs;
 	private final Storage dbhlp;
 	private SQLiteDatabase dbconn;
-	//private SyncGAC gac;
 	
 	public Session(Context context) {
 		appContext = context.getApplicationContext();
@@ -48,16 +48,21 @@ public class Session implements OnSharedPreferenceChangeListener {
 		dbhlp = new Storage(appContext);
 		
 		//getDB().execSQL("update series set timestamp = 1");
-		
 	}
 	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (key.equals(PK.GDRVBAK) && backup()) {
-			Intent si = new Intent(getContext(), Service.class);
+		if (key.equals(PK.TVDBFEED))
+			registerAlarms();
+		else if (key.equals(PK.GDRVSYNC)) {
+			registerAlarms();
+			if (driveEnabled() && TextUtils.isEmpty(driveUserAccount()))
+				appContext.sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
+		} else if (key.equals(PK.GDRVAUTH) && !TextUtils.isEmpty(driveUserAccount())) {
+			Intent si = new Intent(appContext, Service.class);
 			si.setAction(Service.GDRIVE_RESTORE);
-			getContext().startService(si);
-			return;
+			//appContext.startService(si);
+			WakefulIntentService.sendWakefulWork(appContext, si);
 		}
 	}
 	
@@ -83,16 +88,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return dbconn;
 	}
 	
-	/*
-	public SyncGAC getGAC() {
-		if (!backup())
-			return null;
-		if (gac == null)
-			gac = new SyncGAC(this);
-		return gac;
-	}
-	*/
-	
 	public boolean isConnected() {
 		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = cm.getActiveNetworkInfo();
@@ -115,58 +110,75 @@ public class Session implements OnSharedPreferenceChangeListener {
 		// clean database cache a couple of times a day
 		PendingIntent cc = mkPI(Service.CLEAN_DB_CACHE);
 		am.cancel(cc);
-		am.setRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_DAY,
+		am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_DAY,
 			AlarmManager.INTERVAL_HALF_DAY, cc);
 		// check TVDB rss feed for premiers a couple of times a day
 		PendingIntent tv = mkPI(Service.CHECK_TVDB_RSS);
 		am.cancel(tv);
-		am.setRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_DAY,
-			AlarmManager.INTERVAL_HALF_DAY, tv);
-		
-		//https://developers.google.com/drive/web/manage-changes
-		//https://developers.google.com/drive/v2/reference/changes/list
-		
+		if (checkPremieres())
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_DAY,
+				AlarmManager.INTERVAL_HALF_DAY, tv);
+		// check Uoccin files changes in Drive every 15 mins
+		PendingIntent gd = mkPI(Service.GDRIVE_CHECK);
+		am.cancel(gd);
+		if (driveEnabled())
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+				AlarmManager.INTERVAL_FIFTEEN_MINUTES, gd);
 	}
 	
 	// user preferences
 	
 	public String language() {
-		return prefs.getString(PK.LOCALE, Locale.getDefault().getLanguage());
+		return prefs.getString(PK.LANGUAGE, Locale.getDefault().getLanguage());
 	}
 	
 	public boolean specials() {
 		return prefs.getBoolean(PK.SPECIALS, false);
 	}
 	
-	public boolean backup() {
-		return prefs.getBoolean(PK.GDRVBAK, false);
+	public boolean checkPremieres() {
+		return prefs.getBoolean(PK.TVDBFEED, false);
 	}
 	
-	// app preferences / saved stuff
+	public boolean driveEnabled() {
+		return prefs.getBoolean(PK.GDRVSYNC, false);
+	}
 	
-	public String driveAuth() {
+	// app saved stuff
+	
+	public String driveUserAccount() {
 		return prefs.getString(PK.GDRVAUTH, null);
 	}
 	
-	public long driveLastUpdate(String filename) {
+	public long driveLastChangeID() {
+		return prefs.getLong(PK.GDRVLCID, 0);
+	}
+	
+	public long driveLastFileUpdate(String filename) {
 		return prefs.getLong("pk_lastupd_" + filename, 0);
 	}
 	
-	public long driveLastUpdateUTC(String filename) {
-		long res = driveLastUpdate(filename);
+	public long driveLastFileUpdateUTC(String filename) {
+		long res = driveLastFileUpdate(filename);
 		if (res > 0 && !Calendar.getInstance().getTimeZone().getID().equals("UTC"))
 			res = Commons.convertTZ(res, Calendar.getInstance().getTimeZone().getID(), "UTC");
 		return res;
 	}
 	
-	public void setDriveAuth(String value) {
+	public void setDriveUserAccount(String value) {
 		Log.v(TAG, "Account selected: " + value);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(PK.GDRVAUTH, value);
 		editor.commit();
 	}
 	
-	public void setDriveLastUpdate(String filename, long datetime) {
+	public void setDriveLastChangeID(long value) {
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putLong(PK.GDRVLCID, value);
+		editor.commit();
+	}
+	
+	public void setDriveLastFileUpdate(String filename, long datetime) {
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong("pk_lastupd_" + filename, datetime);
 		editor.commit();

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.ggelardi.uoccin.data.Episode;
+import net.ggelardi.uoccin.data.Series;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -30,9 +31,9 @@ public class EpisodeTask extends AsyncTask<String, Void, List<Episode>> {
     @Override
 	protected List<Episode> doInBackground(String... params) {
     	List<Episode> res;
-    	if (type.equals(LIST))
-    		res = Episode.cached(params[0], Integer.parseInt(params[1]));
-    	else {
+    	if (type.equals(LIST)) {
+    		res = Series.get(container.getContext(), params[0]).episodes(Integer.parseInt(params[1]));
+    	} else {
     		String query = params[0];
     		String[] args = new String[params.length - 1];
     		System.arraycopy(params, 1, args, 0, params.length - 1);

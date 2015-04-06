@@ -8,7 +8,6 @@ import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
 import android.text.TextUtils;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -95,8 +94,7 @@ public class EpisodeAdapter extends BaseAdapter {
 		vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ? R.drawable.ics_active_news : 0,
 			0, 0, 0);
 		vh.txt_date.setText(ep.firstAired());
-		vh.txt_date.setCompoundDrawablesWithIntrinsicBounds(DateUtils.isToday(ep.firstAired) ?
-			R.drawable.ics_active_calendar : 0, 0, 0, 0);
+		vh.txt_date.setCompoundDrawablesWithIntrinsicBounds(ep.isToday() ? R.drawable.ics_active_calendar : 0, 0, 0, 0);
 		if (ep.hasSubtitles()) {
 			vh.txt_subs.setText(ep.subtitles());
 			vh.txt_subs.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ics_active_subtitles, 0, 0, 0);

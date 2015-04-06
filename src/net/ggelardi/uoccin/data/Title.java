@@ -7,7 +7,7 @@ public class Title {
 	
 	protected static final List<OnTitleListener> listeners = new ArrayList<OnTitleListener>();
 	
-	public static boolean ongoingBackupOperation = false;
+	public static boolean ongoingServiceOperation = false;
 	
 	public static void addOnTitleEventListener(OnTitleListener aListener) {
 		listeners.add(aListener);

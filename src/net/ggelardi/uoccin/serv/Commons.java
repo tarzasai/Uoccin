@@ -35,21 +35,14 @@ public class Commons {
 	public static final String[] weekdays = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
 	
 	public static class PK {
-		public static final String STARTUP = "pk_startup";
-		public static final String LOCALE = "pk_locale";
+		public static final String STARTUPV = "pk_startup";
+		public static final String LANGUAGE = "pk_locale";
 		public static final String SPECIALS = "pk_specials";
-		public static final String GDRVBAK = "pk_gdrvbak";
+		public static final String TVDBFEED = "pk_tvdbrss";
+		public static final String GDRVSYNC = "pk_gdrvbak";
 		public static final String GDRVAUTH = "pk_gdrv_account";
-		public static final String PINNGDFS = "pk_pinn_gdfiles";
+		public static final String GDRVLCID = "pk_gdrv_lastcid";
 		public static final String NOTIFSND = "pk_notif_sound";
-		/*
-		public static final String TSYNCMW = "pk_tsyncmw";
-		public static final String TSYNCMC = "pk_tsyncmc";
-		public static final String TSYNCMS = "pk_tsyncms";
-		public static final String TSYNCSW = "pk_tsyncsw";
-		public static final String TSYNCSC = "pk_tsyncsc";
-		public static final String TSYNCSS = "pk_tsyncss";
-		*/
 	}
 	
 	public static class GD {

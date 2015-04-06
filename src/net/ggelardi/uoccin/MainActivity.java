@@ -1,5 +1,6 @@
 package net.ggelardi.uoccin;
 
+import net.ggelardi.uoccin.adapters.DrawerAdapter;
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
 import net.ggelardi.uoccin.api.GSA;
 import net.ggelardi.uoccin.serv.Commons;
@@ -13,66 +14,98 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 
-public class MainActivity extends ActionBarActivity implements DrawerFragment.NavigationDrawerCallbacks,
-	BaseFragment.OnFragmentListener {
+public class MainActivity extends ActionBarActivity implements BaseFragment.OnFragmentListener {
 	private static final String TAG = "MainActivity";
 	private static final int REQUEST_ACCOUNT_PICKER = 1;
 	private static final int REQUEST_AUTHORIZATION = 2;
 	
 	private Session session;
+    private Toolbar toolbar;
+    private DrawerLayout drawer;
+	private DrawerAdapter drawerData;
+	private ListView drawerList;
+	private ProgressBar progressBar;
+	private CharSequence lastTitle;
 	private String lastView;
-	
-	/**
-	 * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-	 */
-	private DrawerFragment mDrawerFragment;
-	
-	/**
-	 * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-	 */
-	private CharSequence mStoredTitle;
+	private int pbCount = 0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_main);
-		
+
 		session = Session.getInstance(this);
 		
-		mDrawerFragment = (DrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
-		mDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
+		toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationIcon(R.drawable.ic_drawer);
+        
+        drawer = (DrawerLayout) findViewById(R.id.drawer);
+        drawer.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
+        drawer.setDrawerListener(new DrawerListener() {
+			@Override
+			public void onDrawerStateChanged(int state) {
+			}
+			@Override
+			public void onDrawerSlide(View view, float offset) {
+			}
+			@Override
+			public void onDrawerOpened(View view) {
+				supportInvalidateOptionsMenu();
+			}
+			@Override
+			public void onDrawerClosed(View view) {
+				supportInvalidateOptionsMenu();
+			}
+		});
+        
+        drawerData = new DrawerAdapter(this);
+        
+		drawerList = (ListView) findViewById(R.id.drawer_list);
+		drawerList.setAdapter(drawerData);
+		drawerList.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				drawer.closeDrawer(Gravity.START);
+				openDrawerItem(drawerData.getItem(position));
+			}
+		});
 		
-		mStoredTitle = getTitle();
+		progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+		dropHourGlass();
+        
+		lastTitle = getTitle();
 		
-		ActionBar ab = getSupportActionBar();
-		ab.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO);
-		//ab.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_USE_LOGO);
-		//ab.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
-		//ab.setDisplayHomeAsUpEnabled(true);
-		//ab.setDisplayUseLogoEnabled(true);
-		//ab.setHomeButtonEnabled(true);
-		ab.setIcon(R.mipmap.ic_launcher);
-		
-		lastView = session.getPrefs().getString(PK.STARTUP, "sernext");
+		lastView = session.getPrefs().getString(PK.STARTUPV, "sernext");
 		if (savedInstanceState != null)
 			lastView = savedInstanceState.getString("lastView", lastView);
 		
@@ -91,8 +124,8 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	
 	@Override
 	public void onBackPressed() {
-		if (mDrawerFragment.isDrawerOpen())
-			mDrawerFragment.closeDrawer();
+		if (drawer.isDrawerOpen(Gravity.START))
+			drawer.closeDrawer(Gravity.START);
 		else
 			super.onBackPressed();
 	}
@@ -102,12 +135,12 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		super.onResume();
 		
 		try {
-		mDrawerFragment.selectItem(lastView);
-		} catch (Exception e) {
-			//
+			openDrawerItem(drawerData.findItem(lastView));
+		} catch (Exception err) {
+			Log.e(TAG, "onResume", err);
 		}
 		
-		if (session.backup() && TextUtils.isEmpty(session.driveAuth())) {
+		if (session.driveEnabled() && TextUtils.isEmpty(session.driveUserAccount())) {
 			Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null,
 				new String[]{GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE},true,null,null,null,null) ;
 			startActivityForResult(googlePicker, REQUEST_ACCOUNT_PICKER);
@@ -117,11 +150,6 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	@Override
 	protected void onPause() {
 		super.onPause();
-		
-		/*
-		if (mGoogleApiClient != null)
-            mGoogleApiClient.disconnect();
-		*/
 	}
 	
 	@Override
@@ -129,7 +157,7 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		super.onRestoreInstanceState(savedInstanceState);
 		
 		if (savedInstanceState != null)
-			lastView = savedInstanceState.getString("lastView");
+			lastView = savedInstanceState.getString("lastView", session.getPrefs().getString(PK.STARTUPV, "sernext"));
 	}
 	
 	@Override
@@ -141,15 +169,17 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if (!mDrawerFragment.isDrawerOpen()) {
-			// Only show items in the action bar relevant to this screen
-			// if the drawer is not showing. Otherwise, let the drawer
-			// decide what to show in the action bar.
+		ActionBar actionBar = getSupportActionBar();
+		actionBar.setDisplayShowTitleEnabled(true);
+		//
+		if (drawer.isDrawerOpen(Gravity.START)) {
+			getMenuInflater().inflate(R.menu.global, menu);
+			actionBar.setTitle(R.string.app_name);
+		} else {
 			getMenuInflater().inflate(R.menu.main, menu);
-			restoreActionBar();
-			return true;
+			actionBar.setTitle(lastTitle);
 		}
-		return super.onCreateOptionsMenu(menu);
+		return true;
 	}
 	
 	@Override
@@ -157,47 +187,75 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_search) {
-			searchDialog();
-			return true;
-		}
-		if (id == R.id.action_settings) {
-			startActivity(new Intent(this, SettingsActivity.class));
-			return true;
+		switch (item.getItemId()) {
+			case android.R.id.home:
+				if (drawer.isDrawerOpen(Gravity.START))
+					drawer.closeDrawer(Gravity.START);
+				else
+					drawer.openDrawer(Gravity.START);
+				return true;
+			case R.id.action_search:
+				searchDialog();
+				return true;
+			case R.id.action_settings:
+				startActivity(new Intent(this, SettingsActivity.class));
+				return true;
+			case R.id.action_test_tvdb:
+				Intent t1 = new Intent(this, Service.class);
+				t1.setAction(Service.CHECK_TVDB_RSS);
+				WakefulIntentService.sendWakefulWork(this, t1);
+				return true;
+			case R.id.action_test_drive:
+				Intent t2 = new Intent(this, Service.class);
+				t2.setAction(Service.GDRIVE_CHECK);
+				WakefulIntentService.sendWakefulWork(this, t2);
+				return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 	
 	@Override
 	public void setTitle(CharSequence title) {
-		mStoredTitle = title;
-		getSupportActionBar().setTitle(mStoredTitle);
+		lastTitle = title;
+		getSupportActionBar().setTitle(lastTitle);
 	}
 	
 	@Override
 	protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-		if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == RESULT_OK) {
-			session.setDriveAuth(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
-			Intent si = new Intent(this, Service.class);
-			si.setAction(Service.GDRIVE_RESTORE);
-			startService(si);
-		}
+		if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == RESULT_OK)
+			session.setDriveUserAccount(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
 	}
 	
-	@Override
-	public void onNavigationDrawerItemSelected(DrawerItem selection) {
+	public void openDrawerItem(DrawerItem selection) {
 		if (selection.id.equals("settings")) {
+			startActivity(new Intent(this, SettingsActivity.class));
 			return;
 		}
+		dropHourGlass();
 		lastView = selection.id;
+		drawerList.setItemChecked(selection.position, true);
 		if (selection.type.equals(DrawerItem.SERIES))
 			getSupportFragmentManager().beginTransaction().replace(R.id.container,
 				SeriesListFragment.newQuery(selection.label, selection.query, selection.details,
 					(String[]) null)).commit();
 		else if (selection.type.equals(DrawerItem.MOVIE)) {
-			
+			//
 		}
+	}
+	
+	@Override
+	public void fragmentAttached(BaseFragment fragment) {
+		dropHourGlass();
+		// anything else?
+	}
+	
+	@Override
+	public void showHourGlass(boolean value) {
+		if (value)
+			pbCount++;
+		else
+			pbCount--;
+		progressBar.setVisibility(pbCount > 0 ? View.VISIBLE : View.GONE);
 	}
 	
 	@Override
@@ -218,11 +276,9 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 				EpisodeInfoFragment.newInstance(tvdb_id, season, episode)).addToBackStack(null).commit();
 	}
 	
-	private void restoreActionBar() {
-		ActionBar actionBar = getSupportActionBar();
-		//actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-		actionBar.setDisplayShowTitleEnabled(true);
-		actionBar.setTitle(mStoredTitle);
+	private void dropHourGlass() {
+		pbCount = 0;
+		progressBar.setVisibility(View.GONE);
 	}
 	
 	private void checkDrive() {
@@ -233,8 +289,9 @@ public class MainActivity extends ActionBarActivity implements DrawerFragment.Na
 					new GSA(MainActivity.this).getFolder(true);
 				} catch (UserRecoverableAuthIOException e) {
 					startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
-				} catch (Exception e) {
-					Toast.makeText(MainActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+				} catch (Exception err) {
+					Log.e(TAG, "checkDrive", err);
+					Toast.makeText(MainActivity.this, err.getLocalizedMessage(), Toast.LENGTH_LONG).show();
 				}
 			}
 		});

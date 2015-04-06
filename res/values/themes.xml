@@ -1,24 +1,31 @@
 <resources>
-
-    <style name="Theme.UoccinOrangeTheme" parent="Theme.AppCompat.Light">
-
+    <style name="AppTheme" parent="AppTheme.Base"/>
+    
         <!-- colorPrimary is used for the default action bar background -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-
         <!-- colorPrimaryDark is used for the status bar -->
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-
         <!--
          colorAccent is used as the default value for colorControlActivated,
          which is used to tint widgets
         -->
-        <item name="colorAccent">@color/colorAccent</item>
-
         <!--
          You can also set colorControlNormal, colorControlActivated
          colorControlHighlight, and colorSwitchThumbNormal.
         -->
-
+ 
+    <style name="AppTheme.Base" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
     </style>
+
+        <!--
+    <style name="Theme.UoccinOrangeTheme" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+        -->
 
 </resources>

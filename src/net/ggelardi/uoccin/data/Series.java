@@ -26,6 +26,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
+
 public class Series extends Title {
     private static final String TAG = "Series";
 	private static final String TABLE = "series";
@@ -94,8 +96,10 @@ public class Series extends Title {
 		String tvdb_id = xml.getElementsByTagName("id").item(0).getTextContent();
 		Series res = Series.getInstance(context, tvdb_id);
 		res.load(xml);
+		/* no commit here
 		if (!res.isNew())
 			res.commit(null);
+		*/
 		return res;
 	}
 	
@@ -284,8 +288,7 @@ public class Series extends Title {
 	}
 	
 	protected void load(Cursor cr) {
-		Log.i(TAG, "Loading series " + tvdb_id);
-		
+		Log.v(TAG, "Loading series " + tvdb_id);
 		int ci;
 		tvdb_id = cr.getString(cr.getColumnIndex("tvdb_id")); // it's already set btw...
 		name = cr.getString(cr.getColumnIndex("name"));
@@ -343,11 +346,11 @@ public class Series extends Title {
 		watchlist = cr.getInt(cr.getColumnIndex("watchlist")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
 		reloadEpisodes();
+		Log.v(TAG, "Loaded series " + tvdb_id);
 	}
 	
 	protected void save(boolean isnew) {
-		Log.i(TAG, "Saving series " + tvdb_id);
-		
+		Log.d(TAG, "Saving series " + tvdb_id);
 		ContentValues cv = new ContentValues();
 		cv.put("tvdb_id", tvdb_id);
 		cv.put("name", name);
@@ -426,12 +429,14 @@ public class Series extends Title {
 			session.getDB().insertOrThrow(TABLE, null, cv);
 		else
 			session.getDB().update(TABLE, cv, "tvdb_id=?", new String[] { tvdb_id });
+		Log.i(TAG, "Saved series " + tvdb_id);
 	}
 	
 	protected void delete() {
-		Log.i(TAG, "Deleting series " + tvdb_id);
 		dispatch(OnTitleListener.WORKING, null);
+		Log.d(TAG, "Deleting series " + tvdb_id);
 		session.getDB().delete(TABLE, "tvdb_id=?", new String[] { tvdb_id });
+		Log.i(TAG, "Deleted series " + tvdb_id);
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -458,12 +463,15 @@ public class Series extends Title {
 	}
 	
 	public void refresh(boolean force) {
-		if (force)
-			timestamp = 100;
-		Intent si = new Intent(session.getContext(), Service.class);
-		si.setAction(Service.REFRESH_SERIES);
-		si.putExtra("tvdb_id", tvdb_id);
-		session.getContext().startService(si);
+		if (Title.ongoingServiceOperation)
+			return;
+		if (isOld() || force) {
+			Intent si = new Intent(session.getContext(), Service.class);
+			si.setAction(Service.REFRESH_SERIES);
+			si.putExtra("tvdb_id", tvdb_id);
+			//session.getContext().startService(si);
+			WakefulIntentService.sendWakefulWork(session.getContext(), si);
+		}
 	}
 	
 	public final synchronized void commit(String what) {
@@ -490,11 +498,12 @@ public class Series extends Title {
 				ep.modified = false;
 			if (changes > 0)
 				reloadEpisodes();
-			if (!Title.ongoingBackupOperation && what != null) {
+			if (!Title.ongoingServiceOperation && what != null) {
 				Intent si = new Intent(session.getContext(), Service.class);
 				si.setAction(Service.GDRIVE_BACKUP);
 				si.putExtra("what", what);
-				session.getContext().startService(si);
+				//session.getContext().startService(si);
+				WakefulIntentService.sendWakefulWork(session.getContext(), si);
 			}
 		} catch (Exception err) {
 			Log.e(TAG, "commit", err);
@@ -505,7 +514,7 @@ public class Series extends Title {
 	}
 	
 	public boolean isValid() {
-		return !(TextUtils.isEmpty(tvdb_id) || TextUtils.isEmpty(name) || TextUtils.isEmpty(status));
+		return !(TextUtils.isEmpty(tvdb_id) || TextUtils.isEmpty(name) || episodes == null || episodes.isEmpty());
 	}
 	
 	public boolean isNew() {
@@ -524,8 +533,8 @@ public class Series extends Title {
 		if (value != watchlist) {
 			watchlist = value;
 			modified = true;
-			if (TextUtils.isEmpty(status))
-				refresh(false);
+			if (!isValid())
+				refresh(true);
 			else
 				commit(Commons.GD.SER_WLST);
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_ser : R.string.msg_wlst_del_ser);
@@ -542,8 +551,8 @@ public class Series extends Title {
 		if (value != rating) {
 			rating = value;
 			modified = true;
-			if (TextUtils.isEmpty(status))
-				refresh(false);
+			if (!isValid())
+				refresh(true);
 			else
 				commit(Commons.GD.SER_WLST);
 		}
@@ -564,8 +573,8 @@ public class Series extends Title {
 	public void setTags(String[] values) {
 		tags = new ArrayList<String>(Arrays.asList(values));
 		modified = true;
-		if (TextUtils.isEmpty(status))
-			refresh(false);
+		if (!isValid())
+			refresh(true);
 		else
 			commit(Commons.GD.SER_WLST);
 	}
@@ -575,8 +584,8 @@ public class Series extends Title {
 		if (!hasTag(tag)) {
 			tags.add(tag);
 			modified = true;
-			if (TextUtils.isEmpty(status))
-				refresh(false);
+			if (!isValid())
+				refresh(true);
 			else
 				commit(Commons.GD.SER_WLST);
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), tag);
@@ -589,8 +598,8 @@ public class Series extends Title {
 		if (hasTag(tag)) {
 			tags.remove(tag);
 			modified = true;
-			if (TextUtils.isEmpty(status))
-				refresh(false);
+			if (!isValid())
+				refresh(true);
 			else
 				commit(Commons.GD.SER_WLST);
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), tag);
@@ -651,11 +660,26 @@ public class Series extends Title {
 		return genres.isEmpty() ? "N/A" : TextUtils.join(", ", genres);
 	}
 	
+	public List<Episode> episodes(int season) {
+		List<Episode> res = new ArrayList<Episode>();
+		for (Episode ep:episodes)
+			if (ep.season == season)
+				res.add(ep);
+		return res;
+	}
+	
 	public Episode lastEpisode() {
 		for (int i = episodes.size() - 1; i >= 0; i--)
 			if (episodes.get(i).firstAired < System.currentTimeMillis())
 				return episodes.get(i);
 		return null;
+	}
+	
+	public Episode lastEpisode(int season) {
+		if (!seasons().contains(season))
+			return null;
+		List<Episode> lst = episodes(season);
+		return lst.get(lst.size() - 1);
 	}
 	
 	public Episode nextEpisode() {
@@ -732,11 +756,12 @@ public class Series extends Title {
 			} finally {
 				db.endTransaction();
 			}
-			if (!Title.ongoingBackupOperation) {
+			if (!Title.ongoingServiceOperation) {
 				Intent si = new Intent(session.getContext(), Service.class);
 				si.setAction(Service.GDRIVE_BACKUP);
 				si.putExtra("what", Commons.GD.SER_COLL);
-				session.getContext().startService(si);
+				//session.getContext().startService(si);
+				WakefulIntentService.sendWakefulWork(session.getContext(), si);
 			}
 			reloadEpisodes();
 		}
@@ -768,11 +793,12 @@ public class Series extends Title {
 			} finally {
 				db.endTransaction();
 			}
-			if (!Title.ongoingBackupOperation) {
+			if (!Title.ongoingServiceOperation) {
 				Intent si = new Intent(session.getContext(), Service.class);
 				si.setAction(Service.GDRIVE_BACKUP);
 				si.putExtra("what", Commons.GD.SER_SEEN);
-				session.getContext().startService(si);
+				//session.getContext().startService(si);
+				WakefulIntentService.sendWakefulWork(session.getContext(), si);
 			}
 			reloadEpisodes();
 		}

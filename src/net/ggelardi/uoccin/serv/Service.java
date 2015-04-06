@@ -1,14 +1,22 @@
 package net.ggelardi.uoccin.serv;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+
 import net.ggelardi.uoccin.api.GSA;
-import net.ggelardi.uoccin.api.TNT;
 import net.ggelardi.uoccin.api.XML;
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Movie;
@@ -19,8 +27,8 @@ import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
-import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -30,20 +38,23 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.services.drive.model.Change;
 import com.owlike.genson.GenericType;
 import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
 
-public class Service extends IntentService {
+//public class Service extends IntentService {
+public class Service extends WakefulIntentService {
 	private static final String TAG = "Service";
 	
 	public static final String CLEAN_DB_CACHE = "net.ggelardi.uoccin.CLEAN_DB_CACHE";
-	public static final String CHECK_GD_FOLDER = "net.ggelardi.uoccin.CHECK_GD_FOLDER";
 	public static final String REFRESH_MOVIE = "net.ggelardi.uoccin.REFRESH_MOVIE";
 	public static final String REFRESH_SERIES = "net.ggelardi.uoccin.REFRESH_SERIES";
 	public static final String REFRESH_EPISODE = "net.ggelardi.uoccin.REFRESH_EPISODE";
 	public static final String CHECK_TVDB_RSS = "net.ggelardi.uoccin.CHECK_TVDB_RSS";
+	public static final String GDRIVE_CHECK = "net.ggelardi.uoccin.GDRIVE_CHECK";
 	public static final String GDRIVE_BACKUP = "net.ggelardi.uoccin.GDRIVE_BACKUP";
 	public static final String GDRIVE_RESTORE = "net.ggelardi.uoccin.GDRIVE_RESTORE";
 	
@@ -56,24 +67,23 @@ public class Service extends IntentService {
 	}
 	
 	@Override
-	protected void onHandleIntent(Intent intent) {
+	//protected void onHandleIntent(Intent intent) {
+	protected void doWakefulWork(Intent intent) {
 		session = Session.getInstance(this);
 		String act = intent != null ? intent.getAction() : null;
 		Log.v(TAG, act);
+		Title.ongoingServiceOperation = true;
 		try {
 			if (TextUtils.isEmpty(act))
 				session.registerAlarms();
 			else if (act.equals(CLEAN_DB_CACHE)) {
-				session.getDB().execSQL(
-					"delete from series where watchlist = 0 and tags is null and "
-						+ "(rating is null or rating = 0) and not tvdb_id in (select distinct series from "
-						+ "episode where collected = 1 or watched = 1)");
-			} else if (act.equals(CHECK_GD_FOLDER)) {
-				
+				session.getDB().execSQL("delete from series where watchlist = 0 and tags is null and " +
+					"(rating is null or rating = 0) and not tvdb_id in (select distinct series from " +
+					"episode where collected = 1 or watched = 1)");
 			} else if (act.equals(REFRESH_MOVIE)) {
-				refreshMovie(intent.getExtras().getString("imdb_id"));
+				refreshMovie(intent.getExtras().getString("imdb_id"), false);
 			} else if (act.equals(REFRESH_SERIES)) {
-				refreshSeries(intent.getExtras().getString("tvdb_id"));
+				refreshSeries(intent.getExtras().getString("tvdb_id"), false);
 			} else if (act.equals(REFRESH_EPISODE)) {
 				Bundle extra = intent.getExtras();
 				String series = extra.getString("series");
@@ -82,65 +92,79 @@ public class Service extends IntentService {
 				refreshEpisode(series, season, episode);
 			} else if (act.equals(CHECK_TVDB_RSS)) {
 				checkTVdbNews();
-			} else if (act.equals(GDRIVE_BACKUP) && session.backup()) {
+			} else if (act.equals(GDRIVE_CHECK) && session.driveEnabled()) {
+				List<String> files = new ArrayList<String>();
+				files.add(Commons.GD.MOV_WLST);
+				files.add(Commons.GD.MOV_COLL);
+				files.add(Commons.GD.MOV_SEEN);
+				files.add(Commons.GD.SER_WLST);
+				files.add(Commons.GD.SER_COLL);
+				files.add(Commons.GD.SER_SEEN);
+				checkDrive();
+				List<Change> changes = drive.getChanges();
+				Collections.reverse(changes);
+				String fn;
+				long fd;
+				for (Change ch: changes) {
+					if (files.isEmpty())
+						break;
+					fn = ch.getFile().getTitle();
+					fd = ch.getFile().getModifiedDate().getValue();
+					Log.d(TAG, "File: " + fn + " - Date: " + ch.getFile().getModifiedDate().toString());
+					if (files.contains(fn) && fd > session.driveLastFileUpdateUTC(fn)) {
+						files.remove(fn);
+						if (fn.equals(Commons.GD.MOV_WLST))
+							restoreMovieWatchlist();
+						else if (fn.equals(Commons.GD.MOV_COLL))
+							restoreMovieCollection();
+						else if (fn.equals(Commons.GD.MOV_SEEN))
+							restoreMovieWatched();
+						else if (fn.equals(Commons.GD.SER_WLST))
+							restoreSeriesWatchlist();
+						else if (fn.equals(Commons.GD.SER_COLL))
+							restoreSeriesCollection();
+						else if (fn.equals(Commons.GD.SER_SEEN))
+							restoreSeriesWatched();
+					}
+				}
+			} else if (act.equals(GDRIVE_BACKUP) && session.driveEnabled()) {
 				Bundle extra = intent.getExtras();
 				String what = extra == null ? "*" : extra.getString("what");
-				Title.ongoingBackupOperation = true;
-				try {
-					if (what.equals("*") || what.equals(Commons.GD.MOV_WLST))
-						backupMovieWatchlist();
-					if (what.equals("*") || what.equals(Commons.GD.MOV_COLL))
-						backupMovieCollection();
-					if (what.equals("*") || what.equals(Commons.GD.MOV_SEEN))
-						backupMovieWatched();
-					if (what.equals("*") || what.equals(Commons.GD.SER_WLST))
-						backupSeriesWatchlist();
-					if (what.equals("*") || what.equals(Commons.GD.SER_COLL))
-						backupSeriesCollection();
-					if (what.equals("*") || what.equals(Commons.GD.SER_SEEN))
-						backupSeriesWatched();
-				} finally {
-					Title.ongoingBackupOperation = false;
-				}
-			} else if (act.equals(GDRIVE_RESTORE) && session.backup()) {
+				if (what.equals("*") || what.equals(Commons.GD.MOV_WLST))
+					backupMovieWatchlist();
+				if (what.equals("*") || what.equals(Commons.GD.MOV_COLL))
+					backupMovieCollection();
+				if (what.equals("*") || what.equals(Commons.GD.MOV_SEEN))
+					backupMovieWatched();
+				if (what.equals("*") || what.equals(Commons.GD.SER_WLST))
+					backupSeriesWatchlist();
+				if (what.equals("*") || what.equals(Commons.GD.SER_COLL))
+					backupSeriesCollection();
+				if (what.equals("*") || what.equals(Commons.GD.SER_SEEN))
+					backupSeriesWatched();
+			} else if (act.equals(GDRIVE_RESTORE) && session.driveEnabled()) {
 				Bundle extra = intent.getExtras();
 				String what = extra == null ? "*" : extra.getString("what");
-				Title.ongoingBackupOperation = true;
-				try {
-					if (what.equals("*") || what.equals(Commons.GD.MOV_WLST))
-						restoreMovieWatchlist();
-					if (what.equals("*") || what.equals(Commons.GD.MOV_COLL))
-						restoreMovieCollection();
-					if (what.equals("*") || what.equals(Commons.GD.MOV_SEEN))
-						restoreMovieWatched();
-					if (what.equals("*") || what.equals(Commons.GD.SER_WLST))
-						restoreSeriesWatchlist();
-					if (what.equals("*") || what.equals(Commons.GD.SER_COLL))
-						restoreSeriesCollection();
-					if (what.equals("*") || what.equals(Commons.GD.SER_SEEN))
-						restoreSeriesWatched();
-				} finally {
-					Title.ongoingBackupOperation = false;
-				}
+				if (what.equals("*") || what.equals(Commons.GD.MOV_WLST))
+					restoreMovieWatchlist();
+				if (what.equals("*") || what.equals(Commons.GD.MOV_COLL))
+					restoreMovieCollection();
+				if (what.equals("*") || what.equals(Commons.GD.MOV_SEEN))
+					restoreMovieWatched();
+				if (what.equals("*") || what.equals(Commons.GD.SER_WLST))
+					restoreSeriesWatchlist();
+				if (what.equals("*") || what.equals(Commons.GD.SER_COLL))
+					restoreSeriesCollection();
+				if (what.equals("*") || what.equals(Commons.GD.SER_SEEN))
+					restoreSeriesWatched();
 			}
 		} catch (UserRecoverableAuthIOException err) {
-			/*
-			Intent ei = err.getIntent();
-			ei.setAction(Commons.SN.CONNECT_FAIL);
-			sendBroadcast(ei);
-			*/
 			sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
-			
 		} catch (Exception err) {
 			sendNotification(err);
 		} finally {
-			stopSelf();
+			Title.ongoingServiceOperation = false;
 		}
-	}
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
 	}
 	
 	private void sendNotification(String what) {
@@ -155,20 +179,19 @@ public class Service extends IntentService {
 		sendBroadcast(si);
 	}
 	
-	private void refreshMovie(String imdb_id) {
+	private void refreshMovie(String imdb_id, boolean forceCommit) {
 		Movie mov = Movie.get(this, imdb_id);
 		if (!(mov.isNew() || mov.isOld())) // TODO wifi check?
 			return;
-		Log.v(TAG, "refreshing movie " + imdb_id);
+		Log.d(TAG, "refreshing movie " + imdb_id);
 		//
 	}
 	
-	private void refreshSeries(String tvdb_id) {
+	private void refreshSeries(String tvdb_id, boolean forceCommit) {
 		Series ser = Series.get(this, tvdb_id);
 		if (!(ser.isNew() || ser.isOld())) // TODO wifi check?
 			return;
-		Log.v(TAG, "refreshing series " + tvdb_id);
-		final boolean commit = ser.isNew() && (ser.inWatchlist() || ser.getRating() > 0 || ser.hasTags());
+		Log.d(TAG, "refreshing series " + tvdb_id);
 		Document doc;
 		try {
 			doc = XML.TVDB.getInstance().sync_getFullSeries(tvdb_id, session.language());
@@ -180,18 +203,22 @@ public class Service extends IntentService {
 		}
 		Series.get(this, (Element) doc.getElementsByTagName("Series").item(0));
 		// episodes
+		int eps2save = 0;
 		NodeList lst = doc.getElementsByTagName("Episode");
 		if (lst != null && lst.getLength() > 0) {
 			Episode ep;
 			for (int i = 0; i < lst.getLength(); i++) {
 				ep = Episode.get(this, (Element) lst.item(i));
-				if (ep != null && !ser.episodes.contains(ep))
-					ser.episodes.add(ep);
+				if (ep != null) {
+					if (!ser.episodes.contains(ep))
+						ser.episodes.add(ep);
+					if (ep.hasSubtitles() || ep.inCollection() || ep.isWatched())
+						eps2save++;
+				}
 			}
 			Collections.sort(ser.episodes, new Episode.EpisodeComparator());
 		}
-		// save it?
-		if (!ser.isNew() || commit)
+		if (forceCommit || !ser.isNew() || ser.inWatchlist() || ser.getRating() > 0 || ser.hasTags() || eps2save > 0)
 			ser.commit(null);
 		else
 			Series.dispatch(OnTitleListener.READY, null);
@@ -201,7 +228,7 @@ public class Service extends IntentService {
 		Episode epi = Episode.get(this, series, season, episode);
 		if (!(epi.isNew() || epi.isOld())) // TODO wifi check?
 			return;
-		Log.v(TAG, "refreshing episode " + epi.standardEID());
+		Log.d(TAG, "refreshing episode " + epi.standardEID());
 		Document doc;
 		try {
 			doc = XML.TVDB.getInstance().sync_getEpisode(series, season, episode, session.language());
@@ -217,19 +244,46 @@ public class Service extends IntentService {
 	}
 	
 	private void checkTVdbNews() throws Exception {
-		List<String> links = new TNT().getLinks();
-		for (String url : links) {
-			try {
-				String eid = Uri.parse(url).getQueryParameter("id");
-				Document doc = XML.TVDB.getInstance().sync_getEpisodeById(eid, "en");
-				NodeList lst = doc.getElementsByTagName("Episode");
-				if (lst != null && lst.getLength() > 0) {
-					Episode ep = Episode.get(session.getContext(), (Element) lst.item(0));
-					if (ep != null && ep.season == 1 && ep.episode == 1 && !ep.getSeries().inWatchlist())
-						ep.getSeries().addTag("premiere");
+		String content = null;
+	    URL url = new URL("http://thetvdb.com/rss/newtoday.php");
+		BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+		try {
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null)
+				sb.append(line);
+			content = sb.toString();
+		} finally {
+			reader.close();
+		}
+		if (TextUtils.isEmpty(content))
+			return;
+		DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+		DocumentBuilder bld = fac.newDocumentBuilder();
+		InputSource is = new InputSource(new StringReader(content));
+		Document feed = bld.parse(is);
+		feed.getDocumentElement().normalize();
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList items = (NodeList)xPath.evaluate("/rss/channel/item", feed.getDocumentElement(),
+			XPathConstants.NODESET);
+		if (items != null && items.getLength() > 0) {
+			String link;
+			for (int i = 0; i < items.getLength(); i++) {
+				link = Commons.XML.nodeText((Element) items.item(i), "link");
+				try {
+					String eid = Uri.parse(link).getQueryParameter("id");
+					Document doc = XML.TVDB.getInstance().sync_getEpisodeById(eid, "en");
+					NodeList lst = doc.getElementsByTagName("Episode");
+					if (lst != null && lst.getLength() > 0) {
+						Episode ep = Episode.get(session.getContext(), (Element) lst.item(0));
+						if (ep != null && ep.season == 1 && ep.episode == 1 && !ep.getSeries().inWatchlist()) {
+							Log.d(TAG, "New series found: " + ep.getSeries().name);
+							//ep.getSeries().addTag("premiere");
+						}
+					}
+				} catch (Exception err) {
+					Log.e(TAG, link, err);
 				}
-			} catch (Exception err) {
-				Log.e(TAG, url, err);
 			}
 		}
 	}
@@ -242,26 +296,17 @@ public class Service extends IntentService {
 	private void checkGenson() {
 		if (genson == null)
 			genson = new GensonBuilder().
-				useIndentation(true). // DEBUG ONLY!
+				//useIndentation(true). // DEBUG ONLY!
 				create();
 	}
 	
 	private void backupMovieWatchlist() {
 	}
 	
-	private void restoreMovieWatchlist() {
-	}
-	
 	private void backupMovieCollection() {
 	}
 	
-	private void restoreMovieCollection() {
-	}
-	
 	private void backupMovieWatched() {
-	}
-	
-	private void restoreMovieWatched() {
 	}
 	
 	private void backupSeriesWatchlist() throws Exception {
@@ -290,61 +335,9 @@ public class Service extends IntentService {
 				content = genson.serialize(map);
 			}
 			drive.writeFile(Commons.GD.SER_WLST, content);
-			session.setDriveLastUpdate(Commons.GD.SER_WLST, System.currentTimeMillis());
+			session.setDriveLastFileUpdate(Commons.GD.SER_WLST, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "backupSeriesWatchlist", err);
-			throw err;
-		}
-	}
-	
-	private void restoreSeriesWatchlist() throws Exception {
-		try {
-			checkDrive();
-			String content = drive.readFile(Commons.GD.SER_WLST, session.driveLastUpdateUTC(Commons.GD.SER_WLST));
-			if (!TextUtils.isEmpty(content)) {
-				checkGenson();
-				Map<String, JsonSeries> map = genson.deserialize(content,
-					new GenericType<Map<String, JsonSeries>>() {});
-				if (map.isEmpty())
-					return;
-				SQLiteDatabase db = session.getDB();
-				db.beginTransaction();
-				try {
-					Title.dispatch(OnTitleListener.WORKING, null);
-					// reset all
-					ContentValues cv = new ContentValues();
-					cv.put("watchlist", false);
-					cv.putNull("tags");
-					db.update("series", cv, null, null);
-					// set new values
-					JsonSeries jsw;
-					Series ser;
-					for (String tvdb_id : map.keySet()) {
-						jsw = map.get(tvdb_id);
-						Log.v(TAG, "Setting watchlist for " + jsw.name);
-						cv = new ContentValues();
-						cv.put("watchlist", true);
-						cv.put("tags", TextUtils.join(",", jsw.tags));
-						if (db.update("series", cv, "tvdb_id=?", new String[] { tvdb_id }) < 1) {
-							refreshSeries(tvdb_id);
-							ser = Series.get(this, tvdb_id);
-							ser.setWatchlist(true);
-							ser.setTags(jsw.tags);
-							ser.setRating(jsw.rating);
-						}
-					}
-					db.setTransactionSuccessful();
-					session.setDriveLastUpdate(Commons.GD.SER_WLST, System.currentTimeMillis());
-					// refresh in memory items
-					for (Series s : Series.cached())
-						s.reload();
-					Title.dispatch(OnTitleListener.READY, null);
-				} finally {
-					db.endTransaction();
-				}
-			}
-		} catch (Exception err) {
-			Log.e(TAG, "restoreSeriesWatchlist", err);
 			throw err;
 		}
 	}
@@ -371,70 +364,9 @@ public class Service extends IntentService {
 				content = genson.serialize(map);
 			}
 			drive.writeFile(Commons.GD.SER_COLL, content);
-			session.setDriveLastUpdate(Commons.GD.SER_COLL, System.currentTimeMillis());
+			session.setDriveLastFileUpdate(Commons.GD.SER_COLL, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "backupSeriesCollection", err);
-			throw err;
-		}
-	}
-	
-	private void restoreSeriesCollection() throws Exception {
-		try {
-			checkDrive();
-			String content = drive.readFile(Commons.GD.SER_COLL, session.driveLastUpdateUTC(Commons.GD.SER_COLL));
-			if (!TextUtils.isEmpty(content)) {
-				checkGenson();
-				Map<String, String[]> map = genson.deserialize(content, new GenericType<Map<String, String[]>>() {
-				});
-				if (map.isEmpty())
-					return;
-				SQLiteDatabase db = session.getDB();
-				db.beginTransaction();
-				try {
-					Title.dispatch(OnTitleListener.WORKING, null);
-					// reset all
-					ContentValues cv = new ContentValues();
-					cv.put("collected", false);
-					cv.putNull("subtitles");
-					db.update("episode", cv, null, null);
-					// set new values
-					String[] tmp;
-					String sid;
-					int sno;
-					int eno;
-					Episode ep;
-					for (String eid : map.keySet()) {
-						tmp = eid.split("\\.");
-						sid = tmp[0];
-						sno = Integer.parseInt(tmp[1].substring(1, 3));
-						eno = Integer.parseInt(tmp[1].substring(4, 6));
-						tmp = map.get(eid); // subtitles
-						cv = new ContentValues();
-						cv.put("collected", true);
-						if (tmp != null && tmp.length > 0)
-							cv.put("subtitles", TextUtils.join(",", tmp));
-						if (db.update("episode", cv, "series=? and season=? and episode=?",
-							new String[] { sid, Integer.toString(sno), Integer.toString(eno) }) < 1) {
-							refreshEpisode(sid, sno, eno);
-							ep = Episode.get(this, sid, sno, eno);
-							if (ep != null && !TextUtils.isEmpty(ep.tvdb_id)) {
-								ep.subtitles = new ArrayList<String>(Arrays.asList(tmp));
-								ep.setCollected(true); // after subtitles
-							}
-						}
-					}
-					db.setTransactionSuccessful();
-					session.setDriveLastUpdate(Commons.GD.SER_COLL, System.currentTimeMillis());
-					// refresh in memory items
-					for (Series s : Series.cached())
-						s.reloadEpisodes();
-					Title.dispatch(OnTitleListener.READY, null);
-				} finally {
-					db.endTransaction();
-				}
-			}
-		} catch (Exception err) {
-			Log.e(TAG, "restoreSeriesCollection", err);
 			throw err;
 		}
 	}
@@ -492,9 +424,131 @@ public class Service extends IntentService {
 				content = genson.serialize(map);
 			}
 			drive.writeFile(Commons.GD.SER_SEEN, content);
-			session.setDriveLastUpdate(Commons.GD.SER_SEEN, System.currentTimeMillis());
+			session.setDriveLastFileUpdate(Commons.GD.SER_SEEN, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "backupSeriesWatched", err);
+			throw err;
+		}
+	}
+	
+	private void restoreMovieWatchlist() {
+	}
+	
+	private void restoreMovieCollection() {
+	}
+	
+	private void restoreMovieWatched() {
+	}
+	
+	private void checkRestoreSeries(String tvdb_id, Integer season, Integer episode) {
+		Series ser = Series.get(this, tvdb_id);
+		if (ser.isNew() || ser.isOld())
+			refreshSeries(tvdb_id, true);
+		else if (season != null && !ser.seasons().contains(season))
+			refreshSeries(tvdb_id, true);
+		else if (season != null && episode != null) {
+			Episode ep = ser.lastEpisode(season);
+			if (ep == null || ep.episode < episode)
+				refreshSeries(tvdb_id, true);
+		}
+	}
+	
+	private void restoreSeriesWatchlist() throws Exception {
+		try {
+			checkDrive();
+			String content = drive.readFile(Commons.GD.SER_WLST, session.driveLastFileUpdateUTC(Commons.GD.SER_WLST));
+			if (!TextUtils.isEmpty(content)) {
+				checkGenson();
+				Map<String, JsonSeries> map = genson.deserialize(content,
+					new GenericType<Map<String, JsonSeries>>() {});
+				if (map.isEmpty())
+					return;
+				SQLiteDatabase db = session.getDB();
+				db.beginTransaction();
+				try {
+					Title.dispatch(OnTitleListener.WORKING, null);
+					// reset all
+					ContentValues cv = new ContentValues();
+					cv.put("watchlist", false);
+					cv.putNull("tags");
+					db.update("series", cv, null, null);
+					// set new values
+					JsonSeries jsw;
+					for (String tvdb_id : map.keySet()) {
+						checkRestoreSeries(tvdb_id, null, null);
+						jsw = map.get(tvdb_id);
+						Log.d(TAG, "Setting watchlist for " + jsw.name);
+						cv = new ContentValues();
+						cv.put("watchlist", true);
+						cv.put("tags", TextUtils.join(",", jsw.tags));
+						db.update("series", cv, "tvdb_id=?", new String[] { tvdb_id });
+					}
+					db.setTransactionSuccessful();
+					session.setDriveLastFileUpdate(Commons.GD.SER_WLST, System.currentTimeMillis());
+					// refresh in memory items
+					for (Series s : Series.cached())
+						s.reload();
+					Title.dispatch(OnTitleListener.READY, null);
+				} finally {
+					db.endTransaction();
+				}
+			}
+		} catch (Exception err) {
+			Log.e(TAG, "restoreSeriesWatchlist", err);
+			throw err;
+		}
+	}
+	
+	private void restoreSeriesCollection() throws Exception {
+		try {
+			checkDrive();
+			String content = drive.readFile(Commons.GD.SER_COLL, session.driveLastFileUpdateUTC(Commons.GD.SER_COLL));
+			if (!TextUtils.isEmpty(content)) {
+				checkGenson();
+				Map<String, String[]> map = genson.deserialize(content, new GenericType<Map<String, String[]>>() {
+				});
+				if (map.isEmpty())
+					return;
+				SQLiteDatabase db = session.getDB();
+				db.beginTransaction();
+				try {
+					Title.dispatch(OnTitleListener.WORKING, null);
+					// reset all
+					ContentValues cv = new ContentValues();
+					cv.put("collected", false);
+					cv.putNull("subtitles");
+					db.update("episode", cv, null, null);
+					// set new values
+					String[] tmp;
+					String sid;
+					int sno;
+					int eno;
+					for (String eid : map.keySet()) {
+						tmp = eid.split("\\.");
+						sid = tmp[0];
+						sno = Integer.parseInt(tmp[1].substring(1, 3));
+						eno = Integer.parseInt(tmp[1].substring(4, 6));
+						tmp = map.get(eid); // subtitles
+						checkRestoreSeries(sid, sno, eno);
+						cv = new ContentValues();
+						cv.put("collected", true);
+						if (tmp != null && tmp.length > 0)
+							cv.put("subtitles", TextUtils.join(",", tmp));
+						db.update("episode", cv, "series=? and season=? and episode=?",
+							new String[] { sid, Integer.toString(sno), Integer.toString(eno) });
+					}
+					db.setTransactionSuccessful();
+					session.setDriveLastFileUpdate(Commons.GD.SER_COLL, System.currentTimeMillis());
+					// refresh in memory items
+					for (Series s : Series.cached())
+						s.reloadEpisodes();
+					Title.dispatch(OnTitleListener.READY, null);
+				} finally {
+					db.endTransaction();
+				}
+			}
+		} catch (Exception err) {
+			Log.e(TAG, "restoreSeriesCollection", err);
 			throw err;
 		}
 	}
@@ -503,7 +557,7 @@ public class Service extends IntentService {
 	private void restoreSeriesWatched() throws Exception {
 		try {
 			checkDrive();
-			String content = drive.readFile(Commons.GD.SER_SEEN, session.driveLastUpdateUTC(Commons.GD.SER_SEEN));
+			String content = drive.readFile(Commons.GD.SER_SEEN, session.driveLastFileUpdateUTC(Commons.GD.SER_SEEN));
 			if (!TextUtils.isEmpty(content)) {
 				checkGenson();
 				Map<String, Map<String, Object>> map = genson.deserialize(content,
@@ -523,7 +577,6 @@ public class Service extends IntentService {
 					Map<String, Object> cnt;
 					List<Long> eps;
 					int sno;
-					Episode ep;
 					for (String sid : map.keySet()) {
 						cnt = map.get(sid);
 						for (String key : cnt.keySet())
@@ -532,15 +585,11 @@ public class Service extends IntentService {
 								try {
 									eps = (List<Long>) cnt.get(key);
 									for (Long eno : eps) {
+										checkRestoreSeries(sid, sno, eno.intValue());
 										cv = new ContentValues();
 										cv.put("watched", true);
-										if (db.update("episode", cv, "series=? and season=? and episode=?",
-											new String[] { sid, Integer.toString(sno), Long.toString(eno) }) < 1) {
-											refreshEpisode(sid, sno, eno.intValue());
-											ep = Episode.get(this, sid, sno, eno.intValue());
-											if (ep != null && !TextUtils.isEmpty(ep.tvdb_id))
-												ep.setWatched(true);
-										}
+										db.update("episode", cv, "series=? and season=? and episode=?",
+											new String[] { sid, Integer.toString(sno), Long.toString(eno) });
 									}
 								} catch (Exception err) {
 									Log.e(TAG, "restoreSeriesWatched(): error on " + sid + ", season " + key, err);
@@ -548,7 +597,7 @@ public class Service extends IntentService {
 							}
 					}
 					db.setTransactionSuccessful();
-					session.setDriveLastUpdate(Commons.GD.SER_SEEN, System.currentTimeMillis());
+					session.setDriveLastFileUpdate(Commons.GD.SER_SEEN, System.currentTimeMillis());
 					// refresh in memory items
 					for (Series s : Series.cached())
 						s.reloadEpisodes();

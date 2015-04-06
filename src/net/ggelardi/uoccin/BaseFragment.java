@@ -4,8 +4,6 @@ import net.ggelardi.uoccin.serv.Session;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -15,13 +13,11 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 	protected Session session;
 	protected OnFragmentListener mListener;
 	
-	private int hgCount = 0;
-	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		Log.v(logTag(), "onCreate");
+		Log.v(tag(), "onCreate");
 		
 		session = Session.getInstance(getActivity());
 	}
@@ -30,38 +26,39 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 	public void onResume() {
 		super.onResume();
 		
-		Log.v(logTag(), "onResume");
+		Log.v(tag(), "onResume");
 	}
 	
 	@Override
 	public void onPause() {
 		super.onPause();
 		
-		Log.v(logTag(), "onPause");
+		Log.v(tag(), "onPause");
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		
-		Log.v(logTag(), "onSaveInstanceState");
+		Log.v(tag(), "onSaveInstanceState");
 	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
-		Log.v(logTag(), "onActivityCreated");
+		Log.v(tag(), "onActivityCreated");
 	}
 	
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		
-		Log.v(logTag(), "onAttach");
+		Log.v(tag(), "onAttach");
 		
 		try {
 			mListener = (OnFragmentListener) activity;
+			mListener.fragmentAttached(this);
 		} catch (ClassCastException e) {
 			throw new ClassCastException(activity.toString() + " must implement OnFragmentInteractionListener");
 		}
@@ -71,31 +68,28 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 	public void onDetach() {
 		super.onDetach();
 		
-		Log.v(logTag(), "onDetach");
+		Log.v(tag(), "onDetach");
 		
 		mListener = null;
 	}
 	
 	@Override
 	public void onClick(View v) {
-		//
+		// nothing here.
 	}
 	
-	protected String logTag() {
+	protected String tag() {
 		return this.getClass().getSimpleName();
 	}
 	
 	protected void showHourGlass(boolean value) {
-		if (value)
-			hgCount++;
-		else
-			hgCount--;
-		FragmentActivity activity = getActivity();
-		if (activity != null)
-			((ActionBarActivity) activity).setSupportProgressBarIndeterminateVisibility(hgCount > 0);
+		if (mListener != null)
+			mListener.showHourGlass(value);
 	}
 	
 	public interface OnFragmentListener {
+		void fragmentAttached(BaseFragment fragment);
+		void showHourGlass(boolean value);
 		void openSeriesInfo(String tvdb_id);
 		void openSeriesSeason(String tvdb_id, int season);
 		void openSeriesEpisode(String tvdb_id, int season, int episode);

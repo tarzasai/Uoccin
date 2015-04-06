@@ -8,7 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/sub_ab_shadow"
+        android:background="@color/colorPrimary"
         android:divider="@drawable/divider_2dp"
         android:paddingBottom="5dp"
         android:paddingLeft="15dp"
@@ -20,7 +20,7 @@
             android:id="@+id/lbl_epinf_seas"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/ics_active_news"
+            android:drawableLeft="@drawable/ics_action_news"
             android:drawablePadding="3dp"
             android:text="@string/lbl_comm_seas"
             android:textAllCaps="true"
@@ -55,7 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:drawablePadding="3dp"
-            android:drawableRight="@drawable/ics_active_calendar"
+            android:drawableRight="@drawable/ics_action_calendar"
             android:gravity="right"
             android:text="@string/sample_time1"
             android:textAllCaps="true"
@@ -76,6 +76,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/contentBackground"
                 android:paddingBottom="5dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp" >

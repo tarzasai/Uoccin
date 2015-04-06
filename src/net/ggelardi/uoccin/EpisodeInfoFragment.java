@@ -9,7 +9,6 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -175,7 +174,6 @@ public class EpisodeInfoFragment extends BaseFragment {
 		Episode.addOnTitleEventListener(new OnTitleListener() {
 			@Override
 			public void changed(final String state, final Throwable error) {
-				//Log.v(logTag(), state);
 				final Activity context = getActivity();
 				if (context != null)
 					context.runOnUiThread(new Runnable() {
@@ -212,12 +210,12 @@ public class EpisodeInfoFragment extends BaseFragment {
 		if (txt_seas == null)
 			return;
 		getActivity().setTitle(episode.getSeries().name);
-		lbl_seas.setCompoundDrawablesWithIntrinsicBounds(episode.isPilot() ? R.drawable.ics_active_news : 0, 0, 0, 0);
+		lbl_seas.setCompoundDrawablesWithIntrinsicBounds(episode.isPilot() ? R.drawable.ics_action_news : 0, 0, 0, 0);
 		txt_seas.setText(Integer.toString(episode.season));
 		txt_epis.setText(Integer.toString(episode.episode));
 		txt_time.setText(episode.firstAired());
-		txt_time.setCompoundDrawablesWithIntrinsicBounds(0, 0, DateUtils.isToday(episode.firstAired) ?
-			R.drawable.ics_active_calendar : 0, 0);
+		txt_time.setCompoundDrawablesWithIntrinsicBounds(0, 0, episode.isToday() ? R.drawable.ics_action_calendar :
+			0, 0);
 		img_scrn.setImageBitmap(null);
 		session.picasso(episode.poster).resize(pstWidth, pstHeight).into(img_scrn);
 		txt_name.setText(episode.name());

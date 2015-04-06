@@ -179,7 +179,6 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 		Series.addOnTitleEventListener(new OnTitleListener() {
 			@Override
 			public void changed(final String state, final Throwable error) {
-				//Log.v(logTag(), state);
 				final Activity context = getActivity();
 				if (context != null)
 					context.runOnUiThread(new Runnable() {

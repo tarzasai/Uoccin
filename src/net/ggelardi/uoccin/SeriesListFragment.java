@@ -34,7 +34,7 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	private String title;
 	private String query;
 	private String[] params;
-	private String details = SeriesAdapter.SERIES_PLOT;
+	private String details = SeriesAdapter.SERIES_STORY;
 	private String search;
 	
 	public static SeriesListFragment newQuery(String title, String query, String details, String ... params) {
@@ -108,7 +108,6 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 		Series.addOnTitleEventListener(new OnTitleListener() {
 			@Override
 			public void changed(final String state, final Throwable error) {
-				//Log.v(logTag(), state);
 				final Activity context = getActivity();
 				if (context != null)
 					context.runOnUiThread(new Runnable() {

@@ -42,6 +42,7 @@ public class DrawerAdapter extends BaseAdapter {
 			di.label = deflbs[i];
 			di.query = defqrs[i];
 			di.details = defdet[i];
+			di.position = items.size();
 			items.add(di);
 		}
 		//
@@ -99,11 +100,11 @@ public class DrawerAdapter extends BaseAdapter {
 		return view;
 	}
 	
-	public int indexOfVID(String id) {
+	public DrawerItem findItem(String id) {
 		for (int i = 0; i < items.size(); i++)
-			if (items.get(i).id.equals(id))
-				return i;
-		return -1;
+			if (getItem(i).id.equals(id))
+				return getItem(i);
+		return null;
 	}
 	
 	static class ViewHolder {
@@ -115,6 +116,7 @@ public class DrawerAdapter extends BaseAdapter {
 		public static final String MOVIE = "DrawerItem.MOVIE";
 		
 		public boolean header = false;
+		public int position = -1;
 		public int icon = 0;
 		public String id;
 		public String type;

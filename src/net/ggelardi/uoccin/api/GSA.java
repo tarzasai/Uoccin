@@ -3,8 +3,10 @@ package net.ggelardi.uoccin.api;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons;
@@ -21,7 +23,10 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.Drive.Changes;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.Change;
+import com.google.api.services.drive.model.ChangeList;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
@@ -37,9 +42,35 @@ public class GSA {
 		session = Session.getInstance(context);
 		GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(context,
 			Collections.singleton(DriveScopes.DRIVE));
-		credential.setSelectedAccountName(session.driveAuth());
+		credential.setSelectedAccountName(session.driveUserAccount());
 		service = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential).
 			setApplicationName(session.getString(R.string.app_name)).build();
+	}
+	
+	public List<Change> getChanges() throws Exception {
+		Log.d(TAG, "Looking for changes in Drive files...");
+		long lcid = session.driveLastChangeID();
+		Changes.List request = service.changes().list().setIncludeDeleted(false).setIncludeSubscribed(
+			false).setFields("items/file,largestChangeId,nextPageToken").setStartChangeId(lcid + 1);
+		List<Change> result = new ArrayList<Change>();
+		ChangeList changes;
+		do {
+			try {
+				changes = request.execute();
+				result.addAll(changes.getItems());
+				lcid = changes.getLargestChangeId();
+				request.setPageToken(changes.getNextPageToken());
+			} catch (Exception err) {
+				Log.e(TAG, "getChanges", err);
+				request.setPageToken(null);
+			}
+		} while (request.getPageToken() != null && request.getPageToken().length() > 0);
+		session.setDriveLastChangeID(lcid);
+		if (result.isEmpty())
+			Log.d(TAG, "Zero changes found.");
+		else
+			Log.i(TAG, "Found " + Integer.toString(result.size()) + " new changes since last check.");
+		return result;
 	}
 	
 	public File getFolder(boolean create) throws Exception {
@@ -52,13 +83,13 @@ public class GSA {
 			Log.d(TAG, "Uoccin folder found");
 			folder = files.getItems().get(0);
 		} else if (create) {
-			Log.d(TAG, "Creating Uoccin folder...");
+			Log.i(TAG, "Creating Uoccin folder...");
 			File body = new File();
 			body.setTitle(Commons.GD.FOLDER);
 			body.setMimeType(DriveFolder.MIME_TYPE);
 			folder = service.files().insert(body).execute();
 		} else
-			Log.d(TAG, "Uoccin folder NOT found");
+			Log.w(TAG, "Uoccin folder NOT found");
 		return folder;
 	}
 	
@@ -67,7 +98,7 @@ public class GSA {
 		FileList files = service.files().list().setQ("title = '" + filename + "' and trashed = false and '" +
 			getFolder(true).getId() + "' in parents").execute();
 		if (files == null || files.isEmpty() || files.getItems().size() <= 0) {
-			Log.d(TAG, "File " + filename + " does not exists.");
+			Log.i(TAG, "File " + filename + " does not exists.");
 			return null;
 		}
 		File file = files.getItems().get(0);
@@ -90,6 +121,7 @@ public class GSA {
 			String line;
 			while ((line = reader.readLine()) != null)
 				content.append(line);
+			Log.i(TAG, filename + " downloaded, " + content.length() + " chars.");
 			return content.toString();
 		} finally {
 			if (inputStream != null)
@@ -111,10 +143,10 @@ public class GSA {
 		ByteArrayContent bac = ByteArrayContent.fromString("text/plain", content);
 		if (TextUtils.isEmpty(fileId)) {
 			File file = service.files().insert(body, bac).execute();
-			Log.d(TAG, "Created file " + file.getId());
+			Log.i(TAG, filename + " created, id " + file.getId());
 		} else {
 			service.files().update(fileId, body, bac).execute();
-			Log.d(TAG, "Updated file " + fileId);
+			Log.i(TAG, filename + " updated, id " + fileId);
 		}
 	}
 }

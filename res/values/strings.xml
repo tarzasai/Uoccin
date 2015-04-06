@@ -88,12 +88,14 @@
 
     <!-- settings -->
     <string name="settings_title">Uoccin settings</string>
-    <string name="pk_gdrvbak_title">Backup to Google Drive</string>
-    <string name="pk_gdrvbak_summ">Backup watchlist/collection/watched titles in your .</string>
     <string name="pk_startup_title">Startup view</string>
     <string name="pk_startup_summ">The first view you want to see on startup.</string>
     <string name="pk_locale_title">Localization</string>
     <string name="pk_locale_summ">The language for titles and synopsis (where available).</string>
+    <string name="pk_gdrvbak_title">Google Drive</string>
+    <string name="pk_gdrvbak_summ">Synchronize your watchlist/collection/watched titles with other devices (phones or desktop apps).</string>
+    <string name="pk_tvdbrss_title">TVDB feed</string>
+    <string name="pk_tvdbrss_summ">Periodically check TVDB\'s \"airing today\" feed for new TV shows.</string>
     
     <!-- sample text -->
     <string name="sample_title1">A Short Title</string>
@@ -118,6 +120,7 @@
     <string name="sample_rated">TV-14</string>
     <string name="sample_subs">it/en</string>
     <string name="sample_stat">12 / 43 collected</string>
+    <string name="sample_stat1">121 (43 missing)</string>
     <string name="sample_tags">pippo, pluto, paperino, tafazzi, perdinci, drocopio</string>
     <string name="sample_season">S03</string>
 

@@ -56,43 +56,6 @@
                     android:visibility="gone" />
 
                 <LinearLayout
-                    android:id="@+id/box_seritm_stat"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:orientation="vertical" >
-
-                    <TextView
-                        android:id="@+id/txt_seritm_coll"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ics_action_storage"
-                        android:drawablePadding="4dp"
-                        android:ellipsize="end"
-                        android:gravity="center_vertical"
-                        android:lines="1"
-                        android:text="@string/sample_stat"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/txt_seritm_seen"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ics_action_seen"
-                        android:drawablePadding="4dp"
-                        android:ellipsize="end"
-                        android:gravity="center_vertical"
-                        android:lines="1"
-                        android:text="@string/sample_stat"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/empty_text" />
-                </LinearLayout>
-
-                <LinearLayout
                     android:id="@+id/box_seritm_epis"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -117,6 +80,81 @@
                         android:lines="1"
                         android:text="@string/sample_date1"
                         android:textColor="@android:color/darker_gray"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/empty_text" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/box_seritm_2see"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/txt_seritm_wtot"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ics_action_seen"
+                        android:drawablePadding="4dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:lines="1"
+                        android:text="@string/sample_stat1"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txt_seritm_2see"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ics_action_storage"
+                        android:drawablePadding="4dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:lines="1"
+                        android:text="@string/sample_episode"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/empty_text" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/box_seritm_stat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:orientation="vertical"
+                    android:visibility="gone" >
+
+                    <TextView
+                        android:id="@+id/txt_seritm_coll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ics_action_storage"
+                        android:drawablePadding="4dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:lines="1"
+                        android:text="@string/sample_stat"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txt_seritm_seen"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ics_action_seen"
+                        android:drawablePadding="4dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:lines="1"
+                        android:text="@string/sample_stat"
                         android:textStyle="bold" />
 
                     <TextView

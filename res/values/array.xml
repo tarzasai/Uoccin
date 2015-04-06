@@ -28,57 +28,56 @@
     </string-array>
     
     <string-array name="view_defser_ids">
-        <item>sernext</item>
-        <item>sernews</item>
         <item>serfavs</item>
+        <item>sernext</item>
         <item>ser2see</item>
-        <item>sercoll</item>
-        <item>serseen</item>
+        <item>sernews</item>
+        <item>serstat</item>
     </string-array>
     
     <string-array name="view_defser_titles">
-        <item>Upcoming episodes</item>
-        <item>New TV shows</item>
         <item>Series watchlist</item>
+        <item>Upcoming episodes</item>
         <item>Available episodes</item>
-        <item>Collected episodes</item>
-        <item>Watched episodes</item>
+        <item>New TV shows</item>
+        <item>Series stats</item>
     </string-array>
     
     <string-array name="view_defser_details">
-        <item>NEXT_EPISODE</item>
-        <item>NEAR_EPISODE</item>
-        <item>NEAR_EPISODE</item>
-        <item>SERIES_STATS</item>
-        <item>SERIES_STATS</item>
-        <item>SERIES_STATS</item>
+        <item>EPI_AIR_NEAR</item>
+        <item>EPI_AIR_NEXT</item>
+        <item>EPI_AVAILABL</item>
+        <item>EPI_AIR_NEAR</item>
+        <item>EPI_COUNTERS</item>
     </string-array>
     
     <string-array name="view_defser_queries">
-        <item>
-select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where datetime(e.firstAired/1000, \'unixepoch\') between datetime(\'now\') 
-and datetime(\'now\', \'+6 days\') order by e.firstAired
-        </item>
-        <item>
-select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where datetime(e.firstAired/1000, \'unixepoch\') between datetime(\'now\', \'-2 days\') 
-and datetime(\'now\', \'+2 days\') and e.season = 1 and e.episode = 1 order by e.firstAired
-        </item>
+        <!-- serfavs -->
         <item>
 select tvdb_id from series where watchlist = 1 order by name collate nocase
         </item>
+        <!-- sernext -->
         <item>
 select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where e.collected = 1 and e.watched = 0 order by e.firstAired
+where datetime(e.firstAired/1000, \'unixepoch\') between datetime(\'now\') 
+and datetime(\'now\', \'+6 days\') and (s.watchlist = 1 or (e.season = 1 and e.episode = 1)) 
+order by e.firstAired
         </item>
+        <!-- ser2see -->
         <item>
 select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where e.collected = 1 order by s.name collate nocase
+where e.collected = 1 and e.watched = 0 order by s.name collate nocase
         </item>
+        <!-- sernews -->
         <item>
 select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where e.watched = 1 order by s.name collate nocase
+where datetime(e.firstAired/1000, \'unixepoch\') between datetime(\'now\', \'-7 days\') 
+and datetime(\'now\', \'+7 days\') and e.season = 1 and e.episode = 1 order by e.firstAired
+        </item>
+        <!-- serstat -->
+        <item>
+select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
+where e.collected = 1 or e.watched = 1 order by s.name collate nocase
         </item>
     </string-array>
     

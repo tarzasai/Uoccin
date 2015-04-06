@@ -24,6 +24,8 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
+
 public class Episode extends Title {
 	private static final String TAG = "Episode";
 	private static final String TABLE = "episode";
@@ -61,6 +63,8 @@ public class Episode extends Title {
 	}
 	
 	private static String getEID(String series, int season, int episode) {
+		if (TextUtils.isEmpty(series))
+			series = "unknown";
 		return series + "." + String.format(Locale.getDefault(), "S%1$02dE%2$02d", season, episode);
 	}
 	
@@ -271,8 +275,7 @@ public class Episode extends Title {
 	}
 
 	protected void load(Cursor cr) {
-		Log.i(TAG, "Loading episode " + tvdb_id);
-		
+		Log.v(TAG, "Loading episode " + extendedEID());
 		int ci;
 		tvdb_id = cr.getString(cr.getColumnIndex("tvdb_id"));
 		series = cr.getString(cr.getColumnIndex("series"));
@@ -308,11 +311,11 @@ public class Episode extends Title {
 		collected = cr.getInt(cr.getColumnIndex("collected")) == 1;
 		watched = cr.getInt(cr.getColumnIndex("watched")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
+		Log.v(TAG, "Loaded episode " + extendedEID());
 	}
 	
 	protected void save(boolean isnew) {
-		Log.i(TAG, "Saving episode " + tvdb_id);
-		
+		Log.d(TAG, "Saving episode " + extendedEID());
 		ContentValues cv = new ContentValues();
 		cv.put("tvdb_id", tvdb_id);
 		cv.put("series", series);
@@ -362,28 +365,33 @@ public class Episode extends Title {
 			session.getDB().insertOrThrow(TABLE, null, cv);
 		else
 			session.getDB().update(TABLE, cv, "tvdb_id=?", new String[] { tvdb_id });
+		Log.i(TAG, "Saved episode " + extendedEID());
 	}
 	
 	protected void delete() {
-		Log.i(TAG, "Deleting episode " + tvdb_id);
 		dispatch(OnTitleListener.WORKING, null);
+		Log.d(TAG, "Deleting episode " + extendedEID());
 		session.getDB().delete(TABLE, "tvdb_id=?", new String[] { tvdb_id });
+		Log.i(TAG, "Deleted episode " + extendedEID());
 		dispatch(OnTitleListener.READY, null);
 	}
 	
 	public void refresh(boolean force) {
+		if (Title.ongoingServiceOperation)
+			return;
 		if (TextUtils.isEmpty(tvdb_id) && (TextUtils.isEmpty(series) || season <= 0 || episode <= 0)) {
 			Log.w(TAG, "Missing tvdb_id/series/season/episode, cannot update...");
 			return;
 		}
-		if (force)
-			timestamp = 100;
-		Intent si = new Intent(session.getContext(), Service.class);
-		si.setAction(Service.REFRESH_EPISODE);
-		si.putExtra("series", series);
-		si.putExtra("season", season);
-		si.putExtra("episode", episode);
-		session.getContext().startService(si);
+		if (isOld() || force) {
+			Intent si = new Intent(session.getContext(), Service.class);
+			si.setAction(Service.REFRESH_EPISODE);
+			si.putExtra("series", series);
+			si.putExtra("season", season);
+			si.putExtra("episode", episode);
+			//session.getContext().startService(si);
+			WakefulIntentService.sendWakefulWork(session.getContext(), si);
+		}
 	}
 	
 	public final void commit(String what) {
@@ -455,6 +463,10 @@ public class Episode extends Title {
 		return season == 1 && episode == 1;
 	}
 	
+	public boolean isToday() {
+		return DateUtils.isToday(firstAired);
+	}
+	
 	public String name() {
 		return TextUtils.isEmpty(name) ? "N/A" : name;
 	}
@@ -467,7 +479,7 @@ public class Episode extends Title {
 		if (firstAired <= 0)
 			return "N/A";
 		long now = System.currentTimeMillis();
-		if (DateUtils.isToday(firstAired))
+		if (isToday())
 			return DateUtils.getRelativeTimeSpanString(firstAired, now, DateUtils.MINUTE_IN_MILLIS).toString();
 		String res = DateUtils.getRelativeTimeSpanString(firstAired, now, DateUtils.DAY_IN_MILLIS).toString();
 		if (Math.abs(now - firstAired)/(1000 * 60 * 60) < 168)
