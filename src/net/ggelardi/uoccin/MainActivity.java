@@ -101,7 +101,6 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		});
 		
 		progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-		dropHourGlass();
         
 		lastTitle = getTitle();
 		
@@ -134,11 +133,10 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	protected void onResume() {
 		super.onResume();
 		
-		try {
+		dropHourGlass();
+		
+		if (getSupportFragmentManager().findFragmentByTag(BaseFragment.ROOT_FRAGMENT) == null)
 			openDrawerItem(drawerData.findItem(lastView));
-		} catch (Exception err) {
-			Log.e(TAG, "onResume", err);
-		}
 		
 		if (session.driveEnabled() && TextUtils.isEmpty(session.driveUserAccount())) {
 			Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null,
@@ -234,13 +232,15 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		dropHourGlass();
 		lastView = selection.id;
 		drawerList.setItemChecked(selection.position, true);
-		if (selection.type.equals(DrawerItem.SERIES))
-			getSupportFragmentManager().beginTransaction().replace(R.id.container,
-				SeriesListFragment.newQuery(selection.label, selection.query, selection.details,
-					(String[]) null)).commit();
-		else if (selection.type.equals(DrawerItem.MOVIE)) {
+		BaseFragment f = null;
+		if (selection.type.equals(DrawerItem.SERIES)) {
+			f = SeriesListFragment.newQuery(selection.label, selection.query, selection.details,
+				(String[]) null);
+		} else if (selection.type.equals(DrawerItem.MOVIE)) {
 			//
 		}
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.ROOT_FRAGMENT).commit();
 	}
 	
 	@Override
@@ -260,25 +260,29 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	
 	@Override
 	public void openSeriesInfo(String tvdb_id) {
-		getSupportFragmentManager().beginTransaction().replace(R.id.container,
-			SeriesInfoFragment.newInstance(tvdb_id)).addToBackStack(null).commit();
+		BaseFragment f = SeriesInfoFragment.newInstance(tvdb_id);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
 	}
 	
 	@Override
 	public void openSeriesSeason(String tvdb_id, int season) {
-		EpisodeListFragment f = EpisodeListFragment.newList(tvdb_id, season);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
+		BaseFragment f = EpisodeListFragment.newList(tvdb_id, season);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
 	}
 	
 	@Override
 	public void openSeriesEpisode(String tvdb_id, int season, int episode) {
-		getSupportFragmentManager().beginTransaction().replace(R.id.container,
-				EpisodeInfoFragment.newInstance(tvdb_id, season, episode)).addToBackStack(null).commit();
+		BaseFragment f = EpisodeInfoFragment.newInstance(tvdb_id, season, episode);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
 	}
 	
 	private void dropHourGlass() {
 		pbCount = 0;
-		progressBar.setVisibility(View.GONE);
+		if (progressBar != null)
+			progressBar.setVisibility(View.GONE);
 	}
 	
 	private void checkDrive() {
@@ -334,14 +338,16 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	}
 	
 	private void searchSeries(String text) {
-		SeriesListFragment f = SeriesListFragment.newSearch(text);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
+		BaseFragment f = SeriesListFragment.newSearch(text);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
 	}
 	
 	private void searchMovies(String text) {
 		/*
-		SearchMoviesFragment f = SearchMoviesFragment.newInstance(text);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f).addToBackStack(null).commit();
+		BaseFragment f = SearchMoviesFragment.newInstance(text);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
 		*/
 	}
 }

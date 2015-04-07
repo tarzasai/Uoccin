@@ -441,6 +441,7 @@ public class Service extends WakefulIntentService {
 	}
 	
 	private void checkRestoreSeries(String tvdb_id, Integer season, Integer episode) {
+		Log.d(TAG, "checkRestoreSeries: " + tvdb_id);
 		Series ser = Series.get(this, tvdb_id);
 		if (ser.isNew() || ser.isOld())
 			refreshSeries(tvdb_id, true);

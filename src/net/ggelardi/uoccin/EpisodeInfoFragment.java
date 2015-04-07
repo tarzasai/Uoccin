@@ -133,12 +133,11 @@ public class EpisodeInfoFragment extends BaseFragment {
 		txt_shar.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent si = new Intent(Intent.ACTION_SEND, Uri.parse(episode.tvdbUrl()));
-			    si.setType("*/*");
+				Intent si = new Intent(Intent.ACTION_SEND);
+			    si.setType("text/plain");
 			    si.putExtra(Intent.EXTRA_TITLE, episode.name);
-			    si.putExtra(Intent.EXTRA_SUBJECT, episode.name);
-			    si.putExtra(Intent.EXTRA_TEXT, episode.plot);
-			    //si.putExtra(Intent.EXTRA_STREAM, Uri.parse(episode.poster));
+			    si.putExtra(Intent.EXTRA_SUBJECT, episode.plot);
+			    si.putExtra(Intent.EXTRA_TEXT, !TextUtils.isEmpty(episode.imdbUrl()) ? episode.imdbUrl() : episode.tvdbUrl());
 			    startActivity(Intent.createChooser(si, "Share episode info"));
 			}
 		});

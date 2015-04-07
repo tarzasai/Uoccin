@@ -127,12 +127,11 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_shar.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent si = new Intent(Intent.ACTION_SEND, Uri.parse(series.tvdbUrl()));
-			    si.setType("*/*");
+				Intent si = new Intent(Intent.ACTION_SEND);
+			    si.setType("text/plain");
 			    si.putExtra(Intent.EXTRA_TITLE, series.name);
-			    si.putExtra(Intent.EXTRA_SUBJECT, series.name);
-			    si.putExtra(Intent.EXTRA_TEXT, series.plot);
-			    //si.putExtra(Intent.EXTRA_STREAM, Uri.parse(series.poster));
+			    si.putExtra(Intent.EXTRA_SUBJECT, series.plot);
+			    si.putExtra(Intent.EXTRA_TEXT, !TextUtils.isEmpty(series.imdbUrl()) ? series.imdbUrl() : series.tvdbUrl());
 			    startActivity(Intent.createChooser(si, "Share series info"));
 			}
 		});

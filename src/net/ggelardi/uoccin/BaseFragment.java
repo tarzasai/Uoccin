@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 public abstract class BaseFragment extends Fragment implements OnClickListener {
+	public static final String ROOT_FRAGMENT = "net.ggelardi.uoccin.ROOT_FRAGMENT";
+	public static final String LEAF_FRAGMENT = "net.ggelardi.uoccin.LEAF_FRAGMENT";
 	
 	protected Session session;
 	protected OnFragmentListener mListener;
