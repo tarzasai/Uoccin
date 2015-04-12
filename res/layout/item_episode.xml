@@ -16,84 +16,100 @@
         android:layout_width="2dp"
         android:layout_height="match_parent" />
 
-    <LinearLayout
-        android:id="@+id/box_epitm_size"
-        android:layout_width="0dp"
+    <RelativeLayout
+        android:id="@+id/aaa"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:divider="@drawable/divider_2dp"
-        android:orientation="vertical"
-        android:padding="5dp"
-        android:showDividers="beginning|middle|end" >
-
-        <TextView
-            android:id="@+id/txt_epitm_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/ics_active_news"
-            android:drawablePadding="3dp"
-            android:ellipsize="end"
-            android:gravity="center_vertical"
-            android:maxLines="1"
-            android:text="@string/sample_episode"
-            android:textStyle="bold" />
+        android:layout_weight="1" >
 
         <LinearLayout
-            android:id="@+id/asdsad"
+            android:id="@+id/box_epitm_size"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:divider="@drawable/divider_16dp"
-            android:showDividers="middle" >
+            android:layout_centerInParent="true"
+            android:divider="@drawable/divider_2dp"
+            android:orientation="vertical"
+            android:padding="5dp"
+            android:showDividers="beginning|middle|end" >
 
             <TextView
-                android:id="@+id/txt_epitm_date"
-                android:layout_width="wrap_content"
+                android:id="@+id/txt_epitm_name"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ics_action_calendar"
+                android:drawableLeft="@drawable/ics_active_news"
                 android:drawablePadding="3dp"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="1"
-                android:text="@string/sample_date1"
-                android:textColor="@color/textColorSecondary"
+                android:text="@string/sample_episode"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/txt_epitm_subs"
+            <LinearLayout
+                android:id="@+id/asdsad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@drawable/divider_16dp"
+                android:showDividers="middle" >
+
+                <TextView
+                    android:id="@+id/txt_epitm_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ics_action_calendar"
+                    android:drawablePadding="3dp"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:text="@string/sample_date1"
+                    android:textColor="@color/textColorSecondary"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_epitm_subs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ics_action_subtitles"
+                    android:drawablePadding="3dp"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:text="@string/sample_subs" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/box_epitm_flgs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:divider="@drawable/divider_8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="5dp"
+            android:showDividers="middle" >
+
+            <ImageView
+                android:id="@+id/img_epitm_coll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ics_action_subtitles"
-                android:drawablePadding="3dp"
-                android:ellipsize="end"
-                android:gravity="center_vertical"
-                android:maxLines="1"
-                android:text="@string/sample_subs" />
+                android:contentDescription="@string/empty_text"
+                android:src="@drawable/ic_action_storage" />
+
+            <ImageView
+                android:id="@+id/img_epitm_seen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/empty_text"
+                android:src="@drawable/ic_action_seen" />
+
         </LinearLayout>
-    </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:divider="@drawable/divider_2dp"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:paddingLeft="0dp"
-        android:paddingRight="10dp"
-        android:showDividers="middle" >
-
-        <ImageView
-            android:id="@+id/img_epitm_coll"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/empty_text"
-            android:src="@drawable/ics_action_storage" />
-
-        <ImageView
-            android:id="@+id/img_epitm_seen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/empty_text"
-            android:src="@drawable/ics_action_seen" />
-    </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>

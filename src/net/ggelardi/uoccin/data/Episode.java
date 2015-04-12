@@ -62,21 +62,15 @@ public class Episode extends Title {
 		this.episode = episode;
 	}
 	
-	private static String getEID(String series, int season, int episode) {
-		if (TextUtils.isEmpty(series))
-			series = "unknown";
-		return series + "." + String.format(Locale.getDefault(), "S%1$02dE%2$02d", season, episode);
-	}
-	
 	private static synchronized Episode getInstance(Context context, String series, int season, int episode) {
-		String eid = getEID(series, season, episode);
-		Object tmp = cache.get(eid);
+		EID eid = new EID(series, season, episode);
+		Object tmp = cache.get(eid.toString());
 		if (tmp != null) {
 			Log.v(TAG, "Episode " + eid + " found in cache");
 			return (Episode) tmp;
 		}
 		Episode res = new Episode(context, series, season, episode);
-		cache.add(eid, res);
+		cache.add(eid.toString(), res);
 		Cursor cur = Session.getInstance(context).getDB().query("episode", null, "series=? and season=? and episode=?",
 			new String[] { series, Integer.toString(season), Integer.toString(episode) }, null, null, null);
 		try {
@@ -275,7 +269,7 @@ public class Episode extends Title {
 	}
 
 	protected void load(Cursor cr) {
-		Log.v(TAG, "Loading episode " + extendedEID());
+		Log.v(TAG, "Loading episode " + eid());
 		int ci;
 		tvdb_id = cr.getString(cr.getColumnIndex("tvdb_id"));
 		series = cr.getString(cr.getColumnIndex("series"));
@@ -311,11 +305,11 @@ public class Episode extends Title {
 		collected = cr.getInt(cr.getColumnIndex("collected")) == 1;
 		watched = cr.getInt(cr.getColumnIndex("watched")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
-		Log.v(TAG, "Loaded episode " + extendedEID());
+		Log.v(TAG, "Loaded episode " + eid());
 	}
 	
 	protected void save(boolean isnew) {
-		Log.d(TAG, "Saving episode " + extendedEID());
+		Log.d(TAG, "Saving episode " + eid());
 		ContentValues cv = new ContentValues();
 		cv.put("tvdb_id", tvdb_id);
 		cv.put("series", series);
@@ -365,14 +359,14 @@ public class Episode extends Title {
 			session.getDB().insertOrThrow(TABLE, null, cv);
 		else
 			session.getDB().update(TABLE, cv, "tvdb_id=?", new String[] { tvdb_id });
-		Log.i(TAG, "Saved episode " + extendedEID());
+		Log.i(TAG, "Saved episode " + eid());
 	}
 	
 	protected void delete() {
 		dispatch(OnTitleListener.WORKING, null);
-		Log.d(TAG, "Deleting episode " + extendedEID());
+		Log.d(TAG, "Deleting episode " + eid());
 		session.getDB().delete(TABLE, "tvdb_id=?", new String[] { tvdb_id });
-		Log.i(TAG, "Deleted episode " + extendedEID());
+		Log.i(TAG, "Deleted episode " + eid());
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -424,7 +418,7 @@ public class Episode extends Title {
 			else
 				commit(Commons.GD.SER_COLL);
 			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_epi : R.string.msg_coll_del_epi);
-			msg = String.format(msg, simpleEID());
+			msg = String.format(msg, eid().readable());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
@@ -442,21 +436,13 @@ public class Episode extends Title {
 			else
 				commit(Commons.GD.SER_SEEN);
 			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_epi : R.string.msg_seen_del_epi);
-			msg = String.format(msg, simpleEID());
+			msg = String.format(msg, eid().readable());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
 	
-	public String simpleEID() {
-		return String.format(Locale.getDefault(), "%dx%d", season, episode);
-	}
-	
-	public String standardEID() {
-		return getEID(series, season, episode).split("\\.")[1];
-	}
-	
-	public String extendedEID() {
-		return getEID(series, season, episode);
+	public EID eid() {
+		return new EID(series, season, episode);
 	}
 	
 	public boolean isPilot() {
@@ -547,6 +533,37 @@ public class Episode extends Title {
 	
 	public boolean isBefore(Episode ep) {
 		return isBefore(ep.season, ep.episode);
+	}
+	
+	public static class EID {
+		public final String series;
+		public final int season;
+		public final int episode;
+		
+		public EID(String series, int season, int episode) {
+			this.series = series;
+			this.season = season;
+			this.episode = episode;
+		}
+		
+		public EID(int season, int episode) {
+			this.series = null;
+			this.season = season;
+			this.episode = episode;
+		}
+		
+		public String sequence() {
+			return String.format(Locale.getDefault(), "S%1$02dE%2$02d", season, episode);
+		}
+		
+		public String readable() {
+			return String.format(Locale.getDefault(), "%dx%d", season, episode);
+		}
+		
+		@Override
+		public String toString() {
+			return (TextUtils.isEmpty(series) ? "unknown" : series) + "." + sequence();
+		}
 	}
 	
 	public static class EpisodeComparator implements Comparator<Episode> {

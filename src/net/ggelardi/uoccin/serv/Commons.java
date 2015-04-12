@@ -40,6 +40,8 @@ public class Commons {
 		public static final String SPECIALS = "pk_specials";
 		public static final String TVDBFEED = "pk_tvdbrss";
 		public static final String GDRVSYNC = "pk_gdrvbak";
+		public static final String GDRVWIFI = "pk_gdrvwifi";
+		public static final String GDRVINTV = "pk_gdrvint";
 		public static final String GDRVAUTH = "pk_gdrv_account";
 		public static final String GDRVLCID = "pk_gdrv_lastcid";
 		public static final String NOTIFSND = "pk_notif_sound";

@@ -67,22 +67,24 @@ public class SeriesAdapter extends BaseAdapter {
 		if (view == null) {
 			view = inflater.inflate(R.layout.item_series, parent, false);
 			vh = new ViewHolder();
-			vh.img_ser_pstr = (ImageView) view.findViewById(R.id.img_seritm_poster);
-			vh.box_ser_size = (LinearLayout) view.findViewById(R.id.box_seritm_size);
-			vh.img_ser_star = (ImageView) view.findViewById(R.id.img_seritm_star);
-			vh.txt_ser_name = (TextView) view.findViewById(R.id.txt_seritm_name);
-			vh.txt_ser_info = (TextView) view.findViewById(R.id.txt_seritm_info);
-			vh.txt_ser_plot = (TextView) view.findViewById(R.id.txt_seritm_plot);
-			vh.box_ser_epis = (LinearLayout) view.findViewById(R.id.box_seritm_epis);
-			vh.txt_ser_epis = (TextView) view.findViewById(R.id.txt_seritm_epis);
-			vh.txt_ser_date = (TextView) view.findViewById(R.id.txt_seritm_date);
-			vh.box_ser_stat = (LinearLayout) view.findViewById(R.id.box_seritm_stat);
-			vh.txt_ser_coll = (TextView) view.findViewById(R.id.txt_seritm_coll);
-			vh.txt_ser_seen = (TextView) view.findViewById(R.id.txt_seritm_seen);
-			vh.box_ser_2see = (LinearLayout) view.findViewById(R.id.box_seritm_2see);
-			vh.txt_ser_wtot = (TextView) view.findViewById(R.id.txt_seritm_wtot);
-			vh.txt_ser_2see = (TextView) view.findViewById(R.id.txt_seritm_2see);
-			vh.img_ser_star.setOnClickListener(listener);
+			vh.img_pstr = (ImageView) view.findViewById(R.id.img_is_poster);
+			vh.box_size = (LinearLayout) view.findViewById(R.id.box_is_size);
+			vh.img_star = (ImageView) view.findViewById(R.id.img_is_star);
+			vh.txt_name = (TextView) view.findViewById(R.id.txt_is_series);
+			vh.txt_plot = (TextView) view.findViewById(R.id.txt_is_seplot);
+			vh.box_epis = (LinearLayout) view.findViewById(R.id.box_is_anyep);
+			vh.txt_epis = (TextView) view.findViewById(R.id.txt_is_anyid);
+			vh.txt_date = (TextView) view.findViewById(R.id.txt_is_anyad);
+			vh.box_2see = (LinearLayout) view.findViewById(R.id.box_is_avail);
+			vh.txt_2tit = (TextView) view.findViewById(R.id.txt_is_avtit);
+			vh.txt_2plo = (TextView) view.findViewById(R.id.txt_is_avplot);
+			vh.box_stat = (LinearLayout) view.findViewById(R.id.box_is_count);
+			vh.txt_coll = (TextView) view.findViewById(R.id.txt_seritm_coll);
+			vh.txt_seen = (TextView) view.findViewById(R.id.txt_seritm_seen);
+			vh.txt_info = (TextView) view.findViewById(R.id.txt_is_info);
+			//
+			vh.img_star.setOnClickListener(listener);
+			vh.box_2see.setOnClickListener(listener);
 			//
 			if (pstHeight <= 1) {
 				view.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
@@ -94,62 +96,58 @@ public class SeriesAdapter extends BaseAdapter {
 		} else {
 			vh = (ViewHolder) view.getTag();
 		}
-		vh.img_ser_star.setTag(Integer.valueOf(position));
+		//
+		vh.img_star.setTag(Integer.valueOf(position));
+		//
 		Series ser = getItem(position);
-		session.picasso(ser.poster, true).resize(pstWidth, pstHeight).into(vh.img_ser_pstr);
+		session.picasso(ser.poster, true).resize(pstWidth, pstHeight).into(vh.img_pstr);
 		if (pstWidth > 1)
-			vh.img_ser_pstr.setMinimumWidth(pstWidth);
-		vh.img_ser_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
-		vh.txt_ser_name.setText(ser.name);
+			vh.img_pstr.setMinimumWidth(pstWidth);
+		vh.img_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
+		vh.txt_name.setText(ser.name);
 		if (ser.isNew() || details.equals(SERIES_STORY)) {
-			vh.txt_ser_plot.setVisibility(View.VISIBLE);
-			vh.box_ser_epis.setVisibility(View.GONE);
-			vh.box_ser_2see.setVisibility(View.GONE);
-			vh.box_ser_stat.setVisibility(View.GONE);
+			vh.txt_plot.setVisibility(View.VISIBLE);
+			vh.box_epis.setVisibility(View.GONE);
+			vh.box_2see.setVisibility(View.GONE);
+			vh.box_stat.setVisibility(View.GONE);
 			//
-			vh.txt_ser_plot.setText(ser.plot);
+			vh.txt_plot.setText(ser.plot);
 		} else if (details.equals(EPI_AVAILABL)) {
-			vh.txt_ser_plot.setVisibility(View.GONE);
-			vh.box_ser_epis.setVisibility(View.GONE);
-			vh.box_ser_2see.setVisibility(View.VISIBLE);
-			vh.box_ser_stat.setVisibility(View.GONE);
+			vh.txt_plot.setVisibility(View.GONE);
+			vh.box_epis.setVisibility(View.GONE);
+			vh.box_2see.setVisibility(View.VISIBLE);
+			vh.box_stat.setVisibility(View.GONE);
 			//
-			int n = ser.episodeCount(null);
-			int m = ser.episodeWatched(null);
-			vh.txt_ser_wtot.setText(m == n ? String.format(session.getString(R.string.fmt_nums_done), m) :
-				String.format(session.getString(R.string.fmt_nums_seen), m, n - m));
-			if (n <= 0) {
-				vh.txt_ser_2see.setText("N/A");
-				vh.txt_ser_2see.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-			} else {
-				Episode ep = null;
-				for (int i = 0; i < ser.episodes.size(); i++) {
-					ep = ser.episodes.get(i);
-					if (ep.inCollection() && !ep.isWatched())
-						break;
-				}
-				vh.txt_ser_2see.setText(ep.simpleEID() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
-				vh.txt_ser_2see.setCompoundDrawablesWithIntrinsicBounds(ep.inCollection() ?
-					R.drawable.ics_action_storage : 0, 0, 0, 0);
+			Episode ep = null;
+			for (int i = 0; i < ser.episodes.size(); i++) {
+				ep = ser.episodes.get(i);
+				if (ep.inCollection() && !ep.isWatched())
+					break;
 			}
+			vh.box_2see.setTag(ep.eid());
+			String title = ep.eid().readable() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name);
+			if (ser.episodeWaiting(null) > 1)
+				title += " (+" + Integer.toString(ser.episodeWaiting(null) - 1) + ")";
+			vh.txt_2tit.setText(title);
+			vh.txt_2plo.setText(ep.plot());
 		} else if (details.equals(EPI_COUNTERS)) {
-			vh.txt_ser_plot.setVisibility(View.GONE);
-			vh.box_ser_epis.setVisibility(View.GONE);
-			vh.box_ser_2see.setVisibility(View.GONE);
-			vh.box_ser_stat.setVisibility(View.VISIBLE);
+			vh.txt_plot.setVisibility(View.GONE);
+			vh.box_epis.setVisibility(View.GONE);
+			vh.box_2see.setVisibility(View.GONE);
+			vh.box_stat.setVisibility(View.VISIBLE);
 			//
-			int n = ser.episodeCount(null);
+			int n = ser.episodeAired(null);
 			int m = ser.episodeCollected(null);
-			vh.txt_ser_coll.setText(m == n ? String.format(session.getString(R.string.fmt_nums_done), m) :
+			vh.txt_coll.setText(m == n ? String.format(session.getString(R.string.fmt_nums_done), m) :
 				String.format(session.getString(R.string.fmt_nums_coll), m, n - m));
 			m = ser.episodeWatched(null);
-			vh.txt_ser_seen.setText(m == n ? String.format(session.getString(R.string.fmt_nums_done), m) :
+			vh.txt_seen.setText(m == n ? String.format(session.getString(R.string.fmt_nums_done), m) :
 				String.format(session.getString(R.string.fmt_nums_seen), m, n - m));
 		} else {
-			vh.txt_ser_plot.setVisibility(View.GONE);
-			vh.box_ser_epis.setVisibility(View.VISIBLE);
-			vh.box_ser_2see.setVisibility(View.GONE);
-			vh.box_ser_stat.setVisibility(View.GONE);
+			vh.txt_plot.setVisibility(View.GONE);
+			vh.box_epis.setVisibility(View.VISIBLE);
+			vh.box_2see.setVisibility(View.GONE);
+			vh.box_stat.setVisibility(View.GONE);
 			//
 			List<Episode> chk = new ArrayList<Episode>();
 			chk.add(ser.lastEpisode());
@@ -169,19 +167,19 @@ public class SeriesAdapter extends BaseAdapter {
 				ep = chk.get(0);
 			//
 			if (ep == null) {
-				vh.txt_ser_epis.setText("N/A");
-				vh.txt_ser_epis.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-				vh.txt_ser_date.setText("N/A");
+				vh.txt_epis.setText("N/A");
+				vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+				vh.txt_date.setText("N/A");
 			} else {
-				vh.txt_ser_epis.setText(ep.simpleEID() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
-				vh.txt_ser_epis.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ?
+				vh.txt_epis.setText(ep.eid().readable() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
+				vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ?
 					R.drawable.ics_action_news : 0, 0, 0, 0);
-				vh.txt_ser_date.setCompoundDrawablesWithIntrinsicBounds(ep.isToday() ?
+				vh.txt_date.setCompoundDrawablesWithIntrinsicBounds(ep.isToday() ?
 					R.drawable.ics_action_calendar : 0, 0, 0, 0);
-				vh.txt_ser_date.setText(ep.firstAired());
+				vh.txt_date.setText(ep.firstAired());
 			}
 		}
-		vh.txt_ser_info.setText(ser.airInfo());
+		vh.txt_info.setText(ser.airInfo());
 		return view;
 	}
 	
@@ -191,20 +189,20 @@ public class SeriesAdapter extends BaseAdapter {
 	}
 	
 	static class ViewHolder {
-		public ImageView img_ser_pstr;
-		public LinearLayout box_ser_size;
-		public ImageView img_ser_star;
-		public TextView txt_ser_name;
-		public TextView txt_ser_info;
-		public TextView txt_ser_plot;
-		public LinearLayout box_ser_epis;
-		public TextView txt_ser_epis;
-		public TextView txt_ser_date;
-		public LinearLayout box_ser_stat;
-		public TextView txt_ser_coll;
-		public TextView txt_ser_seen;
-		public LinearLayout box_ser_2see;
-		public TextView txt_ser_wtot;
-		public TextView txt_ser_2see;
+		public ImageView img_pstr;
+		public LinearLayout box_size;
+		public ImageView img_star;
+		public TextView txt_name;
+		public TextView txt_info;
+		public TextView txt_plot;
+		public LinearLayout box_epis;
+		public TextView txt_epis;
+		public TextView txt_date;
+		public LinearLayout box_stat;
+		public TextView txt_coll;
+		public TextView txt_seen;
+		public LinearLayout box_2see;
+		public TextView txt_2tit;
+		public TextView txt_2plo;
 	}
 }

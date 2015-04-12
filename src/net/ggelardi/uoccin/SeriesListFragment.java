@@ -3,6 +3,7 @@ package net.ggelardi.uoccin;
 import java.util.List;
 
 import net.ggelardi.uoccin.adapters.SeriesAdapter;
+import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.SeriesTask;
@@ -12,6 +13,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -170,15 +172,25 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	
 	@Override
 	public void onClick(View v) {
-		int pos;
-		try {
-			pos = (Integer) v.getTag();
-		} catch (Exception err) {
-			return; // wtf?
+		if (v.getId() == R.id.img_is_star) {
+			int pos;
+			try {
+				pos = (Integer) v.getTag();
+				Series ser = mAdapter.getItem(pos);
+				ser.setWatchlist(!ser.inWatchlist());
+			} catch (Exception err) {
+				Log.e(tag(), "onClick", err);
+			}
+			return;
 		}
-		if (v.getId() == R.id.img_seritm_star) {
-			Series ser = mAdapter.getItem(pos);
-			ser.setWatchlist(!ser.inWatchlist());
+		if (v.getId() == R.id.box_is_avail) {
+			Object tmp = v.getTag();
+			if (tmp instanceof EID) {
+				EID eid = (EID) tmp;
+				mListener.openSeriesEpisode(eid.series, eid.season, eid.episode);
+			} else if (tmp instanceof String) {
+				mListener.openSeriesInfo((String) tmp);
+			}
 			return;
 		}
 	}

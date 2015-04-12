@@ -95,7 +95,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_coll.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final boolean flag = series.episodeCollected(null) < series.episodeCount(null);
+				final boolean flag = series.episodeCollected(null) < series.episodeAired(null);
 				int msg = flag ? R.string.ask_set_series_coll_true : R.string.ask_set_series_coll_false;
 				new AlertDialog.Builder(getActivity()).setTitle(series.name).setMessage(msg).
 					setIcon(R.drawable.ic_active_storage).setNegativeButton(R.string.dlg_btn_cancel, null).
@@ -111,7 +111,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_seen.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final boolean flag = series.episodeWatched(null) < series.episodeCount(null);
+				final boolean flag = series.episodeWatched(null) < series.episodeAired(null);
 				int msg = flag ? R.string.ask_set_series_seen_true : R.string.ask_set_series_seen_false;
 				new AlertDialog.Builder(getActivity()).setTitle(series.name).setMessage(msg).
 					setIcon(R.drawable.ic_active_seen).setNegativeButton(R.string.dlg_btn_cancel, null).
@@ -222,11 +222,11 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_ratd.setText(series.rated());
 		txt_wlst.setCompoundDrawablesWithIntrinsicBounds(0, series.inWatchlist() ?
 			R.drawable.ic_active_loved : R.drawable.ic_action_loved, 0, 0);
-		txt_coll.setCompoundDrawablesWithIntrinsicBounds(0, (series.episodeCount(null) > 0 &&
-			series.episodeCollected(null) == series.episodeCount(null)) ? R.drawable.ic_active_storage :
+		txt_coll.setCompoundDrawablesWithIntrinsicBounds(0, (series.episodeAired(null) > 0 &&
+			series.episodeCollected(null) >= series.episodeAired(null)) ? R.drawable.ic_active_storage :
 			R.drawable.ic_action_storage, 0, 0);
-		txt_seen.setCompoundDrawablesWithIntrinsicBounds(0, (series.episodeCount(null) > 0 &&
-			series.episodeWatched(null) == series.episodeCount(null)) ? R.drawable.ic_active_seen :
+		txt_seen.setCompoundDrawablesWithIntrinsicBounds(0, (series.episodeAired(null) > 0 &&
+			series.episodeWatched(null) >= series.episodeAired(null)) ? R.drawable.ic_active_seen :
 			R.drawable.ic_action_seen, 0, 0);
 		txt_plot.setText(series.plot());
 		txt_acts.setText(series.actors());

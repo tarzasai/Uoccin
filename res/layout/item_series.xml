@@ -8,7 +8,7 @@
     android:paddingBottom="1dp" >
 
     <ImageView
-        android:id="@+id/img_seritm_poster"
+        android:id="@+id/img_is_poster"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:contentDescription="@string/empty_text"
@@ -19,7 +19,7 @@
         android:layout_height="wrap_content" >
 
         <LinearLayout
-            android:id="@+id/box_seritm_size"
+            android:id="@+id/box_is_size"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -32,9 +32,10 @@
             android:padding="5dp" >
 
             <TextView
-                android:id="@+id/txt_seritm_name"
+                android:id="@+id/txt_is_series"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="28dp"
                 android:ellipsize="end"
                 android:lines="1"
                 android:text="@string/sample_title1"
@@ -46,7 +47,7 @@
                 android:layout_height="wrap_content" >
 
                 <TextView
-                    android:id="@+id/txt_seritm_plot"
+                    android:id="@+id/txt_is_seplot"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
@@ -56,7 +57,7 @@
                     android:visibility="gone" />
 
                 <LinearLayout
-                    android:id="@+id/box_seritm_epis"
+                    android:id="@+id/box_is_anyep"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
@@ -64,7 +65,7 @@
                     android:visibility="gone" >
 
                     <TextView
-                        android:id="@+id/txt_seritm_epis"
+                        android:id="@+id/txt_is_anyid"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
@@ -73,7 +74,7 @@
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/txt_seritm_date"
+                        android:id="@+id/txt_is_anyad"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
@@ -89,18 +90,16 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/box_seritm_2see"
+                    android:id="@+id/box_is_avail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:orientation="vertical" >
 
                     <TextView
-                        android:id="@+id/txt_seritm_wtot"
+                        android:id="@+id/txt_is_avtit"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ics_action_seen"
-                        android:drawablePadding="4dp"
                         android:ellipsize="end"
                         android:gravity="center_vertical"
                         android:lines="1"
@@ -108,25 +107,17 @@
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/txt_seritm_2see"
+                        android:id="@+id/txt_is_avplot"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ics_action_storage"
-                        android:drawablePadding="4dp"
                         android:ellipsize="end"
-                        android:gravity="center_vertical"
-                        android:lines="1"
-                        android:text="@string/sample_episode"
-                        android:textStyle="bold" />
+                        android:lines="2"
+                        android:text="@string/sample_plot1" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/empty_text" />
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/box_seritm_stat"
+                    android:id="@+id/box_is_count"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
@@ -165,7 +156,7 @@
             </RelativeLayout>
 
             <TextView
-                android:id="@+id/txt_seritm_info"
+                android:id="@+id/txt_is_info"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
@@ -177,7 +168,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/img_seritm_star"
+            android:id="@+id/img_is_star"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"

@@ -26,6 +26,7 @@ public class EpisodeAdapter extends BaseAdapter {
 	private List<Episode> items;
 	private int pstHeight = 1;
 	private int pstWidth = 1;
+	private boolean switches = false;
 	
 	public EpisodeAdapter(Context context, OnClickListener clickListener) {
 		super();
@@ -65,6 +66,7 @@ public class EpisodeAdapter extends BaseAdapter {
 			vh.txt_subs = (TextView) view.findViewById(R.id.txt_epitm_subs);
 			vh.img_coll = (ImageView) view.findViewById(R.id.img_epitm_coll);
 			vh.img_seen = (ImageView) view.findViewById(R.id.img_epitm_seen);
+			vh.box_flgs = (LinearLayout) view.findViewById(R.id.box_epitm_flgs);
 			vh.img_coll.setOnClickListener(listener);
 			vh.img_seen.setOnClickListener(listener);
 			// calculate poster size
@@ -78,6 +80,7 @@ public class EpisodeAdapter extends BaseAdapter {
 		} else {
 			vh = (ViewHolder) view.getTag();
 		}
+		vh.box_flgs.setVisibility(switches ? View.VISIBLE : View.GONE);
 		vh.img_coll.setTag(Integer.valueOf(position));
 		vh.img_seen.setTag(Integer.valueOf(position));
 		Episode ep = getItem(position);
@@ -91,8 +94,14 @@ public class EpisodeAdapter extends BaseAdapter {
 			session.picasso(scrn).resize(pstWidth, pstHeight).into(vh.img_scrn);
 		}
 		vh.txt_name.setText(Integer.toString(ep.episode) + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
-		vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ? R.drawable.ics_active_news : 0,
-			0, 0, 0);
+		if (ep.isWatched())
+			vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ics_action_seen, 0, 0, 0);
+		else if (ep.inCollection())
+			vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ics_action_storage, 0, 0, 0);
+		else if (ep.isPilot())
+			vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ics_active_news, 0, 0, 0);
+		else
+			vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 		vh.txt_date.setText(ep.firstAired());
 		vh.txt_date.setCompoundDrawablesWithIntrinsicBounds(ep.isToday() ? R.drawable.ics_active_calendar : 0, 0, 0, 0);
 		if (ep.hasSubtitles()) {
@@ -102,14 +111,24 @@ public class EpisodeAdapter extends BaseAdapter {
 			vh.txt_subs.setText(R.string.empty_text);
 			vh.txt_subs.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 		}
-		vh.img_coll.setImageResource(ep.inCollection() ? R.drawable.ics_active_storage : R.drawable.ics_action_storage);
-		vh.img_seen.setImageResource(ep.isWatched() ? R.drawable.ics_active_seen : R.drawable.ics_action_seen);
+		vh.img_coll.setImageResource(ep.inCollection() ? R.drawable.ic_active_storage : R.drawable.ic_action_storage);
+		vh.img_seen.setImageResource(ep.isWatched() ? R.drawable.ic_active_seen : R.drawable.ic_action_seen);
 		return view;
 	}
 	
 	public void setTitles(List<Episode> titles) {
 		items = titles;
+		switches = false;
     	notifyDataSetChanged();
+	}
+	
+	public void setSwitches(boolean value) {
+		switches = value;
+		notifyDataSetChanged();
+	}
+	
+	public boolean getSwitches() {
+		return switches;
 	}
 	
 	static class ViewHolder {
@@ -118,6 +137,7 @@ public class EpisodeAdapter extends BaseAdapter {
 		public TextView txt_name;
 		public TextView txt_date;
 		public TextView txt_subs;
+		public LinearLayout box_flgs;
 		public ImageView img_coll;
 		public ImageView img_seen;
 	}

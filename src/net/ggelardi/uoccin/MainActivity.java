@@ -67,7 +67,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setNavigationIcon(R.drawable.ic_drawer);
+        //toolbar.setNavigationIcon(R.drawable.ic_drawer);
+        toolbar.setNavigationIcon(R.drawable.ic_navigation_menu);
         
         drawer = (DrawerLayout) findViewById(R.id.drawer);
         drawer.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);

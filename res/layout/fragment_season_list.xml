@@ -13,10 +13,9 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/sub_ab_shadow"
+            android:background="@color/colorPrimary"
             android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:paddingTop="10dp" >
+            android:paddingRight="5dp" >
 
             <TextView
                 android:id="@+id/txt_sehdr_prev"
@@ -28,6 +27,7 @@
                 android:gravity="center_vertical"
                 android:text="@string/sample_number1"
                 android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/textColorPrimary"
                 android:textStyle="bold" />
 
             <LinearLayout
@@ -44,7 +44,7 @@
                     android:text="@string/lbl_comm_seas"
                     android:textAllCaps="true"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/textColorSecondary" />
+                    android:textColor="@color/textColorPrimary" />
 
                 <TextView
                     android:id="@+id/txt_sehdr_seas"
@@ -53,27 +53,36 @@
                     android:paddingRight="5dp"
                     android:text="@string/sample_number2"
                     android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/textColorPrimary"
                     android:textStyle="bold" />
 
                 <ImageView
-                    android:id="@+id/imageView1"
+                    android:id="@+id/img_sehdr_flgs"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_action_settings" />
 
-                <ImageView
-                    android:id="@+id/img_sehdr_coll"
+                <LinearLayout
+                    android:id="@+id/box_sehdr_flgs"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="@string/empty_text"
-                    android:src="@drawable/ic_action_storage" />
+                    android:divider="@drawable/divider_4dp"
+                    android:showDividers="middle" >
 
-                <ImageView
-                    android:id="@+id/img_sehdr_seen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:contentDescription="@string/empty_text"
-                    android:src="@drawable/ic_action_seen" />
+                    <ImageView
+                        android:id="@+id/img_sehdr_coll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/empty_text"
+                        android:src="@drawable/ic_action_storage" />
+
+                    <ImageView
+                        android:id="@+id/img_sehdr_seen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/empty_text"
+                        android:src="@drawable/ic_action_seen" />
+                </LinearLayout>
             </LinearLayout>
 
             <TextView
@@ -88,7 +97,9 @@
                 android:gravity="center_vertical"
                 android:text="@string/sample_number2"
                 android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/textColorPrimary"
                 android:textStyle="bold" />
+
         </RelativeLayout>
 
         <ListView

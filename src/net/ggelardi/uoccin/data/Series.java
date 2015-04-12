@@ -670,7 +670,7 @@ public class Series extends Title {
 	
 	public Episode lastEpisode() {
 		for (int i = episodes.size() - 1; i >= 0; i--)
-			if (episodes.get(i).firstAired < System.currentTimeMillis())
+			if (episodes.get(i).firstAired > 0 && episodes.get(i).firstAired < System.currentTimeMillis())
 				return episodes.get(i);
 		return null;
 	}
@@ -719,6 +719,14 @@ public class Series extends Title {
 		return res;
 	}
 	
+	public int episodeAired(Integer season) {
+		int res = 0;
+		for (Episode ep: episodes)
+			if (ep.firstAired > 0 && (season == null || ep.season == season))
+				res++;
+		return res;
+	}
+	
 	public int episodeCollected(Integer season) {
 		int res = 0;
 		for (Episode ep: episodes)
@@ -731,6 +739,14 @@ public class Series extends Title {
 		int res = 0;
 		for (Episode ep: episodes)
 			if (ep.isWatched() && (season == null || ep.season == season))
+				res++;
+		return res;
+	}
+	
+	public int episodeWaiting(Integer season) {
+		int res = 0;
+		for (Episode ep: episodes)
+			if (ep.inCollection() && !ep.isWatched() && (season == null || ep.season == season))
 				res++;
 		return res;
 	}

@@ -83,7 +83,7 @@ public class Service extends WakefulIntentService {
 			} else if (act.equals(REFRESH_MOVIE)) {
 				refreshMovie(intent.getExtras().getString("imdb_id"), false);
 			} else if (act.equals(REFRESH_SERIES)) {
-				refreshSeries(intent.getExtras().getString("tvdb_id"), false);
+				refreshSeries(intent.getExtras().getString("tvdb_id"), true, false);
 			} else if (act.equals(REFRESH_EPISODE)) {
 				Bundle extra = intent.getExtras();
 				String series = extra.getString("series");
@@ -187,9 +187,9 @@ public class Service extends WakefulIntentService {
 		//
 	}
 	
-	private void refreshSeries(String tvdb_id, boolean forceCommit) {
+	private void refreshSeries(String tvdb_id, boolean forceRefresh, boolean forceCommit) {
 		Series ser = Series.get(this, tvdb_id);
-		if (!(ser.isNew() || ser.isOld())) // TODO wifi check?
+		if (!(forceRefresh || ser.isNew() || ser.isOld())) // TODO wifi check?
 			return;
 		Log.d(TAG, "refreshing series " + tvdb_id);
 		Document doc;
@@ -228,7 +228,7 @@ public class Service extends WakefulIntentService {
 		Episode epi = Episode.get(this, series, season, episode);
 		if (!(epi.isNew() || epi.isOld())) // TODO wifi check?
 			return;
-		Log.d(TAG, "refreshing episode " + epi.standardEID());
+		Log.d(TAG, "refreshing episode " + epi.eid());
 		Document doc;
 		try {
 			doc = XML.TVDB.getInstance().sync_getEpisode(series, season, episode, session.language());
@@ -353,7 +353,7 @@ public class Service extends WakefulIntentService {
 				while (cur.moveToNext()) {
 					ep = Episode.get(this, cur.getString(0), cur.getInt(1), cur.getInt(2));
 					if (ep != null)
-						map.put(ep.extendedEID(), ep.subtitles.toArray(new String[ep.subtitles.size()]));
+						map.put(ep.eid().toString(), ep.subtitles.toArray(new String[ep.subtitles.size()]));
 				}
 			} finally {
 				cur.close();
@@ -444,13 +444,13 @@ public class Service extends WakefulIntentService {
 		Log.d(TAG, "checkRestoreSeries: " + tvdb_id);
 		Series ser = Series.get(this, tvdb_id);
 		if (ser.isNew() || ser.isOld())
-			refreshSeries(tvdb_id, true);
+			refreshSeries(tvdb_id, false, true);
 		else if (season != null && !ser.seasons().contains(season))
-			refreshSeries(tvdb_id, true);
+			refreshSeries(tvdb_id, false, true);
 		else if (season != null && episode != null) {
 			Episode ep = ser.lastEpisode(season);
 			if (ep == null || ep.episode < episode)
-				refreshSeries(tvdb_id, true);
+				refreshSeries(tvdb_id, false, true);
 		}
 	}
 	

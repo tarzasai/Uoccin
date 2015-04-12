@@ -92,10 +92,13 @@
     <string name="pk_startup_summ">The first view you want to see on startup.</string>
     <string name="pk_locale_title">Localization</string>
     <string name="pk_locale_summ">The language for titles and synopsis (where available).</string>
-    <string name="pk_gdrvbak_title">Google Drive</string>
-    <string name="pk_gdrvbak_summ">Synchronize your watchlist/collection/watched titles with other devices (phones or desktop apps).</string>
     <string name="pk_tvdbrss_title">TVDB feed</string>
     <string name="pk_tvdbrss_summ">Periodically check TVDB\'s \"airing today\" feed for new TV shows.</string>
+    <string name="pc_gdrvcat_title">Google Drive</string>
+    <string name="pk_gdrvbak_title">Synchronize</string>
+    <string name="pk_gdrvbak_summ">Manage your data on multiple devices (phones or desktop apps).</string>
+    <string name="pk_gdrvwif_title">Only on WiFi</string>
+    <string name="pk_gdrvint_title">Sync interval</string>
     
     <!-- sample text -->
     <string name="sample_title1">A Short Title</string>

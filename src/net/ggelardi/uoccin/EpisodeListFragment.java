@@ -22,6 +22,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -47,6 +48,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 	private TextView txtShdrPrev;
 	private TextView txtShdrNext;
 	private TextView lblShdrSeas;
+	private LinearLayout boxShdrFlgs;
 	private ImageView imgShdrColl;
 	private ImageView imgShdrSeen;
 	
@@ -109,6 +111,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 			txtShdrPrev = (TextView) view.findViewById(R.id.txt_sehdr_prev);
 			txtShdrNext = (TextView) view.findViewById(R.id.txt_sehdr_next);
 			lblShdrSeas = (TextView) view.findViewById(R.id.txt_sehdr_seas);
+			boxShdrFlgs = (LinearLayout) view.findViewById(R.id.box_sehdr_flgs);
 			imgShdrColl = (ImageView) view.findViewById(R.id.img_sehdr_coll);
 			imgShdrSeen = (ImageView) view.findViewById(R.id.img_sehdr_seen);
 			
@@ -130,10 +133,19 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 				}
 			});
 			
+			ImageView flgs = (ImageView) view.findViewById(R.id.img_sehdr_flgs);
+			flgs.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mAdapter.setSwitches(!mAdapter.getSwitches());
+					boxShdrFlgs.setVisibility(mAdapter.getSwitches() ? View.VISIBLE : View.GONE);
+				}
+			});
+			
 			imgShdrColl.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					final boolean flag = ser.episodeCollected(season) < ser.episodeCount(season);
+					final boolean flag = ser.episodeCollected(season) < ser.episodeAired(season);
 					int msg = flag ? R.string.ask_set_season_coll_true : R.string.ask_set_season_coll_false;
 					new AlertDialog.Builder(getActivity()).setTitle(ser.name).setMessage(msg).
 						setIcon(R.drawable.ic_active_storage).setNegativeButton(R.string.dlg_btn_cancel, null).
@@ -141,7 +153,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								ser.setCollected(flag, season);
-								imgShdrColl.setImageResource(ser.episodeCollected(season) == ser.episodeCount(season) ?
+								imgShdrColl.setImageResource(ser.episodeCollected(season) >= ser.episodeAired(season) ?
 									R.drawable.ic_active_storage : R.drawable.ic_action_storage);
 							}
 						}).show();
@@ -151,7 +163,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 			imgShdrSeen.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					final boolean flag = ser.episodeWatched(season) < ser.episodeCount(season);
+					final boolean flag = ser.episodeWatched(season) < ser.episodeAired(season);
 					int msg = flag ? R.string.ask_set_season_seen_true : R.string.ask_set_season_seen_false;
 					new AlertDialog.Builder(getActivity()).setTitle(ser.name).setMessage(msg).
 						setIcon(R.drawable.ic_active_seen).setNegativeButton(R.string.dlg_btn_cancel, null).
@@ -159,7 +171,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								ser.setWatched(flag, season);
-								imgShdrSeen.setImageResource(ser.episodeWatched(season) == ser.episodeCount(season) ?
+								imgShdrSeen.setImageResource(ser.episodeWatched(season) >= ser.episodeAired(season) ?
 									R.drawable.ic_active_seen : R.drawable.ic_action_seen);
 							}
 						}).show();
@@ -288,9 +300,10 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 				txtShdrNext.setVisibility(View.VISIBLE);
 				txtShdrNext.setText(Integer.toString(ser.seasons().get(sid + 1)));
 			}
-			imgShdrColl.setImageResource(ser.episodeCollected(season) == ser.episodeCount(season) ?
+			boxShdrFlgs.setVisibility(View.GONE);
+			imgShdrColl.setImageResource(ser.episodeCollected(season) >= ser.episodeAired(season) ?
 				R.drawable.ic_active_storage : R.drawable.ic_action_storage);
-			imgShdrSeen.setImageResource(ser.episodeWatched(season) == ser.episodeCount(season) ?
+			imgShdrSeen.setImageResource(ser.episodeWatched(season) >= ser.episodeAired(season) ?
 				R.drawable.ic_active_seen : R.drawable.ic_action_seen);
 		} else
 			getActivity().setTitle(title);

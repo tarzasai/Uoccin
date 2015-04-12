@@ -226,10 +226,10 @@ public class EpisodeInfoFragment extends BaseFragment {
 		}
 		Episode ep = episode.getPrior();
 		txt_prev.setEnabled(ep != null);
-		txt_prev.setText(ep != null ? ep.simpleEID() : session.getString(R.string.none_text));
+		txt_prev.setText(ep != null ? ep.eid().readable() : session.getString(R.string.none_text));
 		ep = episode.getNext();
 		txt_next.setEnabled(ep != null);
-		txt_next.setText(ep != null ? ep.simpleEID() : session.getString(R.string.none_text));
+		txt_next.setText(ep != null ? ep.eid().readable() : session.getString(R.string.none_text));
 		txt_coll.setCompoundDrawablesWithIntrinsicBounds(0, episode.inCollection() ?
 			R.drawable.ic_active_storage : R.drawable.ic_action_storage, 0, 0);
 		txt_seen.setCompoundDrawablesWithIntrinsicBounds(0, episode.isWatched() ?

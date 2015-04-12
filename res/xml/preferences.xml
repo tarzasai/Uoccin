@@ -21,14 +21,33 @@
 
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="pk_gdrvbak"
-        android:summary="@string/pk_gdrvbak_summ"
-        android:title="@string/pk_gdrvbak_title" />
-
-    <CheckBoxPreference
-        android:defaultValue="false"
         android:key="pk_tvdbrss"
         android:summary="@string/pk_tvdbrss_summ"
         android:title="@string/pk_tvdbrss_title" />
+
+    <PreferenceCategory
+        android:key="pc_gdrvcat"
+        android:title="@string/pc_gdrvcat_title" >
+	
+	    <CheckBoxPreference
+	        android:defaultValue="false"
+	        android:key="pk_gdrvbak"
+	        android:summary="@string/pk_gdrvbak_summ"
+	        android:title="@string/pk_gdrvbak_title" />
+	
+	    <CheckBoxPreference
+	        android:defaultValue="false"
+	        android:key="pk_gdrvwifi"
+	        android:title="@string/pk_gdrvwif_title" />
+        
+        <net.ggelardi.uoccin.comp.IntListPreference
+            android:key="pk_gdrvint"
+            android:defaultValue="1"
+            android:dialogTitle="@string/pk_gdrvint_title"
+            android:entries="@array/pk_gdrvint_names"
+            android:entryValues="@array/pk_gdrvint_values"
+            android:title="@string/pk_gdrvint_title" />
+	    
+    </PreferenceCategory>
     
 </PreferenceScreen>
