@@ -1,5 +1,7 @@
 package net.ggelardi.uoccin;
 
+import java.util.Locale;
+
 import net.ggelardi.uoccin.adapters.SeasonAdapter;
 import net.ggelardi.uoccin.comp.ExpandableHeightGridView;
 import net.ggelardi.uoccin.data.Series;
@@ -127,11 +129,20 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_shar.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("*").append(series.name.toUpperCase(Locale.getDefault())).append("*");
+				sb.append("\n").append(series.network);
+				if (series.isRecent())
+					sb.append(" #premiere");
+				sb.append(" - _").append(series.genres()).append("_");
+				sb.append("\n").append("\n").append(series.plot);
+				sb.append("\n").append("\n").append(series.poster);
+				sb.append("\n").append(!TextUtils.isEmpty(series.imdbUrl()) ? series.imdbUrl() : series.tvdbUrl());
 				Intent si = new Intent(Intent.ACTION_SEND);
 			    si.setType("text/plain");
 			    si.putExtra(Intent.EXTRA_TITLE, series.name);
-			    si.putExtra(Intent.EXTRA_SUBJECT, series.plot);
-			    si.putExtra(Intent.EXTRA_TEXT, !TextUtils.isEmpty(series.imdbUrl()) ? series.imdbUrl() : series.tvdbUrl());
+			    si.putExtra(Intent.EXTRA_SUBJECT, series.name);
+			    si.putExtra(Intent.EXTRA_TEXT, sb.toString());
 			    startActivity(Intent.createChooser(si, "Share series info"));
 			}
 		});

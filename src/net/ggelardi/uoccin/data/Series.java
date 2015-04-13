@@ -617,6 +617,10 @@ public class Series extends Title {
 		return null;
 	}
 	
+	public boolean isRecent() {
+		return (firstAired - System.currentTimeMillis()) < (7 * 24 * 60 * 60 * 1000);
+	}
+	
 	public boolean isEnded() {
 		return !TextUtils.isEmpty(status) && status.equals(ENDED);
 	}
