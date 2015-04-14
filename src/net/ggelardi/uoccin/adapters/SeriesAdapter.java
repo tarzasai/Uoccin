@@ -105,6 +105,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.img_pstr.setMinimumWidth(pstWidth);
 		vh.img_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
 		vh.txt_name.setText(ser.name);
+		vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(ser.isRecent() ? R.drawable.ics_active_news : 0, 0, 0, 0);
 		if (ser.isNew() || details.equals(SERIES_STORY)) {
 			vh.txt_plot.setVisibility(View.VISIBLE);
 			vh.box_epis.setVisibility(View.GONE);
@@ -168,15 +169,16 @@ public class SeriesAdapter extends BaseAdapter {
 			//
 			if (ep == null) {
 				vh.txt_epis.setText("N/A");
-				vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+				//vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 				vh.txt_date.setText("N/A");
+				vh.txt_date.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 			} else {
 				vh.txt_epis.setText(ep.eid().readable() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
-				vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ?
-					R.drawable.ics_action_news : 0, 0, 0, 0);
+				/*vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ?
+					R.drawable.ics_action_news : 0, 0, 0, 0);*/
+				vh.txt_date.setText(ep.firstAired());
 				vh.txt_date.setCompoundDrawablesWithIntrinsicBounds(ep.isToday() ?
 					R.drawable.ics_action_calendar : 0, 0, 0, 0);
-				vh.txt_date.setText(ep.firstAired());
 			}
 		}
 		vh.txt_info.setText(ser.airInfo());

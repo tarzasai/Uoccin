@@ -130,6 +130,20 @@ public class Episode extends Title {
 		return res;
 	}
 	
+	public static synchronized void drop(String series, Integer season, Integer episode) {
+		Object tmp;
+		Episode ep;
+		for (String k: cache.getKeys()) {
+			tmp = cache.get(k);
+			if (tmp != null) {
+				ep = (Episode) tmp;
+				if (ep.series.equals(series) && (season == null || ep.season == season) &&
+					(episode == null || ep.episode == episode))
+					cache.del(k);
+			}
+		}
+	}
+	
 	public static List<Episode> cached(String series, int season) {
 		List<Episode> res = new ArrayList<Episode>();
 		String chk = series + ".";
@@ -402,7 +416,7 @@ public class Episode extends Title {
 	}
 	
 	public boolean isOld() {
-		return timestamp > 0 && (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
+		return timestamp > 0 && (System.currentTimeMillis() - timestamp) > Commons.weekLong; // TODO preferences
 	}
 	
 	public boolean inCollection() {

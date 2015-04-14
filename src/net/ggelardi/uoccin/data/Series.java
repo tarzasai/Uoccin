@@ -43,8 +43,6 @@ public class Series extends Title {
 	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;
 	
-	private boolean noRecalc = false;
-	
 	public List<Episode> episodes = new ArrayList<Episode>();
 	
 	public String tvdb_id;
@@ -61,6 +59,7 @@ public class Series extends Title {
 	public int airsDay;
 	public long airsTime;
 	public int runtime;
+	public int lastseason = 0; // not stored
 	public String rated;
 	public String banner;
 	public String fanart;
@@ -454,11 +453,10 @@ public class Series extends Title {
 	}
 	
 	public synchronized void reloadEpisodes() {
-		if (noRecalc)
-			return;
 		dispatch(OnTitleListener.WORKING, null);
 		episodes = Episode.get(session.getContext(), "select series, season, episode from episode " +
 			"where series = ? order by season, episode", new String[] { tvdb_id });
+		lastseason = episodes.get(episodes.size()-1).season;
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -488,10 +486,18 @@ public class Series extends Title {
 			}
 			List<Episode> eps = Episode.cached(tvdb_id, -1);
 			for (Episode ep: eps)
-				if (ep.modified) {
+				if (lastseason > 0 && ep.season > lastseason) {
+					changes++;
+					Episode.drop(tvdb_id, ep.season, null);
+				} else if (ep.modified) {
 					changes++;
 					ep.save(ep.isNew());
 				}
+			if (lastseason > 0) {
+				Log.v(TAG, "cancello da " + name + " per season > " + Integer.toString(lastseason));
+				db.delete("episode", "series = ? and season > ?",
+					new String[] { tvdb_id, Integer.toString(lastseason) });
+			}
 			db.setTransactionSuccessful();
 			modified = false;
 			for (Episode ep: eps)
@@ -502,7 +508,6 @@ public class Series extends Title {
 				Intent si = new Intent(session.getContext(), Service.class);
 				si.setAction(Service.GDRIVE_BACKUP);
 				si.putExtra("what", what);
-				//session.getContext().startService(si);
 				WakefulIntentService.sendWakefulWork(session.getContext(), si);
 			}
 		} catch (Exception err) {
@@ -522,7 +527,7 @@ public class Series extends Title {
 	}
 	
 	public boolean isOld() {
-		return timestamp > 0 && (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
+		return timestamp > 0 && (System.currentTimeMillis() - timestamp) > Commons.weekLong; // TODO preferences
 	}
 	
 	public boolean inWatchlist() {
@@ -618,7 +623,7 @@ public class Series extends Title {
 	}
 	
 	public boolean isRecent() {
-		return (firstAired - System.currentTimeMillis()) < (7 * 24 * 60 * 60 * 1000);
+		return Math.abs(firstAired - System.currentTimeMillis()) < Commons.weekLong;
 	}
 	
 	public boolean isEnded() {
@@ -662,6 +667,10 @@ public class Series extends Title {
 	
 	public String genres() {
 		return genres.isEmpty() ? "N/A" : TextUtils.join(", ", genres);
+	}
+	
+	public String tags() {
+		return tags.isEmpty() ? "N/D" : TextUtils.join(", ", tags);
 	}
 	
 	public List<Episode> episodes(int season) {

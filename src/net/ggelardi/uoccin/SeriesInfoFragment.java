@@ -45,6 +45,7 @@ public class SeriesInfoFragment extends BaseFragment {
 	private TextView txt_plot;
 	private TextView txt_acts;
 	private TextView txt_gens;
+	private TextView txt_tags;
 	private ExpandableHeightGridView grd_seas;
 	
 	private int pstHeight = 1;
@@ -85,6 +86,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_plot = (TextView) view.findViewById(R.id.txt_serinf_plot);
 		txt_acts = (TextView) view.findViewById(R.id.txt_serinf_acts);
 		txt_gens = (TextView) view.findViewById(R.id.txt_serinf_gens);
+		txt_tags = (TextView) view.findViewById(R.id.txt_serinf_tags);
 		grd_seas = (ExpandableHeightGridView) view.findViewById(R.id.grd_serinf_seas);
 		
 		txt_wlst.setOnClickListener(new OnClickListener() {
@@ -151,6 +153,13 @@ public class SeriesInfoFragment extends BaseFragment {
 			@Override
 			public void onClick(View v) {
 				series.refresh(true);
+			}
+		});
+		
+		txt_tags.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Toast.makeText(getActivity(), "Coming soon :)", Toast.LENGTH_SHORT).show();
 			}
 		});
 		
@@ -242,6 +251,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		txt_plot.setText(series.plot());
 		txt_acts.setText(series.actors());
 		txt_gens.setText(series.genres());
+		txt_tags.setText(series.tags());
 		grd_seas.setAdapter(new SeasonAdapter(getActivity(), series));
 		txt_imdb.setEnabled(!TextUtils.isEmpty(series.imdb_id));
 	}

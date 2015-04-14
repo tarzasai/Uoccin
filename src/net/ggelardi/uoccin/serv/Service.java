@@ -204,12 +204,15 @@ public class Service extends WakefulIntentService {
 		Series.get(this, (Element) doc.getElementsByTagName("Series").item(0));
 		// episodes
 		int eps2save = 0;
+		ser.lastseason = 0;
 		NodeList lst = doc.getElementsByTagName("Episode");
 		if (lst != null && lst.getLength() > 0) {
 			Episode ep;
 			for (int i = 0; i < lst.getLength(); i++) {
 				ep = Episode.get(this, (Element) lst.item(i));
 				if (ep != null) {
+					if (ep.season > ser.lastseason)
+						ser.lastseason = ep.season;
 					if (!ser.episodes.contains(ep))
 						ser.episodes.add(ep);
 					if (ep.hasSubtitles() || ep.inCollection() || ep.isWatched())

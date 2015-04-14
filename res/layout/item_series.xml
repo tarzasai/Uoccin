@@ -36,6 +36,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="28dp"
+                android:drawablePadding="2dp"
                 android:ellipsize="end"
                 android:lines="1"
                 android:text="@string/sample_title1"

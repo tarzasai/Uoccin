@@ -34,6 +34,9 @@ public class Commons {
 	
 	public static final String[] weekdays = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
 	
+	public static final long dayLong = (24 * 60 * 60 * 1000);
+	public static final long weekLong = (7 * dayLong);
+	
 	public static class PK {
 		public static final String STARTUPV = "pk_startup";
 		public static final String LANGUAGE = "pk_locale";

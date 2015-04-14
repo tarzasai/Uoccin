@@ -458,7 +458,7 @@ public class Movie extends Title {
 	}
 	
 	public boolean isOld() {
-		return timestamp > 0 && (System.currentTimeMillis() - timestamp)/(1000 * 60 * 60) > 168; // TODO preferences
+		return timestamp > 0 && (System.currentTimeMillis() - timestamp) > Commons.weekLong; // TODO preferences
 	}
 	
 	public boolean inWatchlist() {

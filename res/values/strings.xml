@@ -46,6 +46,7 @@
     <string name="lbl_serinf_plot">plot</string>
     <string name="lbl_serinf_with">starring</string>
     <string name="lbl_serinf_gens">genre</string>
+    <string name="lbl_serinf_tags">tags</string>
     <string name="lbl_serinf_seas">seasons</string>
     
     <string name="lbl_epinf_plot">plot</string>
