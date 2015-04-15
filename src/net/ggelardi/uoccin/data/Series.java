@@ -467,7 +467,6 @@ public class Series extends Title {
 			Intent si = new Intent(session.getContext(), Service.class);
 			si.setAction(Service.REFRESH_SERIES);
 			si.putExtra("tvdb_id", tvdb_id);
-			//session.getContext().startService(si);
 			WakefulIntentService.sendWakefulWork(session.getContext(), si);
 		}
 	}

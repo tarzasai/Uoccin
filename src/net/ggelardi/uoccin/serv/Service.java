@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -81,7 +82,7 @@ public class Service extends WakefulIntentService {
 					"(rating is null or rating = 0) and not tvdb_id in (select distinct series from " +
 					"episode where collected = 1 or watched = 1)");
 			} else if (act.equals(REFRESH_MOVIE)) {
-				refreshMovie(intent.getExtras().getString("imdb_id"), false);
+				refreshMovie(intent.getExtras().getString("imdb_id"), true, false);
 			} else if (act.equals(REFRESH_SERIES)) {
 				refreshSeries(intent.getExtras().getString("tvdb_id"), true, false);
 			} else if (act.equals(REFRESH_EPISODE)) {
@@ -179,12 +180,41 @@ public class Service extends WakefulIntentService {
 		sendBroadcast(si);
 	}
 	
-	private void refreshMovie(String imdb_id, boolean forceCommit) {
+	private void refreshMovie(String imdb_id, boolean forceRefresh, boolean forceCommit) {
 		Movie mov = Movie.get(this, imdb_id);
-		if (!(mov.isNew() || mov.isOld())) // TODO wifi check?
+		if (!(forceRefresh || mov.isNew() || mov.isOld())) // TODO wifi check?
 			return;
 		Log.d(TAG, "refreshing movie " + imdb_id);
-		//
+		Document doc;
+		try {
+			doc = XML.OMDB.getInstance().getMovie(imdb_id);
+		} catch (Exception err) {
+			Log.e(TAG, "refreshMovie", err);
+			if (!err.getLocalizedMessage().startsWith("404"))
+				sendNotification(err);
+			return;
+		}
+		String res = Commons.XML.attrText(doc.getDocumentElement(), "response");
+		if (TextUtils.isEmpty(res)) {
+			Log.e(TAG, "Unknow response for imdb=" + imdb_id);
+			return;
+		}
+		if (!res.toLowerCase(Locale.getDefault()).equals("true")) {
+			String error;
+			try {
+				error = Commons.XML.nodeText(doc.getDocumentElement(), "error");
+			} catch (Exception err) {
+				error = "unknown error";
+			}
+			Log.e(TAG, "Error on imdb=" + imdb_id + ": " + error);
+			return;
+		}
+		Movie.get(this, (Element) doc.getElementsByTagName("movie").item(0));
+		if (forceCommit || !mov.isNew() || mov.inWatchlist() || mov.inCollection() || mov.isWatched() ||
+			mov.getRating() > 0 || mov.hasTags())
+			mov.commit(null);
+		else
+			Series.dispatch(OnTitleListener.READY, null);
 	}
 	
 	private void refreshSeries(String tvdb_id, boolean forceRefresh, boolean forceCommit) {
@@ -194,7 +224,7 @@ public class Service extends WakefulIntentService {
 		Log.d(TAG, "refreshing series " + tvdb_id);
 		Document doc;
 		try {
-			doc = XML.TVDB.getInstance().sync_getFullSeries(tvdb_id, session.language());
+			doc = XML.TVDB.getInstance().getFullSeries(tvdb_id, session.language());
 		} catch (Exception err) {
 			Log.e(TAG, "refreshSeries", err);
 			if (!err.getLocalizedMessage().startsWith("404"))
@@ -234,7 +264,7 @@ public class Service extends WakefulIntentService {
 		Log.d(TAG, "refreshing episode " + epi.eid());
 		Document doc;
 		try {
-			doc = XML.TVDB.getInstance().sync_getEpisode(series, season, episode, session.language());
+			doc = XML.TVDB.getInstance().getEpisode(series, season, episode, session.language());
 		} catch (Exception err) {
 			Log.e(TAG, "refreshEpisode", err);
 			if (!err.getLocalizedMessage().startsWith("404"))
@@ -275,7 +305,7 @@ public class Service extends WakefulIntentService {
 				link = Commons.XML.nodeText((Element) items.item(i), "link");
 				try {
 					String eid = Uri.parse(link).getQueryParameter("id");
-					Document doc = XML.TVDB.getInstance().sync_getEpisodeById(eid, "en");
+					Document doc = XML.TVDB.getInstance().getEpisodeById(eid, "en");
 					NodeList lst = doc.getElementsByTagName("Episode");
 					if (lst != null && lst.getLength() > 0) {
 						Episode ep = Episode.get(session.getContext(), (Element) lst.item(0));

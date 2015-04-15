@@ -204,5 +204,10 @@ public class Commons {
 				}
 			return "";
 		}
+		
+		public static String attrText(Element node, String ... names) {
+			// TODO: implementazione
+			return "";
+		}
 	}
 }

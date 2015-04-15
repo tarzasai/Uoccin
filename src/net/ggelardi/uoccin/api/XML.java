@@ -16,7 +16,6 @@ import net.ggelardi.uoccin.serv.Commons.WaitingUCC;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
-import retrofit.Callback;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.converter.ConversionException;
@@ -35,56 +34,26 @@ public class XML {
 		private static API apiInstance;
 		
 		public interface API {
-			
-			// http://thetvdb.com/api/GetSeries.php?seriesname=interest&language=en
 			@GET("/GetSeries.php")
 			Document findSeries(@Query("seriesname") String text, @Query("language") String language);
 			
-			// http://thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=tt1839578&language=en
-			@GET("/GetSeriesByRemoteID.php")
-			void getSeriesByImdb(@Query("imdbid") String imdb_id, @Query("language") String language,
-				Callback<Document> callback);
-			
-			// http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/en.xml
 			@GET("/" + apiKey + "/series/{tvdb_id}/{language}.xml")
-			void getSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language,
-				Callback<Document> callback);
+			Document getSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language);
 			
-			// http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/all/en.xml
 			@GET("/" + apiKey + "/series/{tvdb_id}/all/{language}.xml")
-			void getFullSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language,
-				Callback<Document> callback);
+			Document getFullSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language);
 			
-			// http://thetvdb.com/api/A74D017DA5F2C3B0/series/248742/default/4/13/en.xml
 			@GET("/" + apiKey + "/series/{tvdb_id}/default/{season}/{episode}/{language}.xml")
-			void getEpisode(@Path("tvdb_id") String tvdb_id, @Path("season") int season, @Path("episode") int episode,
-				@Path("language") String language, Callback<Document> callback);
-			
-			// http://thetvdb.com/api/A74D017DA5F2C3B0/episodes/4099507/en.xml
-			@GET("/" + apiKey + "/episodes/{tvdb_id}/{language}.xml")
-			void getEpisodeById(@Path("tvdb_id") String tvdb_id, @Path("language") String language,
-				Callback<Document> callback);
-			
-			// sync version
-
-			@GET("/" + apiKey + "/series/{tvdb_id}/{language}.xml")
-			Document sync_getSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language);
-
-			@GET("/" + apiKey + "/series/{tvdb_id}/all/{language}.xml")
-			Document sync_getFullSeries(@Path("tvdb_id") String tvdb_id, @Path("language") String language);
-
-			@GET("/" + apiKey + "/series/{tvdb_id}/default/{season}/{episode}/{language}.xml")
-			Document sync_getEpisode(@Path("tvdb_id") String tvdb_id, @Path("season") int season,
+			Document getEpisode(@Path("tvdb_id") String tvdb_id, @Path("season") int season,
 				@Path("episode") int episode, @Path("language") String language);
 			
 			@GET("/" + apiKey + "/episodes/{tvdb_id}/{language}.xml")
-			Document sync_getEpisodeById(@Path("tvdb_id") String tvdb_id, @Path("language") String language);
+			Document getEpisodeById(@Path("tvdb_id") String tvdb_id, @Path("language") String language);
 		}
 		
 		public static API getInstance() {
 			if (apiInstance == null) {
 				apiInstance = new RestAdapter.Builder().setEndpoint(apiUrl).
-					//setConverter(new StringConverter()).
 					setConverter(new XmlDomConverter()).
 					setRequestInterceptor(new RequestInterceptor() {
 						@Override
@@ -98,28 +67,21 @@ public class XML {
 	}
 	
 	public static class OMDB {
-		private static final String apiUrl = "http://www.omdbapi.com/";
+		private static final String apiUrl = "http://www.omdbapi.com";
 		private static API apiInstance;
 		
 		public interface API {
-			/*
-			 * http://www.omdbapi.com/?s=terminator&type=movie&r=xml
-			 */
 			@GET("/?type=movie&r=xml")
-			String findMovie(@Query("s") String text);
-			/*
-			 * http://www.omdbapi.com/?i=tt0088247&type=movie&plot=full&r=xml
-			 */
+			Document findMovie(@Query("s") String text);
+			
 			@GET("/?plot=full&r=xml")
-			void getMovie(@Query("i") String imdb_id, Callback<String> callback);
+			Document getMovie(@Query("i") String imdb_id);
 		}
 		
 		public static API getInstance() {
 			if (apiInstance == null) {
-				//Strategy strategy = new AnnotationStrategy();
-				//Serializer serializer = new Persister(strategy);
 				apiInstance = new RestAdapter.Builder().setEndpoint(apiUrl).
-					setConverter(new StringConverter()).
+					setConverter(new XmlDomConverter()).
 					setRequestInterceptor(new RequestInterceptor() {
 						@Override
 						public void intercept(RequestFacade request) {
@@ -166,7 +128,9 @@ public class XML {
 			return out.toString();
 		}
 	}
-	
+
+	// @formatter:off
+	/*
 	static class StringConverter implements Converter {
 		@Override
 		public Object fromBody(TypedInput typedInput, Type arg1) throws ConversionException {
@@ -197,4 +161,6 @@ public class XML {
 			return out.toString();
 		}
 	}
+	*/
+	// @formatter:on
 }

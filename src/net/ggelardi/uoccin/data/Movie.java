@@ -9,6 +9,7 @@ import java.util.Locale;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.OMDB;
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import net.ggelardi.uoccin.serv.SimpleCache;
 
@@ -16,16 +17,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class Movie extends Title {
 	private static final String TAG = "Movie";
@@ -76,28 +77,19 @@ public class Movie extends Title {
 		}
 		Movie res = new Movie(context, imdb_id);
 		cache.add(imdb_id, res);
-		Cursor cur = Session.getInstance(context).getDB().query(TABLE, null, "imdb_id=?", new String[] { imdb_id },
-				null, null, null);
-		try {
-			if (cur.moveToFirst()) {
-				res.load(cur);
-			}
-		} finally {
-			cur.close();
-		}
+		res.reload();
 		return res;
 	}
 	
 	public static Movie get(Context context, String imdb_id) {
 		Movie res = Movie.getInstance(context, imdb_id);
-		if (res.isNew() || res.isOld())
-			res.refresh();
+		if (res.isOld())
+			res.refresh(false);
 		return res;
 	}
 
-	//@formatter:off
-	/*
-	public static Movie get(Context context, OMDB.Movie source) {
+	public static Movie get(Context context, Element xml) {
+		String imdb_id = xml.getElementsByTagName("id").item(0).getTextContent();
 		Movie res = Movie.getInstance(context, source.imdbID);
 		res.load(source);
 		res.setInfoLine();
@@ -105,8 +97,6 @@ public class Movie extends Title {
 			res.commit();
 		return res;
 	}
-	*/
-	//@formatter:on
 	
 	public static List<Movie> get(Context context, List<String> imdb_ids) {
 		List<Movie> res = new ArrayList<Movie>();
@@ -133,15 +123,14 @@ public class Movie extends Title {
 	
 	public static List<Movie> find(Context context, String text) {
 		List<Movie> res = new ArrayList<Movie>();
-		String response;
+		Document doc = null;
 		try {
-			response = OMDB.getInstance().findMovie(text);
+			doc = OMDB.getInstance().findMovie(text);
 		} catch (Exception err) {
 			Log.e(TAG, "find", err);
 			dispatch(OnTitleListener.ERROR, null);
 			return res;
 		}
-		Document doc = Commons.XML.str2xml(response);
 		if (doc != null) {
 			NodeList lst = doc.getElementsByTagName("Movie");
 			for (int i = 0; i < lst.getLength(); i++) {
@@ -157,6 +146,32 @@ public class Movie extends Title {
 	}
 	
 	protected void load(Element xml) {
+		
+		/*
+<?xml version="1.0" encoding="UTF-8"?>
+<root response="True">
+	<movie title="The Terminator"
+			year="1984"
+			rated="R"
+			released="26 Oct 1984"
+			runtime="107 min"
+			genre="Action, Sci-Fi"
+			director="James Cameron"
+			writer="James Cameron, Gale Anne Hurd, William Wisher Jr. (additional dialogue)"
+			actors="Arnold Schwarzenegger, Michael Biehn, Linda Hamilton, Paul Winfield"
+			plot="A cyborg is sent from the future on a deadly mission. He has to kill Sarah Connor, a young woman whose life will have a great significance in years to come. Sarah has only one protector - Kyle Reese - also sent from the future. The Terminator uses his exceptional intelligence and strength to find Sarah, but is there any way to stop the seemingly indestructible cyborg ?"
+			language="English, Spanish"
+			country="UK, USA"
+			awards="5 wins &amp; 6 nominations."
+			poster="http://ia.media-imdb.com/images/M/MV5BODE1MDczNTUxOV5BMl5BanBnXkFtZTcwMTA0NDQyNA@@._V1_SX300.jpg"
+			metascore="84"
+			imdbRating="8.1"
+			imdbVotes="494,132"
+			imdbID="tt0088247"
+			type="movie"/>
+</root>
+		*/
+		
 		String chk;
 		chk = Commons.XML.nodeText(xml, "title", "Title");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) || !name.equals(chk))) {
@@ -411,30 +426,31 @@ public class Movie extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public void refresh() {
-		Log.v(TAG, "Refreshing movie " + imdb_id);
-		dispatch(OnTitleListener.WORKING, null);
-		Callback<String> callback = new Callback<String>() {
-			@Override
-			public void success(String result, Response response) {
-				Document doc = Commons.XML.str2xml(result);
-				load((Element) doc.getElementsByTagName("movie").item(0));
-				commit();
-				dispatch(OnTitleListener.READY, null);
-			}
-			@Override
-			public void failure(RetrofitError error) {
-				Log.e(TAG, "refresh", error);
-				
-				plot = error.getLocalizedMessage();
-				
-				dispatch(OnTitleListener.ERROR, error);
-			}
-		};
-		OMDB.getInstance().getMovie(imdb_id, callback);
+	public synchronized void reload() {
+		//dispatch(OnTitleListener.WORKING, null);
+		Cursor cur = session.getDB().query(TABLE, null, "imdb_id=?", new String[] { imdb_id },
+			null, null, null);
+		try {
+			if (cur.moveToFirst())
+				load(cur);
+		} finally {
+			cur.close();
+		}
+		//dispatch(OnTitleListener.READY, null);
 	}
 	
-	public final void commit() {
+	public void refresh(boolean force) {
+		if (Title.ongoingServiceOperation)
+			return;
+		if (isOld() || force) {
+			Intent si = new Intent(session.getContext(), Service.class);
+			si.setAction(Service.REFRESH_MOVIE);
+			si.putExtra("imdb_id", imdb_id);
+			WakefulIntentService.sendWakefulWork(session.getContext(), si);
+		}
+	}
+	
+	public final void commit(String what) {
 		if (!modified)
 			return;
 		dispatch(OnTitleListener.WORKING, null);
@@ -453,6 +469,10 @@ public class Movie extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
+	public boolean isValid() {
+		return !(TextUtils.isEmpty(imdb_id) || TextUtils.isEmpty(name));
+	}
+	
 	public boolean isNew() {
 		return timestamp <= 0;
 	}
@@ -469,8 +489,8 @@ public class Movie extends Title {
 		if (value != watchlist) {
 			watchlist = value;
 			modified = true;
-			if (isNew())
-				refresh();
+			if (isValid())
+				refresh(true);
 			else
 				commit();
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_mov : R.string.msg_wlst_del_mov);
@@ -487,8 +507,8 @@ public class Movie extends Title {
 		if (value != collected) {
 			collected = value;
 			modified = true;
-			if (isNew())
-				refresh();
+			if (isValid())
+				refresh(true);
 			else
 				commit();
 			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_mov : R.string.msg_coll_del_mov);
@@ -505,8 +525,8 @@ public class Movie extends Title {
 		if (value != watched) {
 			watched = value;
 			modified = true;
-			if (isNew())
-				refresh();
+			if (isValid())
+				refresh(true);
 			else
 				commit();
 			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_mov : R.string.msg_seen_del_mov);
@@ -523,8 +543,8 @@ public class Movie extends Title {
 		if (value != rating) {
 			rating = value;
 			modified = true;
-			if (isNew())
-				refresh();
+			if (isValid())
+				refresh(true);
 			else
 				commit();
 		}
@@ -543,8 +563,8 @@ public class Movie extends Title {
 		if (!hasTag(tag)) {
 			tags.add(tag);
 			modified = true;
-			if (isNew())
-				refresh();
+			if (isValid())
+				refresh(true);
 			else
 				commit();
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
@@ -557,8 +577,8 @@ public class Movie extends Title {
 		if (hasTag(tag)) {
 			tags.remove(tag);
 			modified = true;
-			if (isNew())
-				refresh();
+			if (isValid())
+				refresh(true);
 			else
 				commit();
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
