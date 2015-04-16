@@ -95,10 +95,7 @@ public class Series extends Title {
 		String tvdb_id = xml.getElementsByTagName("id").item(0).getTextContent();
 		Series res = Series.getInstance(context, tvdb_id);
 		res.load(xml);
-		/* no commit here
-		if (!res.isNew())
-			res.commit(null);
-		*/
+		// no commit here
 		return res;
 	}
 	
@@ -558,7 +555,7 @@ public class Series extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(Commons.GD.SER_WLST);
+				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
 		}
 	}
 	
@@ -580,7 +577,7 @@ public class Series extends Title {
 		if (!isValid())
 			refresh(true);
 		else
-			commit(Commons.GD.SER_WLST);
+			commit(inWatchlist() ? Commons.GD.SER_WLST : null);
 	}
 	
 	public void addTag(String tag) {
@@ -591,7 +588,7 @@ public class Series extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(Commons.GD.SER_WLST);
+				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
@@ -605,7 +602,7 @@ public class Series extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(Commons.GD.SER_WLST);
+				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}

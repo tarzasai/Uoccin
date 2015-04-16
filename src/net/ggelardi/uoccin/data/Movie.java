@@ -89,12 +89,10 @@ public class Movie extends Title {
 	}
 
 	public static Movie get(Context context, Element xml) {
-		String imdb_id = xml.getElementsByTagName("id").item(0).getTextContent();
-		Movie res = Movie.getInstance(context, source.imdbID);
-		res.load(source);
-		res.setInfoLine();
-		if (res.modified && !res.isNew())
-			res.commit();
+		String imdb_id = Commons.XML.attrText(xml, "imdbID");
+		Movie res = Movie.getInstance(context, imdb_id);
+		res.load(xml);
+		// no commit here
 		return res;
 	}
 	
@@ -145,6 +143,17 @@ public class Movie extends Title {
 		return res;
 	}
 	
+	public static List<Movie> cached() {
+		List<Movie> res = new ArrayList<Movie>();
+		Object mov;
+		for (String k: cache.getKeys()) {
+			mov = cache.get(k);
+			if (mov != null)
+				res.add((Movie) mov);
+		}
+		return res;
+	}
+	
 	protected void load(Element xml) {
 		
 		/*
@@ -173,17 +182,17 @@ public class Movie extends Title {
 		*/
 		
 		String chk;
-		chk = Commons.XML.nodeText(xml, "title", "Title");
+		chk = Commons.XML.attrText(xml, "title", "Title");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) || !name.equals(chk))) {
 			name = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "plot");
+		chk = Commons.XML.attrText(xml, "plot");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(plot) || !plot.equals(chk))) {
 			plot = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "year");
+		chk = Commons.XML.attrText(xml, "year");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				int r = Integer.parseInt(chk);
@@ -195,12 +204,12 @@ public class Movie extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "poster");
+		chk = Commons.XML.attrText(xml, "poster");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
 			poster = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "genre");
+		chk = Commons.XML.attrText(xml, "genre");
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\")));
 			lst.removeAll(Arrays.asList("", null));
@@ -209,17 +218,17 @@ public class Movie extends Title {
 				modified = true;
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "language");
+		chk = Commons.XML.attrText(xml, "language");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(language) || !language.equals(chk))) {
 			language = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "director");
+		chk = Commons.XML.attrText(xml, "director");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(director) || !director.equals(chk))) {
 			director = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "writer");
+		chk = Commons.XML.attrText(xml, "writer");
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\")));
 			lst.removeAll(Arrays.asList("", null));
@@ -228,7 +237,7 @@ public class Movie extends Title {
 				modified = true;
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "actors");
+		chk = Commons.XML.attrText(xml, "actors");
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\")));
 			lst.removeAll(Arrays.asList("", null));
@@ -237,12 +246,12 @@ public class Movie extends Title {
 				modified = true;
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "country");
+		chk = Commons.XML.attrText(xml, "country");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(country) || !country.equals(chk))) {
 			country = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "released");
+		chk = Commons.XML.attrText(xml, "released");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				long t = Commons.SDF.eng("dd MMM yyyy").parse(chk).getTime();
@@ -254,7 +263,7 @@ public class Movie extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "runtime");
+		chk = Commons.XML.attrText(xml, "runtime");
 		if (!TextUtils.isEmpty(chk)) {
 			if (chk.contains(" min"))
 				chk = chk.split(" ")[0];
@@ -268,17 +277,17 @@ public class Movie extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "rated");
+		chk = Commons.XML.attrText(xml, "rated");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(rated) || !rated.equals(chk))) {
 			rated = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "awards");
+		chk = Commons.XML.attrText(xml, "awards");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(awards) || !awards.equals(chk))) {
 			awards = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "metascore");
+		chk = Commons.XML.attrText(xml, "metascore");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
@@ -290,7 +299,7 @@ public class Movie extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "imdbRating");
+		chk = Commons.XML.attrText(xml, "imdbRating");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				double r = Double.parseDouble(chk);
@@ -302,7 +311,7 @@ public class Movie extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "imdbVotes");
+		chk = Commons.XML.attrText(xml, "imdbVotes");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
@@ -450,19 +459,24 @@ public class Movie extends Title {
 		}
 	}
 	
-	public final void commit(String what) {
-		if (!modified)
+	public final synchronized void commit(String what) {
+		if (!(isValid() && modified))
 			return;
 		dispatch(OnTitleListener.WORKING, null);
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			if (watchlist || collected || watched)
-				save(isNew());
-			else
-				delete();
+			save(isNew());
 			db.setTransactionSuccessful();
 			modified = false;
+			if (!Title.ongoingServiceOperation && what != null) {
+				Intent si = new Intent(session.getContext(), Service.class);
+				si.setAction(Service.GDRIVE_BACKUP);
+				si.putExtra("what", what);
+				WakefulIntentService.sendWakefulWork(session.getContext(), si);
+			}
+		} catch (Exception err) {
+			Log.e(TAG, "commit", err);
 		} finally {
 			db.endTransaction();
 		}
@@ -492,7 +506,7 @@ public class Movie extends Title {
 			if (isValid())
 				refresh(true);
 			else
-				commit();
+				commit(Commons.GD.MOV_WLST);
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_mov : R.string.msg_wlst_del_mov);
 			msg = String.format(msg, name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -510,7 +524,7 @@ public class Movie extends Title {
 			if (isValid())
 				refresh(true);
 			else
-				commit();
+				commit(Commons.GD.MOV_COLL);
 			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_mov : R.string.msg_coll_del_mov);
 			msg = String.format(msg, name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -528,7 +542,7 @@ public class Movie extends Title {
 			if (isValid())
 				refresh(true);
 			else
-				commit();
+				commit(Commons.GD.MOV_SEEN);
 			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_mov : R.string.msg_seen_del_mov);
 			msg = String.format(msg, name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -541,12 +555,14 @@ public class Movie extends Title {
 	
 	public void setRating(int value) {
 		if (value != rating) {
+			watchlist = false;
+			watched = true;
 			rating = value;
 			modified = true;
 			if (isValid())
 				refresh(true);
 			else
-				commit();
+				commit(Commons.GD.MOV_SEEN);
 		}
 	}
 	
@@ -554,8 +570,21 @@ public class Movie extends Title {
 		return new ArrayList<String>(tags);
 	}
 	
+	public boolean hasTags() {
+		return !tags.isEmpty();
+	}
+	
 	public boolean hasTag(String tag) {
 		return tags.contains(tag);
+	}
+	
+	public void setTags(String[] values) {
+		tags = new ArrayList<String>(Arrays.asList(values));
+		modified = true;
+		if (!isValid())
+			refresh(true);
+		else
+			commit(inWatchlist() ? Commons.GD.MOV_WLST : null);
 	}
 	
 	public void addTag(String tag) {
@@ -566,7 +595,7 @@ public class Movie extends Title {
 			if (isValid())
 				refresh(true);
 			else
-				commit();
+				commit(inWatchlist() ? Commons.GD.MOV_WLST : null);
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
@@ -580,7 +609,7 @@ public class Movie extends Title {
 			if (isValid())
 				refresh(true);
 			else
-				commit();
+				commit(inWatchlist() ? Commons.GD.MOV_WLST : null);
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
