@@ -81,6 +81,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.box_stat = (LinearLayout) view.findViewById(R.id.box_is_count);
 			vh.txt_coll = (TextView) view.findViewById(R.id.txt_seritm_coll);
 			vh.txt_seen = (TextView) view.findViewById(R.id.txt_seritm_seen);
+			vh.txt_subs = (TextView) view.findViewById(R.id.txt_is_subs);
 			vh.txt_info = (TextView) view.findViewById(R.id.txt_is_info);
 			//
 			vh.img_star.setOnClickListener(listener);
@@ -111,6 +112,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.box_epis.setVisibility(View.GONE);
 			vh.box_2see.setVisibility(View.GONE);
 			vh.box_stat.setVisibility(View.GONE);
+			vh.txt_subs.setVisibility(View.GONE);
 			//
 			vh.txt_plot.setText(ser.plot);
 		} else if (details.equals(EPI_AVAILABL)) {
@@ -131,11 +133,14 @@ public class SeriesAdapter extends BaseAdapter {
 				title += " (+" + Integer.toString(ser.episodeWaiting(null) - 1) + ")";
 			vh.txt_2tit.setText(title);
 			vh.txt_2plo.setText(ep.plot());
+			vh.txt_subs.setText(ep.subtitles());
+			vh.txt_subs.setVisibility(ep.hasSubtitles() ? View.VISIBLE : View.GONE);
 		} else if (details.equals(EPI_COUNTERS)) {
 			vh.txt_plot.setVisibility(View.GONE);
 			vh.box_epis.setVisibility(View.GONE);
 			vh.box_2see.setVisibility(View.GONE);
 			vh.box_stat.setVisibility(View.VISIBLE);
+			vh.txt_subs.setVisibility(View.GONE);
 			//
 			int n = ser.episodeAired(null);
 			int m = ser.episodeCollected(null);
@@ -195,8 +200,9 @@ public class SeriesAdapter extends BaseAdapter {
 		public LinearLayout box_size;
 		public ImageView img_star;
 		public TextView txt_name;
-		public TextView txt_info;
 		public TextView txt_plot;
+		public TextView txt_info;
+		public TextView txt_subs;
 		public LinearLayout box_epis;
 		public TextView txt_epis;
 		public TextView txt_date;

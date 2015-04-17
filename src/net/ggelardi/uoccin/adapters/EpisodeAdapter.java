@@ -104,13 +104,8 @@ public class EpisodeAdapter extends BaseAdapter {
 			vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 		vh.txt_date.setText(ep.firstAired());
 		vh.txt_date.setCompoundDrawablesWithIntrinsicBounds(ep.isToday() ? R.drawable.ics_active_calendar : 0, 0, 0, 0);
-		if (ep.hasSubtitles()) {
-			vh.txt_subs.setText(ep.subtitles());
-			vh.txt_subs.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ics_active_subtitles, 0, 0, 0);
-		} else {
-			vh.txt_subs.setText(R.string.empty_text);
-			vh.txt_subs.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-		}
+		vh.txt_subs.setText(ep.subtitles());
+		vh.txt_subs.setVisibility(ep.hasSubtitles() ? View.VISIBLE : View.GONE);
 		vh.img_coll.setImageResource(ep.inCollection() ? R.drawable.ic_active_storage : R.drawable.ic_action_storage);
 		vh.img_seen.setImageResource(ep.isWatched() ? R.drawable.ic_active_seen : R.drawable.ic_action_seen);
 		return view;

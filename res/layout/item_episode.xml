@@ -55,6 +55,7 @@
                     android:id="@+id/txt_epitm_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:drawableLeft="@drawable/ics_action_calendar"
                     android:drawablePadding="3dp"
                     android:ellipsize="end"
@@ -68,17 +69,13 @@
                     android:id="@+id/txt_epitm_subs"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ics_action_subtitles"
                     android:drawablePadding="3dp"
+                    android:drawableRight="@drawable/ics_action_subtitles"
                     android:ellipsize="end"
                     android:gravity="center_vertical"
                     android:maxLines="1"
                     android:text="@string/sample_subs" />
 
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
             </LinearLayout>
         </LinearLayout>
 
@@ -88,11 +85,14 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:layout_margin="2dp"
+            android:background="@color/contentBackground"
             android:divider="@drawable/divider_8dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="5dp"
-            android:showDividers="middle" >
+            android:showDividers="middle"
+            android:visibility="gone" >
 
             <ImageView
                 android:id="@+id/img_epitm_coll"

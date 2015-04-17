@@ -4,8 +4,8 @@
     android:layout_height="wrap_content"
     android:background="@drawable/item_frame"
     android:orientation="horizontal"
-    android:paddingTop="1dp"
-    android:paddingBottom="1dp" >
+    android:paddingBottom="1dp"
+    android:paddingTop="1dp" >
 
     <ImageView
         android:id="@+id/img_is_poster"
@@ -104,7 +104,7 @@
                         android:ellipsize="end"
                         android:gravity="center_vertical"
                         android:lines="1"
-                        android:text="@string/sample_stat1"
+                        android:text="@string/sample_episode"
                         android:textStyle="bold" />
 
                     <TextView
@@ -114,7 +114,6 @@
                         android:ellipsize="end"
                         android:lines="2"
                         android:text="@string/sample_plot1" />
-
                 </LinearLayout>
 
                 <LinearLayout
@@ -156,16 +155,32 @@
                 </LinearLayout>
             </RelativeLayout>
 
-            <TextView
-                android:id="@+id/txt_is_info"
+            <LinearLayout
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:gravity="end"
-                android:lines="1"
-                android:text="@string/sample_info"
-                android:textColor="@android:color/darker_gray" />
+                android:layout_height="wrap_content" >
 
+                <TextView
+                    android:id="@+id/txt_is_subs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ics_action_subtitles"
+                    android:drawablePadding="3dp"
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:text="@string/sample_subs"
+                    android:textColor="@android:color/darker_gray" />
+
+                <TextView
+                    android:id="@+id/txt_is_info"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="end"
+                    android:lines="1"
+                    android:text="@string/sample_info"
+                    android:textColor="@android:color/darker_gray" />
+            </LinearLayout>
         </LinearLayout>
 
         <ImageView
@@ -177,7 +192,6 @@
             android:layout_margin="2dp"
             android:contentDescription="@string/empty_text"
             android:src="@drawable/ic_active_loved" />
-
     </RelativeLayout>
 
 </LinearLayout>
