@@ -103,6 +103,7 @@ public class EpisodeInfoFragment extends BaseFragment {
 		txt_prev.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				txt_prev.startAnimation(blink);
 				episode = episode.getPrior();
 				showInfo();
 			}
@@ -111,6 +112,7 @@ public class EpisodeInfoFragment extends BaseFragment {
 		txt_next.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				txt_next.startAnimation(blink);
 				episode = episode.getNext();
 				showInfo();
 			}
@@ -120,6 +122,7 @@ public class EpisodeInfoFragment extends BaseFragment {
 			@Override
 			public void onClick(View v) {
 				episode.setCollected(!episode.inCollection());
+				txt_coll.startAnimation(blink);
 			}
 		});
 		
@@ -127,6 +130,7 @@ public class EpisodeInfoFragment extends BaseFragment {
 			@Override
 			public void onClick(View v) {
 				episode.setWatched(!episode.isWatched());
+				txt_seen.startAnimation(blink);
 			}
 		});
 		
@@ -146,6 +150,7 @@ public class EpisodeInfoFragment extends BaseFragment {
 			@Override
 			public void onClick(View v) {
 				episode.refresh(true);
+				txt_refr.startAnimation(blink);
 			}
 		});
 		

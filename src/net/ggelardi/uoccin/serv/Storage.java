@@ -8,7 +8,7 @@ public class Storage extends SQLiteOpenHelper {
 	//private static final String TAG = "Storage";
 	
 	public static final String NAME = "Uoccin.db";
-	public static final int VERSION = 1;
+	public static final int VERSION = 2;
 	
 	public Storage(Context context) {
 		super(context, NAME, null, VERSION);
@@ -32,6 +32,7 @@ public class Storage extends SQLiteOpenHelper {
 	
 	@Override
 	public void onCreate(SQLiteDatabase db) {
+		db.execSQL(CREATE_TABLE_QUEUE);
 		db.execSQL(CREATE_TABLE_MOVIES);
 		db.execSQL(CREATE_TABLE_SERIES);
 		db.execSQL(CREATE_TABLE_EPISODES);
@@ -45,6 +46,8 @@ public class Storage extends SQLiteOpenHelper {
 			db.execSQL("drop table series");
 			db.execSQL("drop table movie");
 			onCreate(db);
+		} else if (newVersion < 2) {
+			db.execSQL(CREATE_TABLE_QUEUE);
 		}
 	}
 	
@@ -125,5 +128,13 @@ public class Storage extends SQLiteOpenHelper {
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG + CS +
 		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" +
+		")";
+	
+	private static final String CREATE_TABLE_QUEUE = "CREATE TABLE queue (" +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS +
+		"command" + DT_STR + CC_NNU + " CHECK (command IN ('set', 'del'))" + CS +
+		"object" + DT_STR + CC_NNU + CS +
+		"field" + DT_STR + CS +
+		"value" + DT_STR + CS +
 		")";
 }

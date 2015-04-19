@@ -93,6 +93,7 @@ public class SeriesInfoFragment extends BaseFragment {
 			@Override
 			public void onClick(View v) {
 				series.setWatchlist(!series.inWatchlist());
+				txt_wlst.startAnimation(blink);
 			}
 		});
 		
@@ -107,6 +108,7 @@ public class SeriesInfoFragment extends BaseFragment {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							series.setCollected(flag, -1);
+							txt_coll.startAnimation(blink);
 						}
 					}).show();
 			}
@@ -123,6 +125,7 @@ public class SeriesInfoFragment extends BaseFragment {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							series.setWatched(flag, -1);
+							txt_seen.startAnimation(blink);
 						}
 					}).show();
 			}
@@ -153,6 +156,7 @@ public class SeriesInfoFragment extends BaseFragment {
 			@Override
 			public void onClick(View v) {
 				series.refresh(true);
+				txt_refr.startAnimation(blink);
 			}
 		});
 		

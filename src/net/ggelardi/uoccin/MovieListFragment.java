@@ -2,18 +2,17 @@ package net.ggelardi.uoccin;
 
 import java.util.List;
 
-import net.ggelardi.uoccin.adapters.SeriesAdapter;
-import net.ggelardi.uoccin.data.Episode.EID;
-import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.adapters.MovieAdapter;
+import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
+import net.ggelardi.uoccin.serv.MovieTask;
+import net.ggelardi.uoccin.serv.MovieTask.MovieTaskContainer;
 import net.ggelardi.uoccin.serv.SeriesTask;
-import net.ggelardi.uoccin.serv.SeriesTask.SeriesTaskContainer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,35 +25,33 @@ import android.widget.Toast;
 
 import com.android.photos.views.HeaderGridView;
 
-public class SeriesListFragment extends BaseFragment implements SeriesTaskContainer, AbsListView.OnItemClickListener {
+public class MovieListFragment extends BaseFragment implements MovieTaskContainer, AbsListView.OnItemClickListener {
 	
 	private String type;
 	private String title;
 	private String query;
 	private String[] params;
-	private String details = SeriesAdapter.SERIES_STORY;
 	private String search;
 	
 	private AbsListView mListView;
-	private SeriesAdapter mAdapter;
-	private SeriesTask mTask;
+	private MovieAdapter mAdapter;
+	private MovieTask mTask;
 	
-	public static SeriesListFragment newQuery(String title, String query, String details, String ... params) {
-		SeriesListFragment fragment = new SeriesListFragment();
+	public static MovieListFragment newQuery(String title, String query, String ... params) {
+		MovieListFragment fragment = new MovieListFragment();
 		Bundle args = new Bundle();
-		args.putString("type", SeriesTask.QUERY);
+		args.putString("type", MovieTask.QUERY);
 		args.putString("title", title);
 		args.putString("query", query);
 		args.putStringArray("params", params);
-		args.putString("details", details);
 		fragment.setArguments(args);
 		return fragment;
 	}
 	
-	public static SeriesListFragment newSearch(String search) {
-		SeriesListFragment fragment = new SeriesListFragment();
+	public static MovieListFragment newSearch(String search) {
+		MovieListFragment fragment = new MovieListFragment();
 		Bundle args = new Bundle();
-		args.putString("type", SeriesTask.SEARCH);
+		args.putString("type", MovieTask.SEARCH);
 		args.putString("search", search);
 		fragment.setArguments(args);
 		return fragment;
@@ -70,13 +67,12 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 			title = args.getString("title");
 			query = args.getString("query");
 			params = args.getStringArray("params");
-			details = args.getString("details");
 		} else {
 			search = args.getString("search");
 			title = String.format(getString(R.string.title_search), search);
 		}
 		
-		mAdapter = new SeriesAdapter(getActivity(), this, details);
+		mAdapter = new MovieAdapter(getActivity(), this);
 	}
 	
 	@SuppressLint("InflateParams")
@@ -107,7 +103,7 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 		
 		getActivity().setTitle(title);
 		
-		Series.addOnTitleEventListener(new OnTitleListener() {
+		Movie.addOnTitleEventListener(new OnTitleListener() {
 			@Override
 			public void changed(final String state, final Throwable error) {
 				final Activity context = getActivity();
@@ -118,7 +114,7 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 							if (state.equals(OnTitleListener.NOTFOUND)) {
 								showHourGlass(false);
 								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-								if (type.equals(SeriesTask.SEARCH))
+								if (type.equals(MovieTask.SEARCH))
 									((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
 								else
 									mAdapter.notifyDataSetChanged();
@@ -137,8 +133,8 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 			}
 		});
 		
-		mTask = new SeriesTask(this, type);
-		if (type.equals(SeriesTask.SEARCH))
+		mTask = new MovieTask(this, type);
+		if (type.equals(MovieTask.SEARCH))
 			mTask.execute(search);
 		else if (params == null || params.length <= 0)
 			mTask.execute(new String[] { query });
@@ -172,18 +168,19 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	
 	@Override
 	public void onClick(View v) {
-		if (v.getId() == R.id.img_is_star) {
+		/*
+		if (v.getId() == R.id.img_im_star) {
 			int pos;
 			try {
 				pos = (Integer) v.getTag();
-				Series ser = mAdapter.getItem(pos);
+				Movie ser = mAdapter.getItem(pos);
 				ser.setWatchlist(!ser.inWatchlist());
 			} catch (Exception err) {
 				Log.e(tag(), "onClick", err);
 			}
 			return;
 		}
-		if (v.getId() == R.id.box_is_avail) {
+		if (v.getId() == R.id.box_im_avail) {
 			Object tmp = v.getTag();
 			if (tmp instanceof EID) {
 				EID eid = (EID) tmp;
@@ -193,26 +190,27 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 			}
 			return;
 		}
+		*/
 	}
-	
+
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		int pos = mListView instanceof GridView ? position - 2 : position - 1;
-		mListener.openSeriesInfo(mAdapter.getItem(pos).tvdb_id);
+		mListener.openSeriesInfo(mAdapter.getItem(pos).imdb_id);
 	}
-	
+
 	@Override
 	public Context getContext() {
 		return getActivity();
 	}
-	
+
 	@Override
 	public void preExecuteTask() {
 		showHourGlass(true);
 	}
-	
+
 	@Override
-	public void postExecuteTask(List<Series> result) {
+	public void postExecuteTask(List<Movie> result) {
 		mAdapter.setTitles(result);
 		showHourGlass(false);
 		mTask = null;

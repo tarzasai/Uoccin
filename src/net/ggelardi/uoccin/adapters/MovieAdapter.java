@@ -11,21 +11,24 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MoviesAdapter extends BaseAdapter {
+public class MovieAdapter extends BaseAdapter {
 	
 	private final Session session;
+	private final OnClickListener listener;
 	private final LayoutInflater inflater;
 	private List<Movie> items;
 	
-	public MoviesAdapter(Context context) {
+	public MovieAdapter(Context context, OnClickListener clickListener) {
 		super();
 		
 		session = Session.getInstance(context);
+		listener = clickListener;
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		items = new ArrayList<Movie>();
 	}

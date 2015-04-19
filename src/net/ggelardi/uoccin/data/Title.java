@@ -3,9 +3,28 @@ package net.ggelardi.uoccin.data;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Title {
+import net.ggelardi.uoccin.serv.Session;
+import android.content.ContentValues;
+import android.text.TextUtils;
+
+public abstract class Title {
+	protected static final String QUEUE_SET = "QUEUE_SET";
+	protected static final String QUEUE_DEL = "QUEUE_DEL";
 	
 	protected static final List<OnTitleListener> listeners = new ArrayList<OnTitleListener>();
+	
+	protected synchronized static void queue(Session session, String command, String id, String field, String value) {
+		ContentValues cv = new ContentValues();
+		cv.put("command", command.equals(QUEUE_SET) ? "set" : "del");
+		cv.put("object", id);
+		if (!TextUtils.isEmpty(field))
+			cv.put("field", field);
+		if (!TextUtils.isEmpty(value))
+			cv.put("value", value);
+		session.getDB().insertOrThrow("queue", null, cv);
+	}
+
+	protected Session session;
 	
 	public static boolean ongoingServiceOperation = false;
 	
@@ -15,8 +34,7 @@ public class Title {
 	
 	public static void dispatch(String state, Throwable error) {
 		for (OnTitleListener listener: listeners)
-			//if (listener != null)
-				listener.changed(state, error);
+			listener.changed(state, error);
 	}
 	
 	public interface OnTitleListener {

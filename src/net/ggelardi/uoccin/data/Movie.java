@@ -34,8 +34,6 @@ public class Movie extends Title {
 	
 	private static final SimpleCache cache = new SimpleCache(500);
 
-	private final Session session;
-
 	private int rating = 0;
 	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;

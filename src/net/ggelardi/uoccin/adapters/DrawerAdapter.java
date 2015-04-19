@@ -45,7 +45,14 @@ public class DrawerAdapter extends BaseAdapter {
 			di.position = items.size();
 			items.add(di);
 		}
-		//
+		// movies header
+		di = new DrawerItem();
+		di.header = true;
+		di.type = DrawerItem.MOVIE;
+		di.id = "header";
+		di.label = context.getResources().getString(R.string.drwhdr_movies);
+		di.icon = R.drawable.ic_action_movie;
+		items.add(di);
 	}
 	
 	@Override

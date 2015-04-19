@@ -238,7 +238,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			f = SeriesListFragment.newQuery(selection.label, selection.query, selection.details,
 				(String[]) null);
 		} else if (selection.type.equals(DrawerItem.MOVIE)) {
-			//
+			f = MovieListFragment.newQuery(selection.label, selection.query, (String[]) null);
 		}
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
 			BaseFragment.ROOT_FRAGMENT).commit();
@@ -257,6 +257,15 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		else
 			pbCount--;
 		progressBar.setVisibility(pbCount > 0 ? View.VISIBLE : View.GONE);
+	}
+	
+	@Override
+	public void openMovieInfo(String imdb_id) {
+		/*
+		BaseFragment f = MovieInfoFragment.newInstance(imdb_id);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
+		*/
 	}
 	
 	@Override
@@ -345,10 +354,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	}
 	
 	private void searchMovies(String text) {
-		/*
-		BaseFragment f = SearchMoviesFragment.newInstance(text);
+		BaseFragment f = MovieListFragment.newSearch(text);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
 			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
-		*/
 	}
 }

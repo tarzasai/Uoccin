@@ -7,12 +7,15 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 
 public abstract class BaseFragment extends Fragment implements OnClickListener {
 	public static final String ROOT_FRAGMENT = "net.ggelardi.uoccin.ROOT_FRAGMENT";
 	public static final String LEAF_FRAGMENT = "net.ggelardi.uoccin.LEAF_FRAGMENT";
 	
 	protected Session session;
+	protected AlphaAnimation blink;
 	protected OnFragmentListener mListener;
 	
 	@Override
@@ -22,6 +25,12 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 		Log.v(tag(), "onCreate");
 		
 		session = Session.getInstance(getActivity());
+
+		blink = new AlphaAnimation(0.0f, 1.0f);
+		blink.setDuration(350);
+		blink.setStartOffset(20);
+		blink.setRepeatMode(Animation.REVERSE);
+		blink.setRepeatCount(2);
 	}
 	
 	@Override
@@ -92,6 +101,7 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 	public interface OnFragmentListener {
 		void fragmentAttached(BaseFragment fragment);
 		void showHourGlass(boolean value);
+		void openMovieInfo(String imdb_id);
 		void openSeriesInfo(String tvdb_id);
 		void openSeriesSeason(String tvdb_id, int season);
 		void openSeriesEpisode(String tvdb_id, int season, int episode);

@@ -32,8 +32,6 @@ public class Episode extends Title {
 	
 	private static final SimpleCache cache = new SimpleCache(1000);
 	
-	private final Session session;
-	
 	private Episode epprev = null;
 	private Episode epnext = null;
 	private boolean collected = false;
@@ -423,6 +421,10 @@ public class Episode extends Title {
 		return collected;
 	}
 	
+	public boolean isWatched() {
+		return watched;
+	}
+	
 	public void setCollected(boolean value) {
 		if (value != collected) {
 			collected = value;
@@ -435,10 +437,6 @@ public class Episode extends Title {
 			msg = String.format(msg, eid().readable());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
-	}
-	
-	public boolean isWatched() {
-		return watched;
 	}
 	
 	public void setWatched(boolean value) {
@@ -455,16 +453,16 @@ public class Episode extends Title {
 		}
 	}
 	
-	public EID eid() {
-		return new EID(series, season, episode);
-	}
-	
 	public boolean isPilot() {
 		return season == 1 && episode == 1;
 	}
 	
 	public boolean isToday() {
 		return DateUtils.isToday(firstAired);
+	}
+	
+	public EID eid() {
+		return new EID(series, season, episode);
 	}
 	
 	public String name() {

@@ -37,8 +37,6 @@ public class Series extends Title {
 	
 	private static final SimpleCache cache = new SimpleCache(500);
 	
-	private final Session session;
-	
 	private int rating = 0;
 	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;
@@ -530,6 +528,22 @@ public class Series extends Title {
 		return watchlist;
 	}
 	
+	public int getRating() {
+		return rating;
+	}
+	
+	public List<String> getTags() {
+		return new ArrayList<String>(tags);
+	}
+	
+	public boolean hasTags() {
+		return !tags.isEmpty();
+	}
+	
+	public boolean hasTag(String tag) {
+		return tags.contains(tag);
+	}
+	
 	public void setWatchlist(boolean value) {
 		if (value != watchlist) {
 			watchlist = value;
@@ -544,8 +558,78 @@ public class Series extends Title {
 		}
 	}
 	
-	public int getRating() {
-		return rating;
+	public void setCollected(boolean flag, int season) {
+		if (!isNew()) {
+			SQLiteDatabase db = session.getDB();
+			db.beginTransaction();
+			try {
+				ContentValues cv = new ContentValues();
+				cv.put("collected", flag);
+				List<String> args = new ArrayList<String>();
+				String where = "series = ?";
+				args.add(tvdb_id);
+				if (season >= 0) {
+					where += " and season = ?";
+					args.add(Integer.toString(season));
+				}
+				String[] wargs = new String[args.size()];
+				wargs = args.toArray(wargs);
+				db.update("episode", cv, where, wargs);
+				db.setTransactionSuccessful();
+			} finally {
+				db.endTransaction();
+			}
+			if (!Title.ongoingServiceOperation) {
+				Intent si = new Intent(session.getContext(), Service.class);
+				si.setAction(Service.GDRIVE_BACKUP);
+				si.putExtra("what", Commons.GD.SER_COLL);
+				//session.getContext().startService(si);
+				WakefulIntentService.sendWakefulWork(session.getContext(), si);
+			}
+			reloadEpisodes();
+		}
+		Episode.setDirtyFlags(tvdb_id, season, flag, null);
+		if (isNew())
+			commit(Commons.GD.SER_COLL);
+		else
+			dispatch(OnTitleListener.READY, null);
+	}
+	
+	public void setWatched(boolean flag, int season) {
+		if (!isNew()) {
+			SQLiteDatabase db = session.getDB();
+			db.beginTransaction();
+			try {
+				ContentValues cv = new ContentValues();
+				cv.put("watched", flag);
+				List<String> args = new ArrayList<String>();
+				String where = "series = ?";
+				args.add(tvdb_id);
+				if (season >= 0) {
+					where += " and season = ?";
+					args.add(Integer.toString(season));
+				}
+				String[] wargs = new String[args.size()];
+				wargs = args.toArray(wargs);
+				db.update("episode", cv, where, wargs);
+				db.setTransactionSuccessful();
+			} finally {
+				db.endTransaction();
+			}
+			if (!Title.ongoingServiceOperation) {
+				Intent si = new Intent(session.getContext(), Service.class);
+				si.setAction(Service.GDRIVE_BACKUP);
+				si.putExtra("what", Commons.GD.SER_SEEN);
+				//session.getContext().startService(si);
+				WakefulIntentService.sendWakefulWork(session.getContext(), si);
+			}
+			reloadEpisodes();
+		}
+		Episode.setDirtyFlags(tvdb_id, season, null, flag);
+		if (isNew())
+			commit(Commons.GD.SER_SEEN);
+		else
+			dispatch(OnTitleListener.READY, null);
 	}
 	
 	public void setRating(int value) {
@@ -557,18 +641,6 @@ public class Series extends Title {
 			else
 				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
 		}
-	}
-	
-	public List<String> getTags() {
-		return new ArrayList<String>(tags);
-	}
-	
-	public boolean hasTags() {
-		return !tags.isEmpty();
-	}
-	
-	public boolean hasTag(String tag) {
-		return tags.contains(tag);
 	}
 	
 	public void setTags(String[] values) {
@@ -758,79 +830,5 @@ public class Series extends Title {
 			if (ep.inCollection() && !ep.isWatched() && (season == null || ep.season == season))
 				res++;
 		return res;
-	}
-	
-	public void setCollected(boolean flag, int season) {
-		if (!isNew()) {
-			SQLiteDatabase db = session.getDB();
-			db.beginTransaction();
-			try {
-				ContentValues cv = new ContentValues();
-				cv.put("collected", flag);
-				List<String> args = new ArrayList<String>();
-				String where = "series = ?";
-				args.add(tvdb_id);
-				if (season >= 0) {
-					where += " and season = ?";
-					args.add(Integer.toString(season));
-				}
-				String[] wargs = new String[args.size()];
-				wargs = args.toArray(wargs);
-				db.update("episode", cv, where, wargs);
-				db.setTransactionSuccessful();
-			} finally {
-				db.endTransaction();
-			}
-			if (!Title.ongoingServiceOperation) {
-				Intent si = new Intent(session.getContext(), Service.class);
-				si.setAction(Service.GDRIVE_BACKUP);
-				si.putExtra("what", Commons.GD.SER_COLL);
-				//session.getContext().startService(si);
-				WakefulIntentService.sendWakefulWork(session.getContext(), si);
-			}
-			reloadEpisodes();
-		}
-		Episode.setDirtyFlags(tvdb_id, season, flag, null);
-		if (isNew())
-			commit(Commons.GD.SER_COLL);
-		else
-			dispatch(OnTitleListener.READY, null);
-	}
-	
-	public void setWatched(boolean flag, int season) {
-		if (!isNew()) {
-			SQLiteDatabase db = session.getDB();
-			db.beginTransaction();
-			try {
-				ContentValues cv = new ContentValues();
-				cv.put("watched", flag);
-				List<String> args = new ArrayList<String>();
-				String where = "series = ?";
-				args.add(tvdb_id);
-				if (season >= 0) {
-					where += " and season = ?";
-					args.add(Integer.toString(season));
-				}
-				String[] wargs = new String[args.size()];
-				wargs = args.toArray(wargs);
-				db.update("episode", cv, where, wargs);
-				db.setTransactionSuccessful();
-			} finally {
-				db.endTransaction();
-			}
-			if (!Title.ongoingServiceOperation) {
-				Intent si = new Intent(session.getContext(), Service.class);
-				si.setAction(Service.GDRIVE_BACKUP);
-				si.putExtra("what", Commons.GD.SER_SEEN);
-				//session.getContext().startService(si);
-				WakefulIntentService.sendWakefulWork(session.getContext(), si);
-			}
-			reloadEpisodes();
-		}
-		Episode.setDirtyFlags(tvdb_id, season, null, flag);
-		if (isNew())
-			commit(Commons.GD.SER_SEEN);
-		else
-			dispatch(OnTitleListener.READY, null);
 	}
 }
