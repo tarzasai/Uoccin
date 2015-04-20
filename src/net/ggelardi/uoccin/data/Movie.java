@@ -209,7 +209,7 @@ public class Movie extends Title {
 		}
 		chk = Commons.XML.attrText(xml, "genre");
 		if (!TextUtils.isEmpty(chk)) {
-			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\")));
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s")));
 			lst.removeAll(Arrays.asList("", null));
 			if (!Commons.sameStringLists(genres, lst)) {
 				genres = new ArrayList<String>(lst);
@@ -228,7 +228,7 @@ public class Movie extends Title {
 		}
 		chk = Commons.XML.attrText(xml, "writer");
 		if (!TextUtils.isEmpty(chk)) {
-			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\")));
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s")));
 			lst.removeAll(Arrays.asList("", null));
 			if (!Commons.sameStringLists(writers, lst)) {
 				writers = new ArrayList<String>(lst);
@@ -237,7 +237,7 @@ public class Movie extends Title {
 		}
 		chk = Commons.XML.attrText(xml, "actors");
 		if (!TextUtils.isEmpty(chk)) {
-			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\")));
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s")));
 			lst.removeAll(Arrays.asList("", null));
 			if (!Commons.sameStringLists(actors, lst)) {
 				actors = new ArrayList<String>(lst);
@@ -466,18 +466,18 @@ public class Movie extends Title {
 		try {
 			save(isNew());
 			db.setTransactionSuccessful();
-			modified = false;
-			if (!Title.ongoingServiceOperation && what != null) {
-				Intent si = new Intent(session.getContext(), Service.class);
-				si.setAction(Service.GDRIVE_BACKUP);
-				si.putExtra("what", what);
-				WakefulIntentService.sendWakefulWork(session.getContext(), si);
-			}
 		} catch (Exception err) {
 			Log.e(TAG, "commit", err);
 		} finally {
 			db.endTransaction();
 		}
+		if (modified && !Title.ongoingServiceOperation && what != null) {
+			Intent si = new Intent(session.getContext(), Service.class);
+			si.setAction(Service.GDRIVE_BACKUP);
+			si.putExtra("what", what);
+			WakefulIntentService.sendWakefulWork(session.getContext(), si);
+		}
+		modified = false;
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -497,71 +497,16 @@ public class Movie extends Title {
 		return watchlist;
 	}
 	
-	public void setWatchlist(boolean value) {
-		if (value != watchlist) {
-			watchlist = value;
-			modified = true;
-			if (isValid())
-				refresh(true);
-			else
-				commit(Commons.GD.MOV_WLST);
-			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_mov : R.string.msg_wlst_del_mov);
-			msg = String.format(msg, name);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
-		}
-	}
-	
 	public boolean inCollection() {
 		return collected;
-	}
-	
-	public void setCollected(boolean value) {
-		if (value != collected) {
-			collected = value;
-			modified = true;
-			if (isValid())
-				refresh(true);
-			else
-				commit(Commons.GD.MOV_COLL);
-			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_mov : R.string.msg_coll_del_mov);
-			msg = String.format(msg, name);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
-		}
 	}
 	
 	public boolean isWatched() {
 		return watched;
 	}
 	
-	public void setWatched(boolean value) {
-		if (value != watched) {
-			watched = value;
-			modified = true;
-			if (isValid())
-				refresh(true);
-			else
-				commit(Commons.GD.MOV_SEEN);
-			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_mov : R.string.msg_seen_del_mov);
-			msg = String.format(msg, name);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
-		}
-	}
-	
 	public int getRating() {
 		return rating;
-	}
-	
-	public void setRating(int value) {
-		if (value != rating) {
-			watchlist = false;
-			watched = true;
-			rating = value;
-			modified = true;
-			if (isValid())
-				refresh(true);
-			else
-				commit(Commons.GD.MOV_SEEN);
-		}
 	}
 	
 	public List<String> getTags() {
@@ -576,6 +521,69 @@ public class Movie extends Title {
 		return tags.contains(tag);
 	}
 	
+	public boolean hasSubtitles() {
+		return !subtitles.isEmpty();
+	}
+	
+	public void setWatchlist(boolean value) {
+		if (value != watchlist) {
+			watchlist = value;
+			modified = true;
+			if (!isValid())
+				refresh(true);
+			else
+				commit(Commons.GD.MOV_WLST);
+			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "watchlist", Boolean.toString(watchlist));
+			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_mov : R.string.msg_wlst_del_mov);
+			msg = String.format(msg, name);
+			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	public void setCollected(boolean value) {
+		if (value != collected) {
+			collected = value;
+			modified = true;
+			if (!isValid())
+				refresh(true);
+			else
+				commit(Commons.GD.MOV_COLL);
+			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "collected", Boolean.toString(collected));
+			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_mov : R.string.msg_coll_del_mov);
+			msg = String.format(msg, name);
+			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	public void setWatched(boolean value) {
+		if (value != watched) {
+			watched = value;
+			modified = true;
+			if (!isValid())
+				refresh(true);
+			else
+				commit(Commons.GD.MOV_SEEN);
+			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "watched", Boolean.toString(watched));
+			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_mov : R.string.msg_seen_del_mov);
+			msg = String.format(msg, name);
+			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	public void setRating(int value) {
+		if (value != rating) {
+			watchlist = false;
+			watched = true;
+			rating = value;
+			modified = true;
+			if (!isValid())
+				refresh(true);
+			else
+				commit(Commons.GD.MOV_SEEN);
+			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "rating", Integer.toString(rating));
+		}
+	}
+	
 	public void setTags(String[] values) {
 		tags = new ArrayList<String>(Arrays.asList(values));
 		modified = true;
@@ -583,6 +591,7 @@ public class Movie extends Title {
 			refresh(true);
 		else
 			commit(inWatchlist() ? Commons.GD.MOV_WLST : null);
+		session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 	}
 	
 	public void addTag(String tag) {
@@ -590,10 +599,11 @@ public class Movie extends Title {
 		if (!hasTag(tag)) {
 			tags.add(tag);
 			modified = true;
-			if (isValid())
+			if (!isValid())
 				refresh(true);
 			else
 				commit(inWatchlist() ? Commons.GD.MOV_WLST : null);
+			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
@@ -604,10 +614,11 @@ public class Movie extends Title {
 		if (hasTag(tag)) {
 			tags.remove(tag);
 			modified = true;
-			if (isValid())
+			if (!isValid())
 				refresh(true);
 			else
 				commit(inWatchlist() ? Commons.GD.MOV_WLST : null);
+			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
@@ -615,9 +626,5 @@ public class Movie extends Title {
 	
 	public String imdbUrl() {
 		return "http://www.imdb.com/title/" + imdb_id;
-	}
-	
-	public boolean hasSubtitles() {
-		return !subtitles.isEmpty();
 	}
 }

@@ -2,11 +2,13 @@ package net.ggelardi.uoccin.serv;
 
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.UUID;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons.PK;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,6 +40,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 	private final SharedPreferences prefs;
 	private final Storage dbhlp;
 	private SQLiteDatabase dbconn;
+	private String gdruid;
 	
 	public Session(Context context) {
 		appContext = context.getApplicationContext();
@@ -47,7 +50,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		
 		dbhlp = new Storage(appContext);
 		
-		//getDB().execSQL("update series set timestamp = 1");
+		driveDeviceID();
 	}
 	
 	@Override
@@ -56,7 +59,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 			registerAlarms();
 		else if (key.equals(PK.GDRVSYNC)) {
 			registerAlarms();
-			if (driveEnabled() && TextUtils.isEmpty(driveUserAccount()))
+			if (driveSyncEnabled() && TextUtils.isEmpty(driveUserAccount()))
 				appContext.sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
 		} else if (key.equals(PK.GDRVAUTH) && !TextUtils.isEmpty(driveUserAccount())) {
 			Intent si = new Intent(appContext, Service.class);
@@ -121,7 +124,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		// check Uoccin files changes in Drive every 15 mins
 		PendingIntent gd = mkPI(Service.GDRIVE_CHECK);
 		am.cancel(gd);
-		if (driveEnabled())
+		if (driveSyncEnabled())
 			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
 				AlarmManager.INTERVAL_FIFTEEN_MINUTES, gd);
 	}
@@ -140,11 +143,24 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return prefs.getBoolean(PK.TVDBFEED, false);
 	}
 	
-	public boolean driveEnabled() {
+	public boolean driveSyncEnabled() {
 		return prefs.getBoolean(PK.GDRVSYNC, false);
 	}
 	
 	// app saved stuff
+	
+	public String driveDeviceID() {
+		if (TextUtils.isEmpty(gdruid))
+			gdruid = getPrefs().getString(PK.GDRVUUID, "");
+		if (TextUtils.isEmpty(gdruid)) {
+			gdruid = UUID.randomUUID().toString();
+			SharedPreferences.Editor editor = prefs.edit();
+			editor.putString(PK.GDRVUUID, gdruid);
+			editor.commit();
+			Log.v(TAG, "Device ID for Drive Sync: " + gdruid);
+		}
+		return gdruid;
+	}
 	
 	public String driveUserAccount() {
 		return prefs.getString(PK.GDRVAUTH, null);
@@ -223,5 +239,19 @@ public class Session implements OnSharedPreferenceChangeListener {
 		if (TextUtils.isEmpty(value))
 			return appContext.getResources().getString(resId);
 		return value;
+	}
+	
+	public static final String QUEUE_MOVIE = "movie";
+	public static final String QUEUE_SERIES = "series";
+	
+	public synchronized void driveQueue(String target, String title, String field, String value) {
+		if (!driveSyncEnabled())
+			return;
+		ContentValues cv = new ContentValues();
+		cv.put("target", target);
+		cv.put("title", title);
+		cv.put("field", field);
+		cv.put("value", value);
+		getDB().insertOrThrow("queue", null, cv);
 	}
 }

@@ -54,6 +54,8 @@ public class Service extends WakefulIntentService {
 	public static final String REFRESH_SERIES = "net.ggelardi.uoccin.REFRESH_SERIES";
 	public static final String REFRESH_EPISODE = "net.ggelardi.uoccin.REFRESH_EPISODE";
 	public static final String CHECK_TVDB_RSS = "net.ggelardi.uoccin.CHECK_TVDB_RSS";
+	public static final String GDRIVE_SYNC = "net.ggelardi.uoccin.GDRIVE_SYNC";
+	
 	public static final String GDRIVE_CHECK = "net.ggelardi.uoccin.GDRIVE_CHECK";
 	public static final String GDRIVE_BACKUP = "net.ggelardi.uoccin.GDRIVE_BACKUP";
 	public static final String GDRIVE_RESTORE = "net.ggelardi.uoccin.GDRIVE_RESTORE";
@@ -91,7 +93,11 @@ public class Service extends WakefulIntentService {
 				refreshEpisode(series, season, episode);
 			} else if (act.equals(CHECK_TVDB_RSS)) {
 				checkTVdbNews();
-			} else if (act.equals(GDRIVE_CHECK) && session.driveEnabled()) {
+			} else if (act.equals(GDRIVE_SYNC) && session.driveSyncEnabled()) {
+				
+				
+				
+			} else if (act.equals(GDRIVE_CHECK) && session.driveSyncEnabled()) {
 				List<String> files = new ArrayList<String>();
 				files.add(Commons.GD.MOV_WLST);
 				files.add(Commons.GD.MOV_COLL);
@@ -126,7 +132,7 @@ public class Service extends WakefulIntentService {
 							restoreSeriesWatched();
 					}
 				}
-			} else if (act.equals(GDRIVE_BACKUP) && session.driveEnabled()) {
+			} else if (act.equals(GDRIVE_BACKUP) && session.driveSyncEnabled()) {
 				Bundle extra = intent.getExtras();
 				String what = extra == null ? "*" : extra.getString("what");
 				if (what.equals("*") || what.equals(Commons.GD.MOV_WLST))
@@ -141,7 +147,7 @@ public class Service extends WakefulIntentService {
 					backupSeriesCollection();
 				if (what.equals("*") || what.equals(Commons.GD.SER_SEEN))
 					backupSeriesWatched();
-			} else if (act.equals(GDRIVE_RESTORE) && session.driveEnabled()) {
+			} else if (act.equals(GDRIVE_RESTORE) && session.driveSyncEnabled()) {
 				Bundle extra = intent.getExtras();
 				String what = extra == null ? "*" : extra.getString("what");
 				if (what.equals("*") || what.equals(Commons.GD.MOV_WLST))

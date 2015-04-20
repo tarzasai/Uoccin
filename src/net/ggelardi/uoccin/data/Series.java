@@ -470,10 +470,10 @@ public class Series extends Title {
 		if (!isValid())
 			return;
 		dispatch(OnTitleListener.WORKING, null);
+		int changes = 0;
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			int changes = 0;
 			if (modified) {
 				changes++;
 				save(isNew());
@@ -487,27 +487,26 @@ public class Series extends Title {
 					changes++;
 					ep.save(ep.isNew());
 				}
-			if (lastseason > 0) {
-				Log.v(TAG, "cancello da " + name + " per season > " + Integer.toString(lastseason));
+			if (lastseason > 0)
 				db.delete("episode", "series = ? and season > ?",
 					new String[] { tvdb_id, Integer.toString(lastseason) });
-			}
 			db.setTransactionSuccessful();
 			modified = false;
 			for (Episode ep: eps)
 				ep.modified = false;
-			if (changes > 0)
-				reloadEpisodes();
+		} catch (Exception err) {
+			Log.e(TAG, "commit", err);
+		} finally {
+			db.endTransaction();
+		}
+		if (changes > 0) {
 			if (!Title.ongoingServiceOperation && what != null) {
 				Intent si = new Intent(session.getContext(), Service.class);
 				si.setAction(Service.GDRIVE_BACKUP);
 				si.putExtra("what", what);
 				WakefulIntentService.sendWakefulWork(session.getContext(), si);
 			}
-		} catch (Exception err) {
-			Log.e(TAG, "commit", err);
-		} finally {
-			db.endTransaction();
+			reloadEpisodes();
 		}
 		dispatch(OnTitleListener.READY, null);
 	}
@@ -552,13 +551,14 @@ public class Series extends Title {
 				refresh(true);
 			else
 				commit(Commons.GD.SER_WLST);
+			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "watchlist", Boolean.toString(watchlist));
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_ser : R.string.msg_wlst_del_ser);
 			msg = String.format(msg, name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
 	
-	public void setCollected(boolean flag, int season) {
+	public void setCollected(boolean flag, Integer season) {
 		if (!isNew()) {
 			SQLiteDatabase db = session.getDB();
 			db.beginTransaction();
@@ -568,9 +568,9 @@ public class Series extends Title {
 				List<String> args = new ArrayList<String>();
 				String where = "series = ?";
 				args.add(tvdb_id);
-				if (season >= 0) {
+				if (season != null) {
 					where += " and season = ?";
-					args.add(Integer.toString(season));
+					args.add(season.toString());
 				}
 				String[] wargs = new String[args.size()];
 				wargs = args.toArray(wargs);
@@ -593,9 +593,11 @@ public class Series extends Title {
 			commit(Commons.GD.SER_COLL);
 		else
 			dispatch(OnTitleListener.READY, null);
+		session.driveQueue(Session.QUEUE_SERIES, tvdb_id + (season != null ? '.' + season.toString() : ""),
+			"collected", Boolean.toString(flag));
 	}
 	
-	public void setWatched(boolean flag, int season) {
+	public void setWatched(boolean flag, Integer season) {
 		if (!isNew()) {
 			SQLiteDatabase db = session.getDB();
 			db.beginTransaction();
@@ -605,9 +607,9 @@ public class Series extends Title {
 				List<String> args = new ArrayList<String>();
 				String where = "series = ?";
 				args.add(tvdb_id);
-				if (season >= 0) {
+				if (season != null) {
 					where += " and season = ?";
-					args.add(Integer.toString(season));
+					args.add(season.toString());
 				}
 				String[] wargs = new String[args.size()];
 				wargs = args.toArray(wargs);
@@ -630,6 +632,8 @@ public class Series extends Title {
 			commit(Commons.GD.SER_SEEN);
 		else
 			dispatch(OnTitleListener.READY, null);
+		session.driveQueue(Session.QUEUE_SERIES, tvdb_id + (season != null ? '.' + season.toString() : ""),
+			"watched", Boolean.toString(flag));
 	}
 	
 	public void setRating(int value) {
@@ -640,6 +644,7 @@ public class Series extends Title {
 				refresh(true);
 			else
 				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
+			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "rating", Integer.toString(rating));
 		}
 	}
 	
@@ -650,6 +655,7 @@ public class Series extends Title {
 			refresh(true);
 		else
 			commit(inWatchlist() ? Commons.GD.SER_WLST : null);
+		session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
 	}
 	
 	public void addTag(String tag) {
@@ -661,6 +667,7 @@ public class Series extends Title {
 				refresh(true);
 			else
 				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
+			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
@@ -675,6 +682,7 @@ public class Series extends Title {
 				refresh(true);
 			else
 				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
+			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}

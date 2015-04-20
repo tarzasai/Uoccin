@@ -42,6 +42,7 @@ public class Commons {
 		public static final String LANGUAGE = "pk_locale";
 		public static final String SPECIALS = "pk_specials";
 		public static final String TVDBFEED = "pk_tvdbrss";
+		public static final String GDRVUUID = "pk_gdrvuid";
 		public static final String GDRVSYNC = "pk_gdrvbak";
 		public static final String GDRVWIFI = "pk_gdrvwifi";
 		public static final String GDRVINTV = "pk_gdrvint";
@@ -206,7 +207,15 @@ public class Commons {
 		}
 		
 		public static String attrText(Element node, String ... names) {
-			// TODO: implementazione
+			String val;
+			for (String name: names)
+				try {
+					val = node.getAttribute(name);
+					if (!TextUtils.isEmpty(val))
+						return val;
+				} catch (Exception err) {
+					//Log.e("Commons.XML", "nodeText(" + name + ")", err); // debug only.
+				}
 			return "";
 		}
 	}

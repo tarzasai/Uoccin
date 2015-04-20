@@ -1,6 +1,7 @@
 package net.ggelardi.uoccin;
 
 import net.ggelardi.uoccin.data.Episode;
+import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import android.app.Activity;
 import android.content.Context;
@@ -137,11 +138,23 @@ public class EpisodeInfoFragment extends BaseFragment {
 		txt_shar.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				Series ser = episode.getSeries();
+				String title = ser.name + " " + episode.eid().sequence();
+				StringBuilder sb = new StringBuilder();
+				sb.append("*").append(title).append("*");
+				if (!TextUtils.isEmpty(episode.name))
+					sb.append(": ").append("_").append(episode.name).append("_");
+				sb.append("\n").append(ser.network).append(", ").append(episode.firstAired());
+				if (!TextUtils.isEmpty(episode.plot))
+					sb.append("\n").append("\n").append(episode.plot());
+				if (!TextUtils.isEmpty(episode.poster))
+					sb.append("\n").append("\n").append(episode.poster);
+				sb.append("\n").append(!TextUtils.isEmpty(episode.imdbUrl()) ? episode.imdbUrl() : episode.tvdbUrl());
 				Intent si = new Intent(Intent.ACTION_SEND);
 			    si.setType("text/plain");
-			    si.putExtra(Intent.EXTRA_TITLE, episode.name);
-			    si.putExtra(Intent.EXTRA_SUBJECT, episode.plot);
-			    si.putExtra(Intent.EXTRA_TEXT, !TextUtils.isEmpty(episode.imdbUrl()) ? episode.imdbUrl() : episode.tvdbUrl());
+			    si.putExtra(Intent.EXTRA_TITLE, title);
+			    si.putExtra(Intent.EXTRA_SUBJECT, title);
+			    si.putExtra(Intent.EXTRA_TEXT, sb.toString());
 			    startActivity(Intent.createChooser(si, "Share episode info"));
 			}
 		});

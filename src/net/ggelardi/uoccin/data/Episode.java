@@ -433,6 +433,8 @@ public class Episode extends Title {
 				refresh(false);
 			else
 				commit(Commons.GD.SER_COLL);
+			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
+				Integer.toString(episode), "collected", Boolean.toString(collected));
 			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_epi : R.string.msg_coll_del_epi);
 			msg = String.format(msg, eid().readable());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -447,6 +449,8 @@ public class Episode extends Title {
 				refresh(false);
 			else
 				commit(Commons.GD.SER_SEEN);
+			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
+				Integer.toString(episode), "watched", Boolean.toString(watched));
 			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_epi : R.string.msg_seen_del_epi);
 			msg = String.format(msg, eid().readable());
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();

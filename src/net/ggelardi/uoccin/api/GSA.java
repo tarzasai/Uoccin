@@ -48,7 +48,7 @@ public class GSA {
 	}
 	
 	public List<Change> getChanges() throws Exception {
-		Log.d(TAG, "Looking for changes in Drive files...");
+		Log.d(TAG, "Looking for changes in Drive's Uoccin folder...");
 		long lcid = session.driveLastChangeID();
 		Changes.List request = service.changes().list().setIncludeDeleted(false).setIncludeSubscribed(
 			false).setFields("items/file,largestChangeId,nextPageToken").setStartChangeId(lcid + 1);
@@ -57,7 +57,15 @@ public class GSA {
 		do {
 			try {
 				changes = request.execute();
-				result.addAll(changes.getItems());
+				
+				//result.addAll(changes.getItems());
+				for (Change change: changes.getItems())
+					for (ParentReference parent: change.getFile().getParents())
+						if (parent.getId().equals(getFolder(false).getId())) {
+							result.add(change);
+							break;
+						}
+				
 				lcid = changes.getLargestChangeId();
 				request.setPageToken(changes.getNextPageToken());
 			} catch (Exception err) {
@@ -66,10 +74,7 @@ public class GSA {
 			}
 		} while (request.getPageToken() != null && request.getPageToken().length() > 0);
 		session.setDriveLastChangeID(lcid);
-		if (result.isEmpty())
-			Log.d(TAG, "Zero changes found.");
-		else
-			Log.i(TAG, "Found " + Integer.toString(result.size()) + " new changes since last check.");
+		Log.i(TAG, "Found " + Integer.toString(result.size()) + " changes since last check.");
 		return result;
 	}
 	

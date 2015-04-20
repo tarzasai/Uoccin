@@ -139,7 +139,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		if (getSupportFragmentManager().findFragmentByTag(BaseFragment.ROOT_FRAGMENT) == null)
 			openDrawerItem(drawerData.findItem(lastView));
 		
-		if (session.driveEnabled() && TextUtils.isEmpty(session.driveUserAccount())) {
+		if (session.driveSyncEnabled() && TextUtils.isEmpty(session.driveUserAccount())) {
 			Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null,
 				new String[]{GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE},true,null,null,null,null) ;
 			startActivityForResult(googlePicker, REQUEST_ACCOUNT_PICKER);

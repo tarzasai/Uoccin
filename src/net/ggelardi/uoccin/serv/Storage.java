@@ -3,9 +3,10 @@ package net.ggelardi.uoccin.serv;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class Storage extends SQLiteOpenHelper {
-	//private static final String TAG = "Storage";
+	private static final String TAG = "Storage";
 	
 	public static final String NAME = "Uoccin.db";
 	public static final int VERSION = 2;
@@ -32,23 +33,26 @@ public class Storage extends SQLiteOpenHelper {
 	
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL(CREATE_TABLE_QUEUE);
 		db.execSQL(CREATE_TABLE_MOVIES);
 		db.execSQL(CREATE_TABLE_SERIES);
 		db.execSQL(CREATE_TABLE_EPISODES);
+		db.execSQL(CREATE_TABLE_QUEUE);
 	}
 	
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		if (newVersion < 1) {
-			// Development phase: destroy everything.
-			db.execSQL("drop table episode");
-			db.execSQL("drop table series");
-			db.execSQL("drop table movie");
-			onCreate(db);
-		} else if (newVersion < 2) {
-			db.execSQL(CREATE_TABLE_QUEUE);
-		}
+		int upgradeTo = oldVersion + 1;
+        while (upgradeTo <= newVersion)
+        {
+        	Log.d(TAG, "Upgrading database to version " + Integer.toString(upgradeTo));
+            switch (upgradeTo)
+            {
+                case 2:
+                	db.execSQL(CREATE_TABLE_QUEUE);
+                    break;
+            }
+            upgradeTo++;
+        }
 	}
 	
 	private static final String CS = ", ";
@@ -130,11 +134,11 @@ public class Storage extends SQLiteOpenHelper {
 		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" +
 		")";
 	
-	private static final String CREATE_TABLE_QUEUE = "CREATE TABLE queue (" +
+	public static final String CREATE_TABLE_QUEUE = "CREATE TABLE queue (" +
 		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS +
-		"command" + DT_STR + CC_NNU + " CHECK (command IN ('set', 'del'))" + CS +
-		"object" + DT_STR + CC_NNU + CS +
+		"target" + DT_STR + CC_NNU + " CHECK (target IN ('movie', 'series'))" + CS +
+		"title" + DT_STR + CC_NNU + CS +
 		"field" + DT_STR + CS +
-		"value" + DT_STR + CS +
+		"value" + DT_STR +
 		")";
 }
