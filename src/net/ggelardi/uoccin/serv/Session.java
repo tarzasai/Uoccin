@@ -166,6 +166,12 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return prefs.getString(PK.GDRVAUTH, null);
 	}
 	
+	/*
+	public long driveLastSyncUTC() {
+		return prefs.getLong(PK.GDRVLASY, 0);
+	}
+	*/
+	
 	public long driveLastChangeID() {
 		return prefs.getLong(PK.GDRVLCID, 0);
 	}
@@ -187,6 +193,14 @@ public class Session implements OnSharedPreferenceChangeListener {
 		editor.putString(PK.GDRVAUTH, value);
 		editor.commit();
 	}
+	
+	/*
+	public void setDriveLastSyncUTC(long value) {
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putLong(PK.GDRVLASY, value);
+		editor.commit();
+	}
+	*/
 	
 	public void setDriveLastChangeID(long value) {
 		SharedPreferences.Editor editor = prefs.edit();

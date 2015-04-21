@@ -95,7 +95,7 @@ public class Service extends WakefulIntentService {
 				checkTVdbNews();
 			} else if (act.equals(GDRIVE_SYNC) && session.driveSyncEnabled()) {
 				
-				
+				driveSync();
 				
 			} else if (act.equals(GDRIVE_CHECK) && session.driveSyncEnabled()) {
 				List<String> files = new ArrayList<String>();
@@ -335,6 +335,38 @@ public class Service extends WakefulIntentService {
 			genson = new GensonBuilder().
 				//useIndentation(true). // DEBUG ONLY!
 				create();
+	}
+	
+	private void driveSync() throws Exception {
+		try {
+			checkDrive();
+			drive.writeDump(true);
+			//
+			SQLiteDatabase db = session.getDB();
+			db.beginTransaction();
+			try {
+				// load other devices' dumps
+				String fn;
+				for (Change ch: drive.getChanges()) {
+					fn = ch.getFile().getTitle();
+					if (fn.startsWith("dump.") && !fn.endsWith(session.driveDeviceID())) {
+						
+					}
+				}
+				
+				//
+				
+				
+				db.setTransactionSuccessful();
+				
+			} finally {
+				db.endTransaction();
+			}
+			
+		} catch (Exception err) {
+			Log.e(TAG, "driveSync", err);
+			throw err;
+		}
 	}
 	
 	private void backupMovieWatchlist() throws Exception {

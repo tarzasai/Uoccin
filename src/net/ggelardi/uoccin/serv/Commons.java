@@ -46,6 +46,7 @@ public class Commons {
 		public static final String GDRVSYNC = "pk_gdrvbak";
 		public static final String GDRVWIFI = "pk_gdrvwifi";
 		public static final String GDRVINTV = "pk_gdrvint";
+		//public static final String GDRVLASY = "pk_gdrv_lastsync";
 		public static final String GDRVAUTH = "pk_gdrv_account";
 		public static final String GDRVLCID = "pk_gdrv_lastcid";
 		public static final String NOTIFSND = "pk_notif_sound";
@@ -166,6 +167,9 @@ public class Commons {
 	public static class SDF {
 		private static final List<String> engdays = Arrays.asList("sunday", "monday", "tuesday", "wednesday",
 			"thursday", "friday", "saturday");
+
+		public static final String RFC3339 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+		public static final String TIMESTAMP = "yyyyMMddHHmmss";
 		
 		public static SimpleDateFormat eng(String format) {
 			return new SimpleDateFormat(format, Locale.ENGLISH);
@@ -177,6 +181,14 @@ public class Commons {
 		
 		public static int day(String dayname) {
 			return TextUtils.isEmpty(dayname) ? 0 : engdays.indexOf(dayname.toLowerCase(Locale.getDefault())) + 1;
+		}
+		
+		public static String rfc3339(long time) {
+			return eng(RFC3339).format(new Date(time));
+		}
+		
+		public static String timestamp(long time) {
+			return eng(TIMESTAMP).format(new Date(time));
 		}
 	}
 	
@@ -214,7 +226,7 @@ public class Commons {
 					if (!TextUtils.isEmpty(val))
 						return val;
 				} catch (Exception err) {
-					//Log.e("Commons.XML", "nodeText(" + name + ")", err); // debug only.
+					//Log.e("Commons.XML", "attrText(" + name + ")", err); // debug only.
 				}
 			return "";
 		}

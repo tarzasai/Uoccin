@@ -474,18 +474,18 @@ public class Series extends Title {
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			if (modified) {
-				changes++;
+			if (modified || isOld()) {
 				save(isNew());
+				changes++;
 			}
 			List<Episode> eps = Episode.cached(tvdb_id, -1);
 			for (Episode ep: eps)
 				if (lastseason > 0 && ep.season > lastseason) {
-					changes++;
 					Episode.drop(tvdb_id, ep.season, null);
-				} else if (ep.modified) {
 					changes++;
+				} else if (ep.modified || ep.isOld()) {
 					ep.save(ep.isNew());
+					changes++;
 				}
 			if (lastseason > 0)
 				db.delete("episode", "series = ? and season > ?",
