@@ -414,7 +414,17 @@ public class Episode extends Title {
 	}
 	
 	public boolean isOld() {
-		return timestamp > 0 && (System.currentTimeMillis() - timestamp) > Commons.weekLong; // TODO preferences
+		if (timestamp > 0 && firstAired > 0) {
+			long now = System.currentTimeMillis();
+			long ageAired = Math.abs(now - firstAired);
+			long ageLocal = now - timestamp;
+			if (ageAired < Commons.weekLong)
+				return ageLocal > Commons.dayLong;
+			if (ageAired > Commons.yearLong)
+				return ageLocal > Commons.monthLong;
+			return ageLocal > Commons.weekLong;
+		}
+		return false;
 	}
 	
 	public boolean inCollection() {

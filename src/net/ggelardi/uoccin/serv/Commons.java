@@ -36,6 +36,8 @@ public class Commons {
 	
 	public static final long dayLong = (24 * 60 * 60 * 1000);
 	public static final long weekLong = (7 * dayLong);
+	public static final long monthLong = (30 * dayLong);
+	public static final long yearLong = (365 * dayLong);
 	
 	public static class PK {
 		public static final String STARTUPV = "pk_startup";
@@ -55,6 +57,9 @@ public class Commons {
 	public static class GD {
 		public static final String FOLDER = "uoccin";
 		//public static final String FOLDER = "uoccin_test";
+		public static final String BACKUP = "uoccin.json";
+		//public static final String BACKUP = "uoccin_test.json";
+		
 		public static final String MOV_WLST = "movies.watchlist.json";
 		public static final String MOV_COLL = "movies.collected.json";
 		public static final String MOV_SEEN = "movies.watched.json";
@@ -67,6 +72,11 @@ public class Commons {
 		public static final String CONNECT_FAIL = "net.ggelardi.uoccin.CONNECT_FAIL";
 		public static final String GENERAL_FAIL = "net.ggelardi.uoccin.GENERAL_FAIL";
 		public static final String GENERAL_INFO = "net.ggelardi.uoccin.GENERAL_INFO";
+	}
+
+	public static class MIME {
+		public static final String TEXT = "text/plain";
+		public static final String JSON = "application/json";
 	}
 	
 	public static long convertTZ(long timestamp, String fromTimeZone, String toTimeZone) {

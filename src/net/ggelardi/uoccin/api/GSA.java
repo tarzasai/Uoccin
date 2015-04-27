@@ -10,10 +10,10 @@ import java.util.List;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Commons.MIME;
 import net.ggelardi.uoccin.serv.Commons.SDF;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
-import android.database.Cursor;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -49,15 +49,6 @@ public class GSA {
 			credential).setApplicationName(session.getString(R.string.app_name)).build();
 	}
 	
-	/*
-	public List<File> getDumps(long since) throws Exception {
-		FileList files = service.files().list().setQ("trashed = false and modifiedDate > '" +
-			SDF.rfc3339(since) + "' and title contains 'dump.' and title not contains '." +
-			session.driveDeviceID() + "' and '" + getFolder(true).getId() + "' in parents").execute();
-		return files != null && !files.isEmpty() ? files.getItems() : null;
-	}
-	*/
-	
 	public List<Change> getChanges() throws Exception {
 		Log.d(TAG, "Looking for changes in Drive's Uoccin folder...");
 		long lcid = session.driveLastChangeID();
@@ -68,7 +59,6 @@ public class GSA {
 		do {
 			try {
 				changes = request.execute();
-				//result.addAll(changes.getItems());
 				for (Change change: changes.getItems())
 					for (ParentReference parent: change.getFile().getParents())
 						if (parent.getId().equals(getFolder(false).getId())) {
@@ -107,6 +97,16 @@ public class GSA {
 		return folder;
 	}
 	
+	public File getFile(String filename, Long newerThanUTC) throws Exception {
+		Log.d(TAG, "Looking for file " + filename + "...");
+		String query = "title = '" + filename + "' and trashed = false and '" +
+			getFolder(true).getId() + "' in parents";
+		if (newerThanUTC != null && newerThanUTC > 0)
+			query += " and modifiedDate > '" + SDF.rfc3339(newerThanUTC) + "'";
+		FileList fl = service.files().list().setQ(query).execute();
+		return fl != null && !fl.isEmpty() && fl.getItems().size() > 0 ? fl.getItems().get(0) : null;
+	}
+	
 	public String readFile(File file) throws Exception {
 		String link = file.getDownloadUrl();
 		if (TextUtils.isEmpty(link)) {
@@ -130,59 +130,18 @@ public class GSA {
 		}
 	}
 	
-	public String readFile(String filename, long since) throws Exception {
-		Log.d(TAG, "Looking for file " + filename + "...");
-		String query = "title = '" + filename + "' and trashed = false and '" +
-			getFolder(true).getId() + "' in parents";
-		if (since > 0)
-			query += " and modifiedDate > '" + SDF.rfc3339(since) + "'";
-		FileList files = service.files().list().setQ(query).execute();
-		return files == null || files.isEmpty() || files.getItems().size() <= 0 ?
-			null : readFile(files.getItems().get(0));
-	}
-	
-	public void writeFile(String filename, String content) throws Exception {
-		Log.d(TAG, "Looking for file " + filename + "...");
-		FileList files = service.files().list().setQ("title = '" + filename + "' and trashed = false and '" +
-			getFolder(true).getId() + "' in parents").execute();
-		String fileId = null;
-		if (files != null && !files.isEmpty() && files.getItems().size() > 0)
-			fileId = files.getItems().get(0).getId();
+	public void writeFile(String fileId, String title, String mime, String content) throws Exception {
 		File body = new File();
-		body.setTitle(filename);
-		body.setMimeType("application/json");
+		body.setTitle(title);
+		body.setMimeType(mime);
 		body.setParents(Arrays.asList(new ParentReference().setId(getFolder(true).getId())));
-		ByteArrayContent bac = ByteArrayContent.fromString("text/plain", content);
+		ByteArrayContent bac = ByteArrayContent.fromString(MIME.TEXT, content);
 		if (TextUtils.isEmpty(fileId)) {
 			File file = service.files().insert(body, bac).execute();
-			Log.i(TAG, filename + " created, id " + file.getId());
+			Log.i(TAG, title + " created, id " + file.getId());
 		} else {
 			service.files().update(fileId, body, bac).execute();
-			Log.i(TAG, filename + " updated, id " + fileId);
-		}
-	}
-	
-	public void writeDump(boolean clearAfter) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		Cursor cr = session.getDB().query("queue", null, null, null, null, null, "timestamp");
-		while (cr.moveToNext()) {
-			sb.append(cr.getLong(0)).append(',');
-			sb.append(cr.getString(1)).append(',');
-			sb.append(cr.getString(2)).append(',');
-			sb.append(cr.getString(3)).append(',');
-			sb.append(cr.getString(4)).append("\n");
-		}
-		if (sb.length() <= 0) {
-			String filename = "dump." + SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID();
-			File body = new File();
-			body.setTitle(filename);
-			body.setMimeType("text/plain");
-			body.setParents(Arrays.asList(new ParentReference().setId(getFolder(true).getId())));
-			ByteArrayContent bac = ByteArrayContent.fromString("text/plain", sb.toString());
-			File file = service.files().insert(body, bac).execute();
-			Log.i(TAG, filename + " created, id " + file.getId());
-			if (clearAfter)
-				session.getDB().delete("queue", null, null);
+			Log.i(TAG, title + " updated, id " + fileId);
 		}
 	}
 }

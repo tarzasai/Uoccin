@@ -266,6 +266,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 		cv.put("title", title);
 		cv.put("field", field);
 		cv.put("value", value);
-		getDB().insertOrThrow("queue", null, cv);
+		getDB().insertOrThrow("queue_out", null, cv);
 	}
 }

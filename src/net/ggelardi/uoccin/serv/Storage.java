@@ -9,7 +9,7 @@ public class Storage extends SQLiteOpenHelper {
 	private static final String TAG = "Storage";
 	
 	public static final String NAME = "Uoccin.db";
-	public static final int VERSION = 2;
+	public static final int VERSION = 3;
 	
 	public Storage(Context context) {
 		super(context, NAME, null, VERSION);
@@ -36,7 +36,8 @@ public class Storage extends SQLiteOpenHelper {
 		db.execSQL(CREATE_TABLE_MOVIES);
 		db.execSQL(CREATE_TABLE_SERIES);
 		db.execSQL(CREATE_TABLE_EPISODES);
-		db.execSQL(CREATE_TABLE_QUEUE);
+		db.execSQL(CREATE_TABLE_QUEUEIN);
+		db.execSQL(CREATE_TABLE_QUEUEOUT);
 	}
 	
 	@Override
@@ -48,7 +49,10 @@ public class Storage extends SQLiteOpenHelper {
             switch (upgradeTo)
             {
                 case 2:
-                	db.execSQL(CREATE_TABLE_QUEUE);
+                    break;
+                case 3:
+                	db.execSQL(CREATE_TABLE_QUEUEIN);
+                	db.execSQL(CREATE_TABLE_QUEUEOUT);
                     break;
             }
             upgradeTo++;
@@ -134,7 +138,15 @@ public class Storage extends SQLiteOpenHelper {
 		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" +
 		")";
 	
-	public static final String CREATE_TABLE_QUEUE = "CREATE TABLE queue (" +
+	public static final String CREATE_TABLE_QUEUEIN = "CREATE TABLE queue_in (" +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS + // UTC
+		"target" + DT_STR + CC_NNU + " CHECK (target IN ('movie', 'series'))" + CS +
+		"title" + DT_STR + CC_NNU + CS +
+		"field" + DT_STR + CS +
+		"value" + DT_STR +
+		")";
+	
+	public static final String CREATE_TABLE_QUEUEOUT = "CREATE TABLE queue_out (" +
 		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS + // UTC
 		"target" + DT_STR + CC_NNU + " CHECK (target IN ('movie', 'series'))" + CS +
 		"title" + DT_STR + CC_NNU + CS +
