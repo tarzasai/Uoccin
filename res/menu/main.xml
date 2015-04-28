@@ -16,16 +16,36 @@
         android:showAsAction="never"
         android:title="@string/action_settings"/>
     
-    <item
-        android:id="@+id/action_test_tvdb"
-        android:orderInCategory="1"
-        android:showAsAction="never"
-        android:title="test tvdb"/>
+    <!-- test/debug -->
     
     <item
-        android:id="@+id/action_test_drive"
+        android:id="@+id/action_test_clean"
+        android:orderInCategory="1"
+        android:showAsAction="never"
+        android:title="(test) Clean DB"/>
+    
+    <item
+        android:id="@+id/action_test_gdsyn"
         android:orderInCategory="2"
         android:showAsAction="never"
-        android:title="test drive"/>
+        android:title="(test) Sync"/>
+    
+    <item
+        android:id="@+id/action_test_gdbak"
+        android:orderInCategory="3"
+        android:showAsAction="never"
+        android:title="(test) Backup"/>
+    
+    <item
+        android:id="@+id/action_test_gdres"
+        android:orderInCategory="4"
+        android:showAsAction="never"
+        android:title="(test) Restore"/>
+    
+    <item
+        android:id="@+id/action_test_tvdbn"
+        android:orderInCategory="5"
+        android:showAsAction="never"
+        android:title="(test) TVDB news"/>
 
 </menu>

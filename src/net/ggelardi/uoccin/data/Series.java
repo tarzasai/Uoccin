@@ -40,6 +40,7 @@ public class Series extends Title {
 	private int rating = 0;
 	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;
+	private boolean massUpd = false;
 	
 	public List<Episode> episodes = new ArrayList<Episode>();
 	
@@ -435,7 +436,7 @@ public class Series extends Title {
 	}
 	
 	public synchronized void reload() {
-		//dispatch(OnTitleListener.WORKING, null);
+		dispatch(OnTitleListener.WORKING, null);
 		Cursor cur = session.getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
 			null, null, null);
 		try {
@@ -444,7 +445,7 @@ public class Series extends Title {
 		} finally {
 			cur.close();
 		}
-		//dispatch(OnTitleListener.READY, null);
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	public synchronized void reloadEpisodes() {
@@ -466,7 +467,7 @@ public class Series extends Title {
 		}
 	}
 	
-	public final synchronized void commit(String what) {
+	public final synchronized void commit() {
 		if (!isValid())
 			return;
 		dispatch(OnTitleListener.WORKING, null);
@@ -478,11 +479,12 @@ public class Series extends Title {
 				save(isNew());
 				changes++;
 			}
-			List<Episode> eps = Episode.cached(tvdb_id, -1);
-			for (Episode ep: eps)
+			for (Episode ep: episodes)
 				if (lastseason > 0 && ep.season > lastseason) {
-					Episode.drop(tvdb_id, ep.season, null);
+					episodes.remove(ep);
 					changes++;
+					if (ep.episode < 2)
+						Episode.drop(tvdb_id, ep.season, null);
 				} else if (ep.modified || ep.isOld()) {
 					ep.save(ep.isNew());
 					changes++;
@@ -491,23 +493,16 @@ public class Series extends Title {
 				db.delete("episode", "series = ? and season > ?",
 					new String[] { tvdb_id, Integer.toString(lastseason) });
 			db.setTransactionSuccessful();
-			modified = false;
-			for (Episode ep: eps)
-				ep.modified = false;
 		} catch (Exception err) {
 			Log.e(TAG, "commit", err);
 		} finally {
 			db.endTransaction();
 		}
-		if (changes > 0) {
-			if (!Title.ongoingServiceOperation && what != null) {
-				Intent si = new Intent(session.getContext(), Service.class);
-				si.setAction(Service.GDRIVE_BACKUP);
-				si.putExtra("what", what);
-				WakefulIntentService.sendWakefulWork(session.getContext(), si);
-			}
+		modified = false;
+		for (Episode ep: episodes)
+			ep.modified = false;
+		if (changes > 0)
 			reloadEpisodes();
-		}
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -543,6 +538,10 @@ public class Series extends Title {
 		return tags.contains(tag);
 	}
 	
+	public boolean massUpdate() {
+		return massUpd;
+	}
+	
 	public void setWatchlist(boolean value) {
 		if (value != watchlist) {
 			watchlist = value;
@@ -550,7 +549,7 @@ public class Series extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(Commons.GD.SER_WLST);
+				commit();
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "watchlist", Boolean.toString(watchlist));
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_ser : R.string.msg_wlst_del_ser);
 			msg = String.format(msg, name);
@@ -559,81 +558,33 @@ public class Series extends Title {
 	}
 	
 	public void setCollected(boolean flag, Integer season) {
-		if (!isNew()) {
-			SQLiteDatabase db = session.getDB();
-			db.beginTransaction();
-			try {
-				ContentValues cv = new ContentValues();
-				cv.put("collected", flag);
-				List<String> args = new ArrayList<String>();
-				String where = "series = ?";
-				args.add(tvdb_id);
-				if (season != null) {
-					where += " and season = ?";
-					args.add(season.toString());
-				}
-				String[] wargs = new String[args.size()];
-				wargs = args.toArray(wargs);
-				db.update("episode", cv, where, wargs);
-				db.setTransactionSuccessful();
-			} finally {
-				db.endTransaction();
-			}
-			if (!Title.ongoingServiceOperation) {
-				Intent si = new Intent(session.getContext(), Service.class);
-				si.setAction(Service.GDRIVE_BACKUP);
-				si.putExtra("what", Commons.GD.SER_COLL);
-				//session.getContext().startService(si);
-				WakefulIntentService.sendWakefulWork(session.getContext(), si);
-			}
-			reloadEpisodes();
+		massUpd = true;
+		try {
+			for (Episode ep: episodes)
+				if (season == null || ep.season == season)
+					ep.setCollected(flag);
+		} finally {
+			massUpd = false;
 		}
-		Episode.setDirtyFlags(tvdb_id, season, flag, null);
-		if (isNew())
-			commit(Commons.GD.SER_COLL);
+		if (!isValid())
+			refresh(true);
 		else
-			dispatch(OnTitleListener.READY, null);
-		session.driveQueue(Session.QUEUE_SERIES, tvdb_id + (season != null ? '.' + season.toString() : ""),
-			"collected", Boolean.toString(flag));
+			commit();
 	}
 	
 	public void setWatched(boolean flag, Integer season) {
-		if (!isNew()) {
-			SQLiteDatabase db = session.getDB();
-			db.beginTransaction();
-			try {
-				ContentValues cv = new ContentValues();
-				cv.put("watched", flag);
-				List<String> args = new ArrayList<String>();
-				String where = "series = ?";
-				args.add(tvdb_id);
-				if (season != null) {
-					where += " and season = ?";
-					args.add(season.toString());
-				}
-				String[] wargs = new String[args.size()];
-				wargs = args.toArray(wargs);
-				db.update("episode", cv, where, wargs);
-				db.setTransactionSuccessful();
-			} finally {
-				db.endTransaction();
-			}
-			if (!Title.ongoingServiceOperation) {
-				Intent si = new Intent(session.getContext(), Service.class);
-				si.setAction(Service.GDRIVE_BACKUP);
-				si.putExtra("what", Commons.GD.SER_SEEN);
-				//session.getContext().startService(si);
-				WakefulIntentService.sendWakefulWork(session.getContext(), si);
-			}
-			reloadEpisodes();
+		massUpd = true;
+		try {
+			for (Episode ep: episodes)
+				if (season == null || ep.season == season)
+					ep.setWatched(flag);
+		} finally {
+			massUpd = false;
 		}
-		Episode.setDirtyFlags(tvdb_id, season, null, flag);
-		if (isNew())
-			commit(Commons.GD.SER_SEEN);
+		if (!isValid())
+			refresh(true);
 		else
-			dispatch(OnTitleListener.READY, null);
-		session.driveQueue(Session.QUEUE_SERIES, tvdb_id + (season != null ? '.' + season.toString() : ""),
-			"watched", Boolean.toString(flag));
+			commit();
 	}
 	
 	public void setRating(int value) {
@@ -643,7 +594,7 @@ public class Series extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
+				commit();
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "rating", Integer.toString(rating));
 		}
 	}
@@ -654,7 +605,7 @@ public class Series extends Title {
 		if (!isValid())
 			refresh(true);
 		else
-			commit(inWatchlist() ? Commons.GD.SER_WLST : null);
+			commit();
 		session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
 	}
 	
@@ -666,7 +617,7 @@ public class Series extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
+				commit();
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -681,7 +632,7 @@ public class Series extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(inWatchlist() ? Commons.GD.SER_WLST : null);
+				commit();
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -774,6 +725,13 @@ public class Series extends Title {
 	public Episode nextEpisode() {
 		for (Episode ep: episodes)
 			if (ep.firstAired >= System.currentTimeMillis())
+				return ep;
+		return null;
+	}
+	
+	public Episode checkEpisode(int season, int episode) {
+		for (Episode ep: episodes)
+			if (ep.season == season && ep.episode == episode)
 				return ep;
 		return null;
 	}

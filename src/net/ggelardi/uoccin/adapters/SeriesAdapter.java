@@ -154,6 +154,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.box_epis.setVisibility(View.VISIBLE);
 			vh.box_2see.setVisibility(View.GONE);
 			vh.box_stat.setVisibility(View.GONE);
+			vh.txt_subs.setVisibility(View.GONE);
 			//
 			List<Episode> chk = new ArrayList<Episode>();
 			chk.add(ser.lastEpisode());

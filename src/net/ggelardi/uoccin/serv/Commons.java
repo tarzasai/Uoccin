@@ -59,13 +59,6 @@ public class Commons {
 		//public static final String FOLDER = "uoccin_test";
 		public static final String BACKUP = "uoccin.json";
 		//public static final String BACKUP = "uoccin_test.json";
-		
-		public static final String MOV_WLST = "movies.watchlist.json";
-		public static final String MOV_COLL = "movies.collected.json";
-		public static final String MOV_SEEN = "movies.watched.json";
-		public static final String SER_WLST = "series.watchlist.json";
-		public static final String SER_COLL = "series.collected.json";
-		public static final String SER_SEEN = "series.watched.json";
 	}
 	
 	public static class SN {

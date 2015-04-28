@@ -199,15 +199,26 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			case R.id.action_settings:
 				startActivity(new Intent(this, SettingsActivity.class));
 				return true;
-			case R.id.action_test_tvdb:
-				Intent t1 = new Intent(this, Service.class);
-				t1.setAction(Service.CHECK_TVDB_RSS);
-				WakefulIntentService.sendWakefulWork(this, t1);
+			/////////////////////////////////////////////////////
+			case R.id.action_test_clean:
+				WakefulIntentService.sendWakefulWork(this,
+					new Intent(this, Service.class).setAction(Service.CLEAN_DB_CACHE));
 				return true;
-			case R.id.action_test_drive:
-				Intent t2 = new Intent(this, Service.class);
-				t2.setAction(Service.GDRIVE_CHECK);
-				WakefulIntentService.sendWakefulWork(this, t2);
+			case R.id.action_test_gdsyn:
+				WakefulIntentService.sendWakefulWork(this,
+					new Intent(this, Service.class).setAction(Service.GDRIVE_SYNC));
+				return true;
+			case R.id.action_test_gdbak:
+				WakefulIntentService.sendWakefulWork(this,
+					new Intent(this, Service.class).setAction(Service.GDRIVE_BACKUP));
+				return true;
+			case R.id.action_test_gdres:
+				WakefulIntentService.sendWakefulWork(this,
+					new Intent(this, Service.class).setAction(Service.GDRIVE_RESTORE));
+				return true;
+			case R.id.action_test_tvdbn:
+				WakefulIntentService.sendWakefulWork(this,
+					new Intent(this, Service.class).setAction(Service.CHECK_TVDB_RSS));
 				return true;
 		}
 		return super.onOptionsItemSelected(item);

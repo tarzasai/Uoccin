@@ -92,7 +92,7 @@ public class Storage extends SQLiteOpenHelper {
 		"watchlist" + DT_FLG + CS +
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG + CS +
-		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + // UTC
+		"timestamp" + DT_INT + CC_NNU +
 		")";
 	
 	private static final String CREATE_TABLE_SERIES = "CREATE TABLE series (" +
@@ -116,7 +116,7 @@ public class Storage extends SQLiteOpenHelper {
 		"rating" + DT_INT + CS +
 		"tags" + DT_STR + CS +
 		"watchlist" + DT_FLG + CS +
-		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + // UTC
+		"timestamp" + DT_INT + CC_NNU +
 		")";
 	
 	private static final String CREATE_TABLE_EPISODES = "CREATE TABLE episode (" +
@@ -135,11 +135,11 @@ public class Storage extends SQLiteOpenHelper {
 		"subtitles" + DT_STR + CS +
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG + CS +
-		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" +
+		"timestamp" + DT_INT + CC_NNU +
 		")";
 	
 	public static final String CREATE_TABLE_QUEUEIN = "CREATE TABLE queue_in (" +
-		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS + // UTC
+		"timestamp" + DT_INT + CC_NNU + CS + // UTC
 		"target" + DT_STR + CC_NNU + " CHECK (target IN ('movie', 'series'))" + CS +
 		"title" + DT_STR + CC_NNU + CS +
 		"field" + DT_STR + CS +
@@ -147,7 +147,7 @@ public class Storage extends SQLiteOpenHelper {
 		")";
 	
 	public static final String CREATE_TABLE_QUEUEOUT = "CREATE TABLE queue_out (" +
-		"timestamp" + DT_INT + CC_NNU + " DEFAULT CURRENT_TIMESTAMP" + CS + // UTC
+		"timestamp" + DT_INT + CC_NNU + CS + // UTC
 		"target" + DT_STR + CC_NNU + " CHECK (target IN ('movie', 'series'))" + CS +
 		"title" + DT_STR + CC_NNU + CS +
 		"field" + DT_STR + CS +

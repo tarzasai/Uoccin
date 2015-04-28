@@ -209,7 +209,7 @@ public class Movie extends Title {
 		}
 		chk = Commons.XML.attrText(xml, "genre");
 		if (!TextUtils.isEmpty(chk)) {
-			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s")));
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s*")));
 			lst.removeAll(Arrays.asList("", null));
 			if (!Commons.sameStringLists(genres, lst)) {
 				genres = new ArrayList<String>(lst);
@@ -228,7 +228,7 @@ public class Movie extends Title {
 		}
 		chk = Commons.XML.attrText(xml, "writer");
 		if (!TextUtils.isEmpty(chk)) {
-			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s")));
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s*")));
 			lst.removeAll(Arrays.asList("", null));
 			if (!Commons.sameStringLists(writers, lst)) {
 				writers = new ArrayList<String>(lst);
@@ -237,7 +237,7 @@ public class Movie extends Title {
 		}
 		chk = Commons.XML.attrText(xml, "actors");
 		if (!TextUtils.isEmpty(chk)) {
-			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s")));
+			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s*")));
 			lst.removeAll(Arrays.asList("", null));
 			if (!Commons.sameStringLists(actors, lst)) {
 				actors = new ArrayList<String>(lst);
@@ -457,7 +457,7 @@ public class Movie extends Title {
 		}
 	}
 	
-	public final synchronized void commit(String what) {
+	public final synchronized void commit() {
 		if (!(isValid() && modified))
 			return;
 		dispatch(OnTitleListener.WORKING, null);
@@ -470,12 +470,6 @@ public class Movie extends Title {
 			Log.e(TAG, "commit", err);
 		} finally {
 			db.endTransaction();
-		}
-		if (modified && !Title.ongoingServiceOperation && what != null) {
-			Intent si = new Intent(session.getContext(), Service.class);
-			si.setAction(Service.GDRIVE_BACKUP);
-			si.putExtra("what", what);
-			WakefulIntentService.sendWakefulWork(session.getContext(), si);
 		}
 		modified = false;
 		dispatch(OnTitleListener.READY, null);
@@ -532,7 +526,7 @@ public class Movie extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(Commons.GD.MOV_WLST);
+				commit();
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "watchlist", Boolean.toString(watchlist));
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_mov : R.string.msg_wlst_del_mov);
 			msg = String.format(msg, name);
@@ -547,7 +541,7 @@ public class Movie extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(Commons.GD.MOV_COLL);
+				commit();
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "collected", Boolean.toString(collected));
 			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_mov : R.string.msg_coll_del_mov);
 			msg = String.format(msg, name);
@@ -562,7 +556,7 @@ public class Movie extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(Commons.GD.MOV_SEEN);
+				commit();
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "watched", Boolean.toString(watched));
 			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_mov : R.string.msg_seen_del_mov);
 			msg = String.format(msg, name);
@@ -579,7 +573,7 @@ public class Movie extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(Commons.GD.MOV_SEEN);
+				commit();
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "rating", Integer.toString(rating));
 		}
 	}
@@ -590,7 +584,7 @@ public class Movie extends Title {
 		if (!isValid())
 			refresh(true);
 		else
-			commit(inWatchlist() ? Commons.GD.MOV_WLST : null);
+			commit();
 		session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 	}
 	
@@ -602,7 +596,7 @@ public class Movie extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(inWatchlist() ? Commons.GD.MOV_WLST : null);
+				commit();
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -617,7 +611,7 @@ public class Movie extends Title {
 			if (!isValid())
 				refresh(true);
 			else
-				commit(inWatchlist() ? Commons.GD.MOV_WLST : null);
+				commit();
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();

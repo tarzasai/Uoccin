@@ -44,10 +44,9 @@ public class Receiver extends BroadcastReceiver {
 			NotificationCompat.Builder nb = makeNotification(session, null).setContentText(
 				intent.getExtras().getString("what"));
 			nm.notify(NOTIF_GENERAL_INFO, nb.build());
-		} else if (action.equals(Service.CLEAN_DB_CACHE) || action.equals(Service.GDRIVE_CHECK)) {
+		} else if (action.equals(Service.CLEAN_DB_CACHE) || action.equals(Service.GDRIVE_SYNC)) {
 			Intent si = new Intent(context, Service.class);
 			si.setAction(action);
-			//context.startService(si);
 			WakefulIntentService.sendWakefulWork(context, si);
 		}
 	}

@@ -122,7 +122,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_DAY,
 				AlarmManager.INTERVAL_HALF_DAY, tv);
 		// check Uoccin files changes in Drive every 15 mins
-		PendingIntent gd = mkPI(Service.GDRIVE_CHECK);
+		PendingIntent gd = mkPI(Service.GDRIVE_SYNC);
 		am.cancel(gd);
 		if (driveSyncEnabled())
 			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
@@ -262,6 +262,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		if (!driveSyncEnabled())
 			return;
 		ContentValues cv = new ContentValues();
+		cv.put("timestamp", System.currentTimeMillis());
 		cv.put("target", target);
 		cv.put("title", title);
 		cv.put("field", field);
