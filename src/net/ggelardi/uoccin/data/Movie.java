@@ -21,7 +21,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -60,7 +59,6 @@ public class Movie extends Title {
 	public int imdbVotes;
 	public List<String> subtitles = new ArrayList<String>();
 	public long timestamp = 0;
-	public boolean modified = false;
 	
 	public Movie(Context context, String imdb_id) {
 		this.session = Session.getInstance(context);
@@ -77,6 +75,10 @@ public class Movie extends Title {
 		cache.add(imdb_id, res);
 		res.reload();
 		return res;
+	}
+	
+	public static void drop() {
+		cache.clear();
 	}
 	
 	public static Movie get(Context context, String imdb_id) {
@@ -153,32 +155,7 @@ public class Movie extends Title {
 	}
 	
 	protected void load(Element xml) {
-		
-		/*
-<?xml version="1.0" encoding="UTF-8"?>
-<root response="True">
-	<movie title="The Terminator"
-			year="1984"
-			rated="R"
-			released="26 Oct 1984"
-			runtime="107 min"
-			genre="Action, Sci-Fi"
-			director="James Cameron"
-			writer="James Cameron, Gale Anne Hurd, William Wisher Jr. (additional dialogue)"
-			actors="Arnold Schwarzenegger, Michael Biehn, Linda Hamilton, Paul Winfield"
-			plot="A cyborg is sent from the future on a deadly mission. He has to kill Sarah Connor, a young woman whose life will have a great significance in years to come. Sarah has only one protector - Kyle Reese - also sent from the future. The Terminator uses his exceptional intelligence and strength to find Sarah, but is there any way to stop the seemingly indestructible cyborg ?"
-			language="English, Spanish"
-			country="UK, USA"
-			awards="5 wins &amp; 6 nominations."
-			poster="http://ia.media-imdb.com/images/M/MV5BODE1MDczNTUxOV5BMl5BanBnXkFtZTcwMTA0NDQyNA@@._V1_SX300.jpg"
-			metascore="84"
-			imdbRating="8.1"
-			imdbVotes="494,132"
-			imdbID="tt0088247"
-			type="movie"/>
-</root>
-		*/
-		
+		boolean modified = false;
 		String chk;
 		chk = Commons.XML.attrText(xml, "title", "Title");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) || !name.equals(chk))) {
@@ -301,7 +278,7 @@ public class Movie extends Title {
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				double r = Double.parseDouble(chk);
-				if (r > 0 && r != imdbRating) {
+				if (r > 0 && (imdbRating == null || r != imdbRating)) {
 					imdbRating = r;
 					modified = true;
 				}
@@ -321,7 +298,9 @@ public class Movie extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
-		
+		//
+		if (modified)
+			save(true);
 	}
 	
 	protected void load(Cursor cr) {
@@ -389,41 +368,132 @@ public class Movie extends Title {
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
 	}
 	
-	protected void save(boolean isnew) {
+	protected void save(boolean metadata) {
+		dispatch(OnTitleListener.WORKING, null);
+		
 		Log.v(TAG, "Saving movie " + imdb_id);
 		
 		ContentValues cv = new ContentValues();
-		cv.put("name", name);
-		cv.put("year", year);
-		cv.put("plot", plot);
-		cv.put("poster", poster);
-		cv.put("genres", TextUtils.join(",", genres));
-		cv.put("language", language);
-		cv.put("director", director);
-		cv.put("writers", TextUtils.join(",", writers));
-		cv.put("actors", TextUtils.join(",", actors));
-		cv.put("country", country);
-		cv.put("released", released);
-		cv.put("runtime", runtime);
-		cv.put("rated", rated);
-		cv.put("awards", awards);
-		cv.put("metascore", metascore);
-		cv.put("imdbRating", imdbRating);
-		cv.put("imdbVotes", imdbVotes);
-		cv.put("rating", rating);
-		cv.put("tags", TextUtils.join(",", tags));
-		cv.put("subtitles", TextUtils.join(",", subtitles));
+		
+		cv.put("imdb_id", imdb_id);
+		
+		if (!TextUtils.isEmpty(name))
+			cv.put("name", name);
+		else
+			cv.putNull("name");
+		
+		if (year > 0)
+			cv.put("year", year);
+		else
+			cv.putNull("year");
+		
+		if (!TextUtils.isEmpty(plot))
+			cv.put("plot", plot);
+		else
+			cv.putNull("plot");
+		
+		if (!TextUtils.isEmpty(poster))
+			cv.put("poster", poster);
+		else
+			cv.putNull("poster");
+		
+		if (!genres.isEmpty())
+			cv.put("genres", TextUtils.join(",", genres));
+		else
+			cv.putNull("genres");
+		
+		if (!TextUtils.isEmpty(language))
+			cv.put("language", language);
+		else
+			cv.putNull("language");
+		
+		if (!TextUtils.isEmpty(director))
+			cv.put("director", director);
+		else
+			cv.putNull("director");
+		
+		if (!writers.isEmpty())
+			cv.put("writers", TextUtils.join(",", writers));
+		else
+			cv.putNull("writers");
+		
+		if (!actors.isEmpty())
+			cv.put("actors", TextUtils.join(",", actors));
+		else
+			cv.putNull("actors");
+		
+		if (!TextUtils.isEmpty(country))
+			cv.put("country", country);
+		else
+			cv.putNull("country");
+		
+		if (released > 0)
+			cv.put("released", released);
+		else
+			cv.putNull("released");
+		
+		if (runtime > 0)
+			cv.put("runtime", runtime);
+		else
+			cv.putNull("runtime");
+		
+		if (!TextUtils.isEmpty(rated))
+			cv.put("rated", rated);
+		else
+			cv.putNull("rated");
+		
+		if (!TextUtils.isEmpty(awards))
+			cv.put("awards", awards);
+		else
+			cv.putNull("awards");
+		
+		if (metascore > 0)
+			cv.put("metascore", metascore);
+		else
+			cv.putNull("metascore");
+		
+		if (imdbRating != null && imdbRating > 0)
+			cv.put("imdbRating", imdbRating);
+		else
+			cv.putNull("imdbRating");
+		
+		if (imdbVotes > 0)
+			cv.put("imdbVotes", imdbVotes);
+		else
+			cv.putNull("imdbVotes");
+		
+		if (rating > 0)
+			cv.put("rating", rating);
+		else
+			cv.putNull("rating");
+		
+		if (!tags.isEmpty())
+			cv.put("tags", TextUtils.join(",", tags));
+		else
+			cv.putNull("tags");
+		
+		if (!subtitles.isEmpty())
+			cv.put("subtitles", TextUtils.join(",", subtitles));
+		else
+			cv.putNull("subtitles");
+		
 		cv.put("watchlist", watchlist);
 		cv.put("collected", collected);
 		cv.put("watched", watched);
-		timestamp = System.currentTimeMillis();
-		cv.put("timestamp", timestamp);
 		
-		if (isnew) {
-			cv.put("imdb_id", imdb_id);
+		boolean isnew = timestamp <= 0;
+		if (isnew || metadata) {
+			timestamp = System.currentTimeMillis();
+			cv.put("timestamp", timestamp);
+		}
+		if (isnew)
 			session.getDB().insertOrThrow(TABLE, null, cv);
-		} else
+		else
 			session.getDB().update(TABLE, cv, "imdb_id=?", new String[] { imdb_id });
+		
+		Log.i(TAG, "Saved movie " + imdb_id);
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	protected void delete() {
@@ -455,24 +525,6 @@ public class Movie extends Title {
 			si.putExtra("imdb_id", imdb_id);
 			WakefulIntentService.sendWakefulWork(session.getContext(), si);
 		}
-	}
-	
-	public final synchronized void commit() {
-		if (!(isValid() && modified))
-			return;
-		dispatch(OnTitleListener.WORKING, null);
-		SQLiteDatabase db = session.getDB();
-		db.beginTransaction();
-		try {
-			save(isNew());
-			db.setTransactionSuccessful();
-		} catch (Exception err) {
-			Log.e(TAG, "commit", err);
-		} finally {
-			db.endTransaction();
-		}
-		modified = false;
-		dispatch(OnTitleListener.READY, null);
 	}
 	
 	public boolean isValid() {
@@ -522,11 +574,10 @@ public class Movie extends Title {
 	public void setWatchlist(boolean value) {
 		if (value != watchlist) {
 			watchlist = value;
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "watchlist", Boolean.toString(watchlist));
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_mov : R.string.msg_wlst_del_mov);
 			msg = String.format(msg, name);
@@ -537,11 +588,10 @@ public class Movie extends Title {
 	public void setCollected(boolean value) {
 		if (value != collected) {
 			collected = value;
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "collected", Boolean.toString(collected));
 			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_mov : R.string.msg_coll_del_mov);
 			msg = String.format(msg, name);
@@ -552,11 +602,10 @@ public class Movie extends Title {
 	public void setWatched(boolean value) {
 		if (value != watched) {
 			watched = value;
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "watched", Boolean.toString(watched));
 			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_mov : R.string.msg_seen_del_mov);
 			msg = String.format(msg, name);
@@ -569,22 +618,20 @@ public class Movie extends Title {
 			watchlist = false;
 			watched = true;
 			rating = value;
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "rating", Integer.toString(rating));
 		}
 	}
 	
 	public void setTags(String[] values) {
 		tags = new ArrayList<String>(Arrays.asList(values));
-		modified = true;
-		if (!isValid())
-			refresh(true);
+		if (isValid())
+			save(false);
 		else
-			commit();
+			refresh(true);
 		session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 	}
 	
@@ -592,11 +639,10 @@ public class Movie extends Title {
 		tag = tag.toLowerCase(Locale.getDefault());
 		if (!hasTag(tag)) {
 			tags.add(tag);
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -607,11 +653,10 @@ public class Movie extends Title {
 		tag = tag.toLowerCase(Locale.getDefault());
 		if (hasTag(tag)) {
 			tags.remove(tag);
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();

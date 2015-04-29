@@ -3,6 +3,7 @@ package net.ggelardi.uoccin.data;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -63,7 +64,6 @@ public class Series extends Title {
 	public String banner;
 	public String fanart;
 	public long timestamp = 0;
-	public boolean modified = false;
 	
 	public Series(Context context, String tvdb_id) {
 		this.session = Session.getInstance(context);
@@ -83,6 +83,10 @@ public class Series extends Title {
 		return res;
 	}
 	
+	public static void drop() {
+		cache.clear();
+	}
+	
 	public static Series get(Context context, String tvdb_id) {
 		Series res = Series.getInstance(context, tvdb_id);
 		if (res.isOld())
@@ -90,11 +94,10 @@ public class Series extends Title {
 		return res;
 	}
 	
-	public static Series get(Context context, Element xml) {
+	public static Series get(Context context, Element xml, NodeList episodes) {
 		String tvdb_id = xml.getElementsByTagName("id").item(0).getTextContent();
 		Series res = Series.getInstance(context, tvdb_id);
-		res.load(xml);
-		// no commit here
+		res.load(xml, episodes);
 		return res;
 	}
 	
@@ -122,7 +125,7 @@ public class Series extends Title {
 			for (int i = 0; i < lst.getLength(); i++) {
 				// for non-english requests the search API can returns the translated version (if exists) AND the
 				// english version of each series...
-				series = Series.get(context, (Element)lst.item(i));
+				series = Series.get(context, (Element)lst.item(i), null);
 				if (!ids.contains(series.tvdb_id)) {
 					res.add(series);
 					ids.add(series.tvdb_id);
@@ -145,39 +148,40 @@ public class Series extends Title {
 		return res;
 	}
 	
-	protected void load(Element xml) {
+	protected void load(Element serxml, NodeList epsxml) {
+		boolean modified = false;
 		String chk;
-		String lang = Commons.XML.nodeText(xml, "language", "Language");
+		String lang = Commons.XML.nodeText(serxml, "language", "Language");
 		if (!TextUtils.isEmpty(lang)) {
-			chk = Commons.XML.nodeText(xml, "SeriesName");
+			chk = Commons.XML.nodeText(serxml, "SeriesName");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) ||
 				(!name.equals(chk) && lang.equals(session.language())))) {
 				name = chk;
 				modified = true;
 			}
-			chk = Commons.XML.nodeText(xml, "Overview");
+			chk = Commons.XML.nodeText(serxml, "Overview");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(plot) ||
 				(!plot.equals(chk) && lang.equals(session.language())))) {
 				plot = chk;
 				modified = true;
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "poster");
+		chk = Commons.XML.nodeText(serxml, "poster");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
 			poster = "http://thetvdb.com/banners/" + chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "banner");
+		chk = Commons.XML.nodeText(serxml, "banner");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(banner) || !banner.equals(chk))) {
 			banner = "http://thetvdb.com/banners/" + chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "fanart");
+		chk = Commons.XML.nodeText(serxml, "fanart");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(fanart) || !fanart.equals(chk))) {
 			fanart = "http://thetvdb.com/banners/" + chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "Genre");
+		chk = Commons.XML.nodeText(serxml, "Genre");
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split("[\\x7C]")));
 			lst.removeAll(Arrays.asList("", null));
@@ -186,7 +190,7 @@ public class Series extends Title {
 				modified = true;
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "Actors");
+		chk = Commons.XML.nodeText(serxml, "Actors");
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split("[\\x7C]")));
 			lst.removeAll(Arrays.asList("", null));
@@ -195,22 +199,22 @@ public class Series extends Title {
 				modified = true;
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "IMDB_ID");
+		chk = Commons.XML.nodeText(serxml, "IMDB_ID");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(imdb_id) || !imdb_id.equals(chk))) {
 			imdb_id = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "Status");
+		chk = Commons.XML.nodeText(serxml, "Status");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(status) || !status.equals(chk))) {
 			status = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "Network");
+		chk = Commons.XML.nodeText(serxml, "Network");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(network) || !network.equals(chk))) {
 			network = chk;
 			modified = true;
 		}
-		chk = Commons.XML.nodeText(xml, "FirstAired");
+		chk = Commons.XML.nodeText(serxml, "FirstAired");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				long t = Commons.SDF.eng("yyyy-MM-dd").parse(chk).getTime();
@@ -223,7 +227,7 @@ public class Series extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "Airs_DayOfWeek");
+		chk = Commons.XML.nodeText(serxml, "Airs_DayOfWeek");
 		if (!TextUtils.isEmpty(chk)) {
 			int d = Commons.SDF.day(chk);
 			if (d > 0) {
@@ -231,9 +235,9 @@ public class Series extends Title {
 				modified = true;
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "Airs_Time");
+		chk = Commons.XML.nodeText(serxml, "Airs_Time");
 		if (!TextUtils.isEmpty(chk)) {
-			if (!chk.contains("M")) {
+			if (!chk.toLowerCase(Locale.getDefault()).contains("m")) {
 				try {
 					long t = Commons.SDF.eng("HH:mm").parse(chk).getTime();
 					if (t > 0) {
@@ -263,7 +267,7 @@ public class Series extends Title {
 				}
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "Runtime");
+		chk = Commons.XML.nodeText(serxml, "Runtime");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				int r = Integer.parseInt(chk);
@@ -275,10 +279,38 @@ public class Series extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
-		chk = Commons.XML.nodeText(xml, "ContentRating");
+		chk = Commons.XML.nodeText(serxml, "ContentRating");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(rated) || !rated.equals(chk))) {
 			rated = chk;
 			modified = true;
+		}
+		SQLiteDatabase db = session.getDB();
+		db.beginTransaction();
+		try {
+			if (modified)
+				save(true);
+			if (epsxml != null && epsxml.getLength() > 0) {
+				episodes.clear();
+				Episode.drop(tvdb_id, null, null);
+				lastseason = 0;
+				Episode ep;
+				for (int i = 0; i < epsxml.getLength(); i++) {
+					ep = Episode.get(session.getContext(), (Element) epsxml.item(i));
+					if (ep != null) {
+						if (ep.season > lastseason)
+							lastseason = ep.season;
+						if (!episodes.contains(ep))
+							episodes.add(ep);
+					}
+				}
+				if (lastseason > 0)
+					db.delete("episode", "series = ? and season > ?",
+						new String[] { tvdb_id, Integer.toString(lastseason) });
+				Collections.sort(episodes, new Episode.EpisodeComparator());
+			}
+			db.setTransactionSuccessful();
+		} finally {
+			db.endTransaction();
 		}
 	}
 	
@@ -340,91 +372,119 @@ public class Series extends Title {
 			tags = Arrays.asList(cr.getString(ci).split(","));
 		watchlist = cr.getInt(cr.getColumnIndex("watchlist")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
-		reloadEpisodes();
 		Log.v(TAG, "Loaded series " + tvdb_id);
 	}
 	
-	protected void save(boolean isnew) {
+	protected void save(boolean metadata) {
+		dispatch(OnTitleListener.WORKING, null);
+		
 		Log.d(TAG, "Saving series " + tvdb_id);
+		
 		ContentValues cv = new ContentValues();
+		
 		cv.put("tvdb_id", tvdb_id);
 		cv.put("name", name);
+		
 		if (year > 0)
 			cv.put("year", year);
 		else
 			cv.putNull("year");
+		
 		if (!TextUtils.isEmpty(plot))
 			cv.put("plot", plot);
 		else
 			cv.putNull("plot");
+		
 		if (!TextUtils.isEmpty(poster))
 			cv.put("poster", poster);
 		else
 			cv.putNull("poster");
+		
 		if (!genres.isEmpty())
 			cv.put("genres", TextUtils.join(",", genres));
 		else
 			cv.putNull("genres");
+		
 		if (!actors.isEmpty())
 			cv.put("actors", TextUtils.join(",", actors));
 		else
 			cv.putNull("actors");
+		
 		if (!TextUtils.isEmpty(imdb_id))
 			cv.put("imdb_id", imdb_id);
 		else
 			cv.putNull("imdb_id");
+		
 		if (!TextUtils.isEmpty(status))
 			cv.put("status", status);
 		else
 			cv.putNull("status");
+		
 		if (!TextUtils.isEmpty(network))
 			cv.put("network", network);
 		else
 			cv.putNull("network");
+		
 		if (firstAired > 0)
 			cv.put("firstAired", firstAired);
 		else
 			cv.putNull("firstAired");
+		
 		if (airsDay > 0)
 			cv.put("airsDay", airsDay);
 		else
 			cv.putNull("airsDay");
+		
 		if (airsTime > 0)
 			cv.put("airsTime", airsTime);
 		else
 			cv.putNull("airsTime");
+		
 		if (runtime > 0)
 			cv.put("runtime", runtime);
 		else
 			cv.putNull("runtime");
+		
 		if (!TextUtils.isEmpty(rated))
 			cv.put("rated", rated);
 		else
 			cv.putNull("rated");
+		
 		if (!TextUtils.isEmpty(banner))
 			cv.put("banner", banner);
 		else
 			cv.putNull("banner");
+		
 		if (!TextUtils.isEmpty(fanart))
 			cv.put("fanart", fanart);
 		else
 			cv.putNull("fanart");
+		
 		if (rating > 0)
 			cv.put("rating", rating);
 		else
 			cv.putNull("rating");
+		
 		if (!tags.isEmpty())
 			cv.put("tags", TextUtils.join(",", tags));
 		else
 			cv.putNull("tags");
+		
 		cv.put("watchlist", watchlist);
-		timestamp = System.currentTimeMillis();
-		cv.put("timestamp", timestamp);
+		
+		boolean isnew = timestamp <= 0;
+		if (isnew || metadata) {
+			timestamp = System.currentTimeMillis();
+			cv.put("timestamp", timestamp);
+		}
 		if (isnew)
 			session.getDB().insertOrThrow(TABLE, null, cv);
 		else
 			session.getDB().update(TABLE, cv, "tvdb_id=?", new String[] { tvdb_id });
+		
 		Log.i(TAG, "Saved series " + tvdb_id);
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	protected void delete() {
@@ -445,14 +505,9 @@ public class Series extends Title {
 		} finally {
 			cur.close();
 		}
-		dispatch(OnTitleListener.READY, null);
-	}
-	
-	public synchronized void reloadEpisodes() {
-		dispatch(OnTitleListener.WORKING, null);
 		episodes = Episode.get(session.getContext(), "select series, season, episode from episode " +
 			"where series = ? order by season, episode", new String[] { tvdb_id });
-		lastseason = episodes.get(episodes.size()-1).season;
+		lastseason = episodes.size() > 0 ? episodes.get(episodes.size()-1).season : 0;
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -467,6 +522,7 @@ public class Series extends Title {
 		}
 	}
 	
+	/*
 	public final synchronized void commit() {
 		if (!isValid())
 			return;
@@ -476,7 +532,7 @@ public class Series extends Title {
 		db.beginTransaction();
 		try {
 			if (modified || isOld()) {
-				save(isNew());
+				save(isNew(), false);
 				changes++;
 			}
 			for (Episode ep: episodes)
@@ -505,6 +561,7 @@ public class Series extends Title {
 			reloadEpisodes();
 		dispatch(OnTitleListener.READY, null);
 	}
+	*/
 	
 	public boolean isValid() {
 		return !(TextUtils.isEmpty(tvdb_id) || TextUtils.isEmpty(name) || episodes == null || episodes.isEmpty());
@@ -545,11 +602,10 @@ public class Series extends Title {
 	public void setWatchlist(boolean value) {
 		if (value != watchlist) {
 			watchlist = value;
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "watchlist", Boolean.toString(watchlist));
 			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_ser : R.string.msg_wlst_del_ser);
 			msg = String.format(msg, name);
@@ -566,10 +622,10 @@ public class Series extends Title {
 		} finally {
 			massUpd = false;
 		}
-		if (!isValid())
-			refresh(true);
+		if (isValid())
+			save(false);
 		else
-			commit();
+			refresh(true);
 	}
 	
 	public void setWatched(boolean flag, Integer season) {
@@ -581,31 +637,29 @@ public class Series extends Title {
 		} finally {
 			massUpd = false;
 		}
-		if (!isValid())
-			refresh(true);
+		if (isValid())
+			save(false);
 		else
-			commit();
+			refresh(true);
 	}
 	
 	public void setRating(int value) {
 		if (value != rating) {
 			rating = value;
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "rating", Integer.toString(rating));
 		}
 	}
 	
 	public void setTags(String[] values) {
 		tags = new ArrayList<String>(Arrays.asList(values));
-		modified = true;
-		if (!isValid())
-			refresh(true);
+		if (isValid())
+			save(false);
 		else
-			commit();
+			refresh(true);
 		session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
 	}
 	
@@ -613,11 +667,10 @@ public class Series extends Title {
 		tag = tag.toLowerCase(Locale.getDefault());
 		if (!hasTag(tag)) {
 			tags.add(tag);
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -628,11 +681,10 @@ public class Series extends Title {
 		tag = tag.toLowerCase(Locale.getDefault());
 		if (hasTag(tag)) {
 			tags.remove(tag);
-			modified = true;
-			if (!isValid())
-				refresh(true);
+			if (isValid())
+				save(false);
 			else
-				commit();
+				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), tag);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();

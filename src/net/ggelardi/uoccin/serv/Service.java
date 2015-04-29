@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -126,10 +125,10 @@ public class Service extends WakefulIntentService {
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			db.delete("movie", "watchlist = 0 and collected = 0 and watched = 0", null);
-			db.execSQL("update movie set subtitles = null where subtitles = ''");
+			db.execSQL("delete from movie where watchlist = 0 and collected = 0 and watched = 0");
 			db.execSQL("delete from series where watchlist = 0 and not tvdb_id in " +
 				"(select distinct series from episode where collected = 1 or watched = 1)");
+			db.execSQL("update movie set subtitles = null where subtitles = ''");
 			db.execSQL("update episode set subtitles = null where subtitles = ''");
 			db.setTransactionSuccessful();
 		} finally {
@@ -167,11 +166,6 @@ public class Service extends WakefulIntentService {
 			return;
 		}
 		Movie.get(this, (Element) doc.getElementsByTagName("movie").item(0));
-		if (forceCommit || !mov.isNew() || mov.inWatchlist() || mov.inCollection() || mov.isWatched() ||
-			mov.getRating() > 0 || mov.hasTags())
-			mov.commit();
-		else
-			Series.dispatch(OnTitleListener.READY, null);
 	}
 	
 	private void refreshSeries(String tvdb_id, boolean forceRefresh, boolean forceCommit) {
@@ -188,7 +182,8 @@ public class Service extends WakefulIntentService {
 				sendNotification(err);
 			return;
 		}
-		Series.get(this, (Element) doc.getElementsByTagName("Series").item(0));
+		Series.get(this, (Element) doc.getElementsByTagName("Series").item(0), doc.getElementsByTagName("Episode"));
+		/*
 		// episodes
 		int eps2save = 0;
 		ser.lastseason = 0;
@@ -212,6 +207,7 @@ public class Service extends WakefulIntentService {
 			ser.commit();
 		else
 			Series.dispatch(OnTitleListener.READY, null);
+		*/
 	}
 	
 	private void refreshEpisode(String series, int season, int episode) {
@@ -228,9 +224,6 @@ public class Service extends WakefulIntentService {
 				sendNotification(err);
 			return;
 		}
-		epi = Episode.get(this, (Element) doc.getElementsByTagName("Episode").item(0));
-		if (epi != null)
-			epi.commit();
 	}
 	
 	private void checkTVdbNews() throws Exception {
@@ -398,7 +391,6 @@ public class Service extends WakefulIntentService {
 				db.update(table, cv, where, args.toArray(new String[args.size()]));
 				Series ser = Series.get(this, parts[0]);
 				ser.reload();
-				ser.reloadEpisodes();
 			}
 		} catch (Exception err) {
 			Log.e(TAG, "Error on command " + Long.toString(id), err);
@@ -569,122 +561,93 @@ public class Service extends WakefulIntentService {
 			UFile file = genson.deserialize(content, UFile.class);
 			db.beginTransaction();
 			try {
+				ContentValues cv;
 				// movies
-				ContentValues cv = new ContentValues();
-				cv.put("watchlist", 0);
-				cv.put("collected", 0);
-				cv.put("watched", 0);
-				cv.putNull("rating");
-				cv.putNull("tags");
-				cv.putNull("subtitles");
-				db.update("movie", cv, null, null);
+				db.delete("movie", null, null);
 				UMovie umo;
 				for (String imdb_id: file.movies.keySet()) {
-					checkRestoreMovie(imdb_id);
 					umo = file.movies.get(imdb_id);
 					cv = new ContentValues();
+					cv.put("imdb_id", imdb_id);
+					cv.put("name", umo.name);
 					cv.put("watchlist", umo.watchlist);
 					cv.put("collected", umo.collected);
 					cv.put("watched", umo.watched);
-					if (umo.rating <= 0)
-						cv.putNull("rating");
-					else
+					cv.put("timestamp", 1);
+					if (umo.rating > 0)
 						cv.put("rating", umo.rating);
-					if (umo.tags == null || umo.tags.length <= 0)
-						cv.putNull("tags");
-					else
+					if (umo.tags != null && umo.tags.length > 0)
 						cv.put("tags", TextUtils.join(",", umo.tags));
-					if (umo.subtitles == null || umo.subtitles.length <= 0)
-						cv.putNull("subtitles");
-					else
+					if (umo.subtitles != null && umo.subtitles.length > 0)
 						cv.put("subtitles", TextUtils.join(",", umo.subtitles));
-					db.update("movie", cv, "imdb_id = ?", new String[] { imdb_id });
-					Movie.get(this, imdb_id).reload();
+					db.insertOrThrow("movie", null, cv);
 				}
 				// series
-				cv = new ContentValues();
-				cv.put("watchlist", 0);
-				cv.putNull("rating");
-				cv.putNull("tags");
-				db.update("series", cv, null, null);
-				cv = new ContentValues();
-				cv.put("collected", 0);
-				cv.put("watched", 0);
-				cv.putNull("subtitles");
-				db.update("episode", cv, null, null);
+				db.delete("series", null, null);
 				USeries use;
 				Series ser;
-				String[] subs;
+				List<String> chk;
+				//String[] subs;
 				for (String tvdb_id: file.series.keySet()) {
-					checkRestoreSeries(tvdb_id, null, null);
 					use = file.series.get(tvdb_id);
 					cv = new ContentValues();
+					cv.put("tvdb_id", tvdb_id);
+					cv.put("name", use.name);
 					cv.put("watchlist", use.watchlist);
-					if (use.rating <= 0)
-						cv.putNull("rating");
-					else
+					if (use.rating > 0)
 						cv.put("rating", use.rating);
-					if (use.tags == null || use.tags.length <= 0)
-						cv.putNull("tags");
-					else
+					if (use.tags != null && use.tags.length > 0)
 						cv.put("tags", TextUtils.join(",", use.tags));
-					db.update("series", cv, "tvdb_id = ?", new String[] { tvdb_id });
+					cv.put("timestamp", 1);
+					db.insertOrThrow("series", null, cv);
 					// episodes
-					ser = Series.get(this, tvdb_id);
-					ser.reload();
-					ser.reloadEpisodes();
-					int changes = 0;
+					chk = new ArrayList<String>();
 					Map<String, String[]> smap;
 					for (String season: use.collected.keySet()) {
-						int sno = Integer.parseInt(season);
 						smap = use.collected.get(season);
 						for (String episode: smap.keySet()) {
-							int eno = Integer.parseInt(episode);
-							if (ser.checkEpisode(sno, eno) != null) {
-								cv = new ContentValues();
-								cv.put("collected", true);
-								Object[] chk = smap.get(episode);
-								if (chk != null && chk.length > 0) {
-									/*
-									subs = smap.get(episode);
-									cv.put("subtitles", TextUtils.join(",", subs));
-									*/
-									cv.put("subtitles", TextUtils.join(",", smap.get(episode)));
-								}
-								db.update("episode", cv, "series = ? and season = ? and episode = ?",
-									new String[] { tvdb_id, season, episode });
-								changes++;
+							cv = new ContentValues();
+							cv.put("series", tvdb_id);
+							cv.put("season", Integer.parseInt(season));
+							cv.put("episode", Integer.parseInt(episode));
+							cv.put("collected", true);
+							Object[] tmp = smap.get(episode);
+							if (tmp != null && tmp.length > 0) {
+								/*
+								subs = smap.get(episode);
+								cv.put("subtitles", TextUtils.join(",", subs));
+								*/
+								cv.put("subtitles", TextUtils.join(",", smap.get(episode)));
 							}
+							cv.put("timestamp", 1);
+							db.insertOrThrow("episode", null, cv);
+							chk.add(season + "|" + episode);
 						}
 					}
-					for (String season: use.watched.keySet()) {
-						int sno = Integer.parseInt(season);
-						for (Integer eno: use.watched.get(season)) {
-							if (ser.checkEpisode(sno, eno) != null) {
-								cv = new ContentValues();
-								cv.put("watched", true);
+					for (String season: use.watched.keySet())
+						for (Integer episode: use.watched.get(season)) {
+							cv = new ContentValues();
+							cv.put("series", tvdb_id);
+							cv.put("season", Integer.parseInt(season));
+							cv.put("episode", episode);
+							cv.put("watched", true);
+							if (!chk.contains(season + "|" + episode.toString())) {
+								cv.put("timestamp", 1);
+								db.insertOrThrow("episode", null, cv);
+							} else
 								db.update("episode", cv, "series = ? and season = ? and episode = ?",
-									new String[] { tvdb_id, season, eno.toString() });
-								changes++;
-							}
+									new String[] { tvdb_id, season, episode.toString() });
 						}
-					}
-					/*if (changes > 0)
-						ser.reloadEpisodes();*/
 				}
 				db.delete("queue_out", null, null);
 				db.setTransactionSuccessful();
 			} finally {
 				db.endTransaction();
 			}
-			
-			for (Movie mov: Movie.cached())
-				mov.reload();
-			for (Series ser: Series.cached()) {
-				ser.reload();
-				ser.reloadEpisodes();
-			}
-			
+			Movie.drop();
+			Series.drop();
+			Episode.drop();
+			Title.dispatch(OnTitleListener.READY, null);
 		} catch (Exception err) {
 			Log.e(TAG, "driveRestore", err);
 			throw err;

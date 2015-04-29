@@ -107,7 +107,7 @@ public class SeriesInfoFragment extends BaseFragment {
 					setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							series.setCollected(flag, -1);
+							series.setCollected(flag, null);
 							txt_coll.startAnimation(blink);
 						}
 					}).show();
@@ -124,7 +124,7 @@ public class SeriesInfoFragment extends BaseFragment {
 					setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							series.setWatched(flag, -1);
+							series.setWatched(flag, null);
 							txt_seen.startAnimation(blink);
 						}
 					}).show();

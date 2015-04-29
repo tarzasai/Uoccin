@@ -51,7 +51,7 @@ public class Episode extends Title {
 	public String imdb_id;
 	public List<String> subtitles = new ArrayList<String>();
 	public long timestamp = 0;
-	public boolean modified = false;
+	//public boolean modified = false;
 	
 	public Episode(Context context, String series, int season, int episode) {
 		this.session = Session.getInstance(context);
@@ -79,6 +79,24 @@ public class Episode extends Title {
 			cur.close();
 		}
 		return res;
+	}
+	
+	public static void drop() {
+		cache.clear();
+	}
+	
+	public static synchronized void drop(String series, Integer season, Integer episode) {
+		Object tmp;
+		Episode ep;
+		for (String k: cache.getKeys()) {
+			tmp = cache.get(k);
+			if (tmp != null) {
+				ep = (Episode) tmp;
+				if (ep.series.equals(series) && (season == null || ep.season == season) &&
+					(episode == null || ep.episode == episode))
+					cache.del(k);
+			}
+		}
 	}
 	
 	public static Episode get(Context context, String series, int season, int episode) {
@@ -128,20 +146,6 @@ public class Episode extends Title {
 		return res;
 	}
 	
-	public static synchronized void drop(String series, Integer season, Integer episode) {
-		Object tmp;
-		Episode ep;
-		for (String k: cache.getKeys()) {
-			tmp = cache.get(k);
-			if (tmp != null) {
-				ep = (Episode) tmp;
-				if (ep.series.equals(series) && (season == null || ep.season == season) &&
-					(episode == null || ep.episode == episode))
-					cache.del(k);
-			}
-		}
-	}
-	
 	public static List<Episode> cached(String series, int season) {
 		List<Episode> res = new ArrayList<Episode>();
 		String chk = series + ".";
@@ -178,6 +182,7 @@ public class Episode extends Title {
 	}
 	
 	protected void load(Element xml) {
+		boolean modified = false;
 		String chk;
 		chk = Commons.XML.nodeText(xml, "seriesid");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(series) || !series.equals(chk))) {
@@ -278,6 +283,9 @@ public class Episode extends Title {
 				modified = true;
 			}
 		}
+		//
+		if (modified)
+			save(true);
 	}
 
 	protected void load(Cursor cr) {
@@ -320,7 +328,9 @@ public class Episode extends Title {
 		Log.v(TAG, "Loaded episode " + eid());
 	}
 	
-	protected void save(boolean isnew) {
+	protected void save(boolean metadata) {
+		dispatch(OnTitleListener.WORKING, null);
+		
 		Log.d(TAG, "Saving episode " + eid());
 		ContentValues cv = new ContentValues();
 		cv.put("tvdb_id", tvdb_id);
@@ -365,13 +375,19 @@ public class Episode extends Title {
 			cv.putNull("subtitles");
 		cv.put("collected", collected);
 		cv.put("watched", watched);
-		timestamp = System.currentTimeMillis();
-		cv.put("timestamp", timestamp);
+		
+		boolean isnew = timestamp <= 0;
+		if (isnew || metadata) {
+			timestamp = System.currentTimeMillis();
+			cv.put("timestamp", timestamp);
+		}
 		if (isnew)
 			session.getDB().insertOrThrow(TABLE, null, cv);
 		else
 			session.getDB().update(TABLE, cv, "tvdb_id=?", new String[] { tvdb_id });
 		Log.i(TAG, "Saved episode " + eid());
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	protected void delete() {
@@ -398,11 +414,6 @@ public class Episode extends Title {
 			//session.getContext().startService(si);
 			WakefulIntentService.sendWakefulWork(session.getContext(), si);
 		}
-	}
-	
-	public final void commit() {
-		if (isValid())
-			getSeries().commit();
 	}
 	
 	public boolean isValid() {
@@ -438,36 +449,34 @@ public class Episode extends Title {
 	public void setCollected(boolean value) {
 		if (value != collected) {
 			collected = value;
-			modified = true;
-			if (TextUtils.isEmpty(tvdb_id))
-				refresh(false);
-			else if (!getSeries().massUpdate()) {
-				commit();
-				//
+			if (isValid())
+				save(false);
+			else
+				refresh(true);
+			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
+				Integer.toString(episode), "collected", Boolean.toString(collected));
+			if (!getSeries().massUpdate()) {
 				String msg = session.getRes().getString(collected ? R.string.msg_coll_add_epi : R.string.msg_coll_del_epi);
 				msg = String.format(msg, eid().readable());
 				Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 			}
-			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
-				Integer.toString(episode), "collected", Boolean.toString(collected));
 		}
 	}
 	
 	public void setWatched(boolean value) {
 		if (value != watched) {
 			watched = value;
-			modified = true;
-			if (TextUtils.isEmpty(tvdb_id))
-				refresh(false);
-			else if (!getSeries().massUpdate()) {
-				commit();
-				//
+			if (isValid())
+				save(false);
+			else
+				refresh(true);
+			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
+				Integer.toString(episode), "watched", Boolean.toString(watched));
+			if (!getSeries().massUpdate()) {
 				String msg = session.getRes().getString(watched ? R.string.msg_seen_add_epi : R.string.msg_seen_del_epi);
 				msg = String.format(msg, eid().readable());
 				Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 			}
-			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
-				Integer.toString(episode), "watched", Boolean.toString(watched));
 		}
 	}
 	

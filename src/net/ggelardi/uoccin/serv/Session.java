@@ -110,11 +110,11 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	public void registerAlarms() {
 		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
-		// clean database cache a couple of times a day
+		// clean database cache every hour
 		PendingIntent cc = mkPI(Service.CLEAN_DB_CACHE);
 		am.cancel(cc);
-		am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_DAY,
-			AlarmManager.INTERVAL_HALF_DAY, cc);
+		am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HOUR,
+			AlarmManager.INTERVAL_HOUR, cc);
 		// check TVDB rss feed for premiers a couple of times a day
 		PendingIntent tv = mkPI(Service.CHECK_TVDB_RSS);
 		am.cancel(tv);
@@ -126,7 +126,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		am.cancel(gd);
 		if (driveSyncEnabled())
 			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-				AlarmManager.INTERVAL_FIFTEEN_MINUTES, gd);
+				driveSyncInterval(), gd);
 	}
 	
 	// user preferences
@@ -145,6 +145,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	public boolean driveSyncEnabled() {
 		return prefs.getBoolean(PK.GDRVSYNC, false);
+	}
+	
+	public long driveSyncInterval() {
+		return prefs.getInt(PK.GDRVINTV, 15) * 60000;
 	}
 	
 	// app saved stuff

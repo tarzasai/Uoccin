@@ -9,7 +9,7 @@ public class Storage extends SQLiteOpenHelper {
 	private static final String TAG = "Storage";
 	
 	public static final String NAME = "Uoccin.db";
-	public static final int VERSION = 3;
+	public static final int VERSION = 1;
 	
 	public Storage(Context context) {
 		super(context, NAME, null, VERSION);
@@ -18,16 +18,6 @@ public class Storage extends SQLiteOpenHelper {
 		Log.v(TAG, CREATE_TABLE_MOVIES);
 		Log.v(TAG, CREATE_TABLE_SERIES);
 		Log.v(TAG, CREATE_TABLE_EPISODES);
-		*/
-		
-		/*
-		SQLiteDatabase db = getWritableDatabase();
-		db.execSQL("delete from episode where season = 0 or episode = 0");
-		db.execSQL("update episode set subtitles = null");
-		db.execSQL("delete from movie");
-		db.execSQL("update episode set guestStars = null where guestStars = '' or guestStars = ','");
-		db.execSQL("update episode set writers = null where writers = '' or writers = ','");
-		db.execSQL("update episode set director = null where director = ''");
 		*/
 	}
 	
@@ -50,10 +40,6 @@ public class Storage extends SQLiteOpenHelper {
             {
                 case 2:
                     break;
-                case 3:
-                	db.execSQL(CREATE_TABLE_QUEUEIN);
-                	db.execSQL(CREATE_TABLE_QUEUEOUT);
-                    break;
             }
             upgradeTo++;
         }
@@ -70,11 +56,11 @@ public class Storage extends SQLiteOpenHelper {
 	private static final String CREATE_TABLE_MOVIES = "CREATE TABLE movie (" +
 		"imdb_id" + DT_STR + PK + CC_NNU + CS +
 		"name" + DT_STR + CC_NNU + CS +
-		"year" + DT_INT + CC_NNU + CS +
+		"year" + DT_INT + CS +
 		"plot" + DT_STR + CS +
 		"poster" + DT_STR + CS + // url
 		"genres" + DT_STR + CS + // comma delimited
-		"language" + DT_STR + CC_NNU + " DEFAULT 'en'" + CS +
+		"language" + DT_STR + CS +
 		"director" + DT_STR + CS +
 		"writers" + DT_STR + CS + // comma delimited
 		"actors" + DT_STR + CS + // comma delimited
@@ -92,7 +78,7 @@ public class Storage extends SQLiteOpenHelper {
 		"watchlist" + DT_FLG + CS +
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG + CS +
-		"timestamp" + DT_INT + CC_NNU +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" +
 		")";
 	
 	private static final String CREATE_TABLE_SERIES = "CREATE TABLE series (" +
@@ -116,11 +102,10 @@ public class Storage extends SQLiteOpenHelper {
 		"rating" + DT_INT + CS +
 		"tags" + DT_STR + CS +
 		"watchlist" + DT_FLG + CS +
-		"timestamp" + DT_INT + CC_NNU +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" +
 		")";
 	
 	private static final String CREATE_TABLE_EPISODES = "CREATE TABLE episode (" +
-		"tvdb_id" + DT_STR + PK + CC_NNU + CS +
 		"series" + DT_STR + CC_NNU + " REFERENCES series(tvdb_id) ON DELETE CASCADE" + CS +
 		"season" + DT_INT + CC_NNU + CS +
 		"episode" + DT_INT + CC_NNU + CS +
@@ -131,11 +116,12 @@ public class Storage extends SQLiteOpenHelper {
 		"director" + DT_STR + CS +
 		"guestStars" + DT_STR + CS + // comma delimited
 		"firstAired" + DT_INT + CS +
+		"tvdb_id" + DT_STR + CS +
 		"imdb_id" + DT_STR + CS +
 		"subtitles" + DT_STR + CS +
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG + CS +
-		"timestamp" + DT_INT + CC_NNU +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" +
 		")";
 	
 	public static final String CREATE_TABLE_QUEUEIN = "CREATE TABLE queue_in (" +
