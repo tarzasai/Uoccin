@@ -44,7 +44,7 @@ public class GSA {
 		session = Session.getInstance(context);
 		GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(context,
 			Collections.singleton(DriveScopes.DRIVE));
-		credential.setSelectedAccountName(session.driveUserAccount());
+		credential.setSelectedAccountName(session.driveAccountName());
 		service = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(),
 			credential).setApplicationName(session.getString(R.string.app_name)).build();
 	}
@@ -59,12 +59,20 @@ public class GSA {
 		do {
 			try {
 				changes = request.execute();
-				for (Change change: changes.getItems())
+				for (Change change: changes.getItems()) {
+					// looks like List.setIncludeDeleted() has no effects. btw Change.getDeleted() always returns null
+					Boolean deleted = change.getDeleted();
+					if (deleted != null && deleted)
+						continue;
+					deleted = change.getFile().getExplicitlyTrashed();
+					if (deleted != null && deleted)
+						continue;
 					for (ParentReference parent: change.getFile().getParents())
 						if (parent.getId().equals(getFolder(false).getId())) {
 							result.add(change);
 							break;
 						}
+				}
 				lcid = changes.getLargestChangeId();
 				request.setPageToken(changes.getNextPageToken());
 			} catch (Exception err) {

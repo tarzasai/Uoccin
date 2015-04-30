@@ -48,7 +48,6 @@ public class Commons {
 		public static final String GDRVSYNC = "pk_gdrvbak";
 		public static final String GDRVWIFI = "pk_gdrvwifi";
 		public static final String GDRVINTV = "pk_gdrvint";
-		//public static final String GDRVLASY = "pk_gdrv_lastsync";
 		public static final String GDRVAUTH = "pk_gdrv_account";
 		public static final String GDRVLCID = "pk_gdrv_lastcid";
 		public static final String NOTIFSND = "pk_notif_sound";
@@ -57,8 +56,8 @@ public class Commons {
 	public static class GD {
 		public static final String FOLDER = "uoccin";
 		//public static final String FOLDER = "uoccin_test";
-		public static final String BACKUP = "uoccin.json";
-		//public static final String BACKUP = "uoccin_test.json";
+		//public static final String BACKUP = "uoccin.json";
+		public static final String BACKUP = "uoccin_test.json";
 	}
 	
 	public static class SN {

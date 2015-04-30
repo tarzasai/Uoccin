@@ -220,7 +220,10 @@ public class EpisodeInfoFragment extends BaseFragment {
 		pstHeight = Math.round((pstWidth*225)/400);
 		
 		episode = Episode.get(getActivity(), series, seasNo, episNo);
-		showInfo();
+		if (episode.isNew() || episode.isOld())
+			episode.refresh(true);
+		else
+			showInfo();
 	}
 	
 	private void showInfo() {

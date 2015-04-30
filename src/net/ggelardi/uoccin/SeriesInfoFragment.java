@@ -228,7 +228,7 @@ public class SeriesInfoFragment extends BaseFragment {
 		pstHeight = Math.round((pstWidth*140)/758);
 		
 		series = Series.get(getActivity(), tvdb_id);
-		if (series.episodes == null || series.episodes.isEmpty())
+		if (series.isNew() || series.isOld() || series.episodes.isEmpty())
 			series.refresh(true);
 		else
 			showInfo();

@@ -58,7 +58,6 @@ public class Movie extends Title {
 	public Double imdbRating;
 	public int imdbVotes;
 	public List<String> subtitles = new ArrayList<String>();
-	public long timestamp = 0;
 	
 	public Movie(Context context, String imdb_id) {
 		this.session = Session.getInstance(context);
@@ -155,6 +154,8 @@ public class Movie extends Title {
 	}
 	
 	protected void load(Element xml) {
+		dispatch(OnTitleListener.WORKING, null);
+		
 		boolean modified = false;
 		String chk;
 		chk = Commons.XML.attrText(xml, "title", "Title");
@@ -301,9 +302,13 @@ public class Movie extends Title {
 		//
 		if (modified)
 			save(true);
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	protected void load(Cursor cr) {
+		dispatch(OnTitleListener.WORKING, null);
+		
 		Log.v(TAG, "Loading movie " + imdb_id);
 		
 		int ci;
@@ -366,6 +371,8 @@ public class Movie extends Title {
 		collected = cr.getInt(cr.getColumnIndex("collected")) == 1;
 		watched = cr.getInt(cr.getColumnIndex("watched")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	protected void save(boolean metadata) {
@@ -531,12 +538,22 @@ public class Movie extends Title {
 		return !(TextUtils.isEmpty(imdb_id) || TextUtils.isEmpty(name));
 	}
 	
-	public boolean isNew() {
-		return timestamp <= 0;
-	}
-	
 	public boolean isOld() {
-		return timestamp > 0 && (System.currentTimeMillis() - timestamp) > Commons.weekLong; // TODO preferences
+		if (timestamp > 0) {
+			if (timestamp == 1)
+				return true;
+			long now = System.currentTimeMillis();
+			long ageLocal = now - timestamp;
+			if (released > 0) {
+				long ageAired = Math.abs(now - released);
+				if (ageAired < Commons.weekLong)
+					return ageLocal > Commons.dayLong;
+				if (ageAired > Commons.yearLong)
+					return ageLocal > Commons.monthLong;
+			}
+			return ageLocal > Commons.weekLong;
+		}
+		return false;
 	}
 	
 	public boolean inWatchlist() {

@@ -85,6 +85,12 @@
     <string name="msg_tags_add">Tag \"%s\" added</string>
     <string name="msg_tags_del">Tag \"%s\" removed</string>
     
+    <string name="msg_restore_1">Restoring database backup</string>
+    <string name="msg_restore_2a">Uoccin backup not found</string>
+    <string name="msg_restore_2b">Uoccin backup is empty</string>
+    <string name="msg_restore_3">Backup contains %1$d movies and %2$d series</string>
+    <string name="msg_restore_4">Restore terminated</string>
+    
     <string name="notif_srv_gac_conn_fail">Authorization required</string>
 
     <!-- settings -->
@@ -96,6 +102,7 @@
     <string name="pk_tvdbrss_title">TVDB feed</string>
     <string name="pk_tvdbrss_summ">Periodically check TVDB\'s \"airing today\" feed for new TV shows.</string>
     <string name="pc_gdrvcat_title">Google Drive</string>
+    <string name="pk_gdrvacc_title">Select a Google account</string>
     <string name="pk_gdrvbak_title">Synchronize</string>
     <string name="pk_gdrvbak_summ">Manage your data on multiple devices (phones or desktop apps).</string>
     <string name="pk_gdrvwif_title">Only on WiFi</string>

@@ -22,7 +22,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -63,7 +62,6 @@ public class Series extends Title {
 	public String rated;
 	public String banner;
 	public String fanart;
-	public long timestamp = 0;
 	
 	public Series(Context context, String tvdb_id) {
 		this.session = Session.getInstance(context);
@@ -149,6 +147,8 @@ public class Series extends Title {
 	}
 	
 	protected void load(Element serxml, NodeList epsxml) {
+		dispatch(OnTitleListener.WORKING, null);
+		
 		boolean modified = false;
 		String chk;
 		String lang = Commons.XML.nodeText(serxml, "language", "Language");
@@ -237,34 +237,16 @@ public class Series extends Title {
 		}
 		chk = Commons.XML.nodeText(serxml, "Airs_Time");
 		if (!TextUtils.isEmpty(chk)) {
-			if (!chk.toLowerCase(Locale.getDefault()).contains("m")) {
-				try {
-					long t = Commons.SDF.eng("HH:mm").parse(chk).getTime();
-					if (t > 0) {
-						airsTime = t;
-						modified = true;
-					}
-				} catch (Exception err) {
-					Log.e(TAG, chk, err);
+			chk = chk.replace(".", ":").replace(" ", "").toUpperCase(Locale.getDefault());
+			String fmt = chk.contains("M") ? "hh:mma" : "HH:mm";
+			try {
+				long t = Commons.SDF.eng(fmt).parse(chk).getTime();
+				if (t > 0) {
+					airsTime = t;
+					modified = true;
 				}
-			} else {
-				try {
-					long t = Commons.SDF.eng("hh:mm a").parse(chk).getTime();
-					if (t > 0) {
-						airsTime = t;
-						modified = true;
-					}
-				} catch (Exception err) {
-					try {
-						long t = Commons.SDF.eng("hh:mma").parse(chk).getTime();
-						if (t > 0) {
-							airsTime = t;
-							modified = true;
-						}
-					} catch (Exception err2) {
-						Log.e(TAG, chk, err2);
-					}
-				}
+			} catch (Exception err) {
+				Log.e(TAG, chk, err);
 			}
 		}
 		chk = Commons.XML.nodeText(serxml, "Runtime");
@@ -284,14 +266,16 @@ public class Series extends Title {
 			rated = chk;
 			modified = true;
 		}
+		/*
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
+			*/
 			if (modified)
 				save(true);
 			if (epsxml != null && epsxml.getLength() > 0) {
-				episodes.clear();
-				Episode.drop(tvdb_id, null, null);
+				List<Episode> lst = new ArrayList<Episode>();
+				//Episode.drop(tvdb_id, null, null);
 				lastseason = 0;
 				Episode ep;
 				for (int i = 0; i < epsxml.getLength(); i++) {
@@ -299,22 +283,30 @@ public class Series extends Title {
 					if (ep != null) {
 						if (ep.season > lastseason)
 							lastseason = ep.season;
-						if (!episodes.contains(ep))
-							episodes.add(ep);
+						if (!lst.contains(ep))
+							lst.add(ep);
 					}
 				}
 				if (lastseason > 0)
-					db.delete("episode", "series = ? and season > ?",
+					//db.delete("episode", "series = ? and season > ?",
+					session.getDB().delete("episode", "series = ? and season > ?",
 						new String[] { tvdb_id, Integer.toString(lastseason) });
-				Collections.sort(episodes, new Episode.EpisodeComparator());
+				Collections.sort(lst, new Episode.EpisodeComparator());
+				episodes = lst;
 			}
+			/*
 			db.setTransactionSuccessful();
 		} finally {
 			db.endTransaction();
 		}
+		*/
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	protected void load(Cursor cr) {
+		dispatch(OnTitleListener.WORKING, null);
+		
 		Log.v(TAG, "Loading series " + tvdb_id);
 		int ci;
 		tvdb_id = cr.getString(cr.getColumnIndex("tvdb_id")); // it's already set btw...
@@ -373,6 +365,8 @@ public class Series extends Title {
 		watchlist = cr.getInt(cr.getColumnIndex("watchlist")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
 		Log.v(TAG, "Loaded series " + tvdb_id);
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	protected void save(boolean metadata) {
@@ -522,57 +516,29 @@ public class Series extends Title {
 		}
 	}
 	
-	/*
-	public final synchronized void commit() {
-		if (!isValid())
-			return;
-		dispatch(OnTitleListener.WORKING, null);
-		int changes = 0;
-		SQLiteDatabase db = session.getDB();
-		db.beginTransaction();
-		try {
-			if (modified || isOld()) {
-				save(isNew(), false);
-				changes++;
-			}
-			for (Episode ep: episodes)
-				if (lastseason > 0 && ep.season > lastseason) {
-					episodes.remove(ep);
-					changes++;
-					if (ep.episode < 2)
-						Episode.drop(tvdb_id, ep.season, null);
-				} else if (ep.modified || ep.isOld()) {
-					ep.save(ep.isNew());
-					changes++;
-				}
-			if (lastseason > 0)
-				db.delete("episode", "series = ? and season > ?",
-					new String[] { tvdb_id, Integer.toString(lastseason) });
-			db.setTransactionSuccessful();
-		} catch (Exception err) {
-			Log.e(TAG, "commit", err);
-		} finally {
-			db.endTransaction();
-		}
-		modified = false;
-		for (Episode ep: episodes)
-			ep.modified = false;
-		if (changes > 0)
-			reloadEpisodes();
-		dispatch(OnTitleListener.READY, null);
-	}
-	*/
-	
 	public boolean isValid() {
 		return !(TextUtils.isEmpty(tvdb_id) || TextUtils.isEmpty(name) || episodes == null || episodes.isEmpty());
 	}
 	
-	public boolean isNew() {
-		return timestamp <= 0;
-	}
-	
 	public boolean isOld() {
-		return timestamp > 0 && (System.currentTimeMillis() - timestamp) > Commons.weekLong; // TODO preferences
+		if (timestamp > 0) {
+			if (timestamp == 1)
+				return true;
+			for (Episode ep: episodes)
+				if (ep.isOld())
+					return true;
+			long now = System.currentTimeMillis();
+			long ageLocal = now - timestamp;
+			if (firstAired > 0) {
+				long ageAired = Math.abs(now - firstAired);
+				if (ageAired < Commons.weekLong)
+					return ageLocal > Commons.dayLong;
+				if (ageAired > Commons.yearLong)
+					return ageLocal > Commons.monthLong;
+			}
+			return ageLocal > Commons.weekLong;
+		}
+		return false;
 	}
 	
 	public boolean inWatchlist() {
@@ -775,9 +741,13 @@ public class Series extends Title {
 	}
 	
 	public Episode nextEpisode() {
+		try {
 		for (Episode ep: episodes)
 			if (ep.firstAired >= System.currentTimeMillis())
 				return ep;
+		} catch (Exception err) {
+			Log.e(TAG, "nextEpisode", err);
+		}
 		return null;
 	}
 	

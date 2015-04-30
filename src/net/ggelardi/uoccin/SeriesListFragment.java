@@ -124,6 +124,8 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 									mAdapter.notifyDataSetChanged();
 							} else if (state.equals(OnTitleListener.WORKING)) {
 								showHourGlass(true);
+							} else if (state.equals(OnTitleListener.RELOAD)) {
+								reload();
 							} else if (state.equals(OnTitleListener.ERROR)) {
 								showHourGlass(false);
 								mAdapter.notifyDataSetChanged();
@@ -137,17 +139,7 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 			}
 		});
 		
-		mTask = new SeriesTask(this, type);
-		if (type.equals(SeriesTask.SEARCH))
-			mTask.execute(search);
-		else if (params == null || params.length <= 0)
-			mTask.execute(new String[] { query });
-		else {
-			String[] args = new String[params.length + 1];
-			args[0] = query;
-			System.arraycopy(params, 0, args, 1, params.length);
-			mTask.execute(args);
-		}
+		reload();
 	}
 	
 	@Override
@@ -216,5 +208,20 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 		mAdapter.setTitles(result);
 		showHourGlass(false);
 		mTask = null;
+	}
+	
+	private void reload() {
+		Log.v(getTag(), "reload()");
+		mTask = new SeriesTask(this, type);
+		if (type.equals(SeriesTask.SEARCH))
+			mTask.execute(search);
+		else if (params == null || params.length <= 0)
+			mTask.execute(new String[] { query });
+		else {
+			String[] args = new String[params.length + 1];
+			args[0] = query;
+			System.arraycopy(params, 0, args, 1, params.length);
+			mTask.execute(args);
+		}
 	}
 }

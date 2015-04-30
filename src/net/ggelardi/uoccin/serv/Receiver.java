@@ -33,15 +33,15 @@ public class Receiver extends BroadcastReceiver {
 		if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
 			session.registerAlarms();
 		} else if (action.equals(Commons.SN.CONNECT_FAIL)) {
-			NotificationCompat.Builder nb = makeNotification(session, Commons.SN.CONNECT_FAIL).setContentText(
-				session.getString(R.string.notif_srv_gac_conn_fail));
+			NotificationCompat.Builder nb = makeNotification(session, Commons.SN.CONNECT_FAIL,
+				true).setContentText(session.getString(R.string.notif_srv_gac_conn_fail));
 			nm.notify(NOTIF_CONNECT_FAIL, nb.build());
 		} else if (action.equals(Commons.SN.GENERAL_FAIL)) {
-			NotificationCompat.Builder nb = makeNotification(session, null).setContentText(
+			NotificationCompat.Builder nb = makeNotification(session, null, true).setContentText(
 				intent.getExtras().getString("what"));
 			nm.notify(NOTIF_GENERAL_FAIL, nb.build());
 		} else if (action.equals(Commons.SN.GENERAL_INFO)) {
-			NotificationCompat.Builder nb = makeNotification(session, null).setContentText(
+			NotificationCompat.Builder nb = makeNotification(session, null, false).setContentText(
 				intent.getExtras().getString("what"));
 			nm.notify(NOTIF_GENERAL_INFO, nb.build());
 		} else if (action.equals(Service.CLEAN_DB_CACHE) || action.equals(Service.GDRIVE_SYNC)) {
@@ -51,14 +51,14 @@ public class Receiver extends BroadcastReceiver {
 		}
 	}
 	
-	private NotificationCompat.Builder makeNotification(Session session, String action) {
+	private NotificationCompat.Builder makeNotification(Session session, String action, boolean sound) {
 		Intent ai = new Intent(session.getContext(), MainActivity.class);
 		if (action != null)
 			ai.setAction(action);
 		PendingIntent pi = PendingIntent.getActivity(session.getContext(), 0, ai, PendingIntent.FLAG_UPDATE_CURRENT);
 		NotificationCompat.Builder nb = new NotificationCompat.Builder(session.getContext()).setSmallIcon(
 			R.drawable.ic_notification).setContentTitle(session.getString(R.string.app_name)).setContentIntent(pi);
-		if (session.getPrefs().getBoolean(PK.NOTIFSND, true))
+		if (sound && session.getPrefs().getBoolean(PK.NOTIFSND, true))
 			nb.setSound(NOTIF_SOUND);
 		return nb;
 	}

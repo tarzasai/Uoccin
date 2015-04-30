@@ -16,6 +16,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.GSA;
 import net.ggelardi.uoccin.api.XML;
 import net.ggelardi.uoccin.data.Episode;
@@ -94,9 +95,9 @@ public class Service extends WakefulIntentService {
 				checkTVdbNews();
 			} else if (act.equals(GDRIVE_SYNC) && session.driveSyncEnabled()) {
 				driveSync();
-			} else if (act.equals(GDRIVE_BACKUP) && session.driveSyncEnabled()) {
+			} else if (act.equals(GDRIVE_BACKUP) && session.driveAccountSet()) {
 				driveBackup();
-			} else if (act.equals(GDRIVE_RESTORE) && session.driveSyncEnabled()) {
+			} else if (act.equals(GDRIVE_RESTORE) && session.driveAccountSet()) {
 				driveRestore();
 			}
 		} catch (UserRecoverableAuthIOException err) {
@@ -182,32 +183,14 @@ public class Service extends WakefulIntentService {
 				sendNotification(err);
 			return;
 		}
-		Series.get(this, (Element) doc.getElementsByTagName("Series").item(0), doc.getElementsByTagName("Episode"));
-		/*
-		// episodes
-		int eps2save = 0;
-		ser.lastseason = 0;
-		NodeList lst = doc.getElementsByTagName("Episode");
-		if (lst != null && lst.getLength() > 0) {
-			Episode ep;
-			for (int i = 0; i < lst.getLength(); i++) {
-				ep = Episode.get(this, (Element) lst.item(i));
-				if (ep != null) {
-					if (ep.season > ser.lastseason)
-						ser.lastseason = ep.season;
-					if (!ser.episodes.contains(ep))
-						ser.episodes.add(ep);
-					if (ep.hasSubtitles() || ep.inCollection() || ep.isWatched())
-						eps2save++;
-				}
-			}
-			Collections.sort(ser.episodes, new Episode.EpisodeComparator());
+		SQLiteDatabase db = session.getDB();
+		db.beginTransaction();
+		try {
+			Series.get(this, (Element) doc.getElementsByTagName("Series").item(0), doc.getElementsByTagName("Episode"));
+			db.setTransactionSuccessful();
+		} finally {
+			db.endTransaction();
 		}
-		if (forceCommit || !ser.isNew() || ser.inWatchlist() || ser.getRating() > 0 || ser.hasTags() || eps2save > 0)
-			ser.commit();
-		else
-			Series.dispatch(OnTitleListener.READY, null);
-		*/
 	}
 	
 	private void refreshEpisode(String series, int season, int episode) {
@@ -223,6 +206,14 @@ public class Service extends WakefulIntentService {
 			if (!err.getLocalizedMessage().startsWith("404"))
 				sendNotification(err);
 			return;
+		}
+		SQLiteDatabase db = session.getDB();
+		db.beginTransaction();
+		try {
+			Episode.get(this, (Element) doc.getElementsByTagName("Episode").item(0));
+			db.setTransactionSuccessful();
+		} finally {
+			db.endTransaction();
 		}
 	}
 	
@@ -286,6 +277,7 @@ public class Service extends WakefulIntentService {
 	private int loadDiff(File file) {
 		String[] lines = null;
 		try {
+			Log.d(TAG, "Loading file " + file.getTitle());
 			lines = drive.readFile(file).split("\n");
 		} catch (Exception err) {
 			Log.e(TAG, "Error loading file " + file.getTitle(), err);
@@ -389,8 +381,7 @@ public class Service extends WakefulIntentService {
 				else
 					throw new Exception("Invalid field '" + field + "'");
 				db.update(table, cv, where, args.toArray(new String[args.size()]));
-				Series ser = Series.get(this, parts[0]);
-				ser.reload();
+				Series.get(this, parts[0]).reload();
 			}
 		} catch (Exception err) {
 			Log.e(TAG, "Error on command " + Long.toString(id), err);
@@ -415,15 +406,17 @@ public class Service extends WakefulIntentService {
 			} finally {
 				qo.close();
 			}
-			String fn = "diff." + SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID();
-			drive.writeFile(null, fn, MIME.TEXT, sb.toString());
+			if (sb.length() > 0) {
+				String fn = SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
+				drive.writeFile(null, fn, MIME.TEXT, sb.toString());
+			}
 			db.delete("queue_in", null, null);
 			// load other devices' diffs
 			int lines = 0;
 			File file;
 			for (Change ch: drive.getChanges()) {
 				file = ch.getFile();
-				if (file.getTitle().startsWith("diff.") && !file.getTitle().endsWith(session.driveDeviceID()))
+				if (file.getTitle().endsWith(".diff") && !file.getTitle().contains(session.driveDeviceID()))
 					lines += loadDiff(file);
 			}
 			if (lines <= 0) {
@@ -548,17 +541,24 @@ public class Service extends WakefulIntentService {
 	}
 	
 	private void driveRestore() throws Exception {
+		sendNotification(session.getString(R.string.msg_restore_1));
 		SQLiteDatabase db = session.getDB();
 		try {
 			checkDrive();
 			File bak = drive.getFile(Commons.GD.BACKUP, null);
-			if (bak == null)
+			if (bak == null) {
+				sendNotification(session.getString(R.string.msg_restore_2a));
 				return;
+			}
 			String content = drive.readFile(bak);
-			if (TextUtils.isEmpty(content))
+			if (TextUtils.isEmpty(content)) {
+				sendNotification(session.getString(R.string.msg_restore_2b));
 				return;
+			}
 			checkGenson();
 			UFile file = genson.deserialize(content, UFile.class);
+			sendNotification(String.format(session.getString(R.string.msg_restore_3),
+				file.movies.keySet().size(), file.series.keySet().size()));
 			db.beginTransaction();
 			try {
 				ContentValues cv;
@@ -585,9 +585,7 @@ public class Service extends WakefulIntentService {
 				// series
 				db.delete("series", null, null);
 				USeries use;
-				Series ser;
 				List<String> chk;
-				//String[] subs;
 				for (String tvdb_id: file.series.keySet()) {
 					use = file.series.get(tvdb_id);
 					cv = new ContentValues();
@@ -612,13 +610,8 @@ public class Service extends WakefulIntentService {
 							cv.put("episode", Integer.parseInt(episode));
 							cv.put("collected", true);
 							Object[] tmp = smap.get(episode);
-							if (tmp != null && tmp.length > 0) {
-								/*
-								subs = smap.get(episode);
-								cv.put("subtitles", TextUtils.join(",", subs));
-								*/
+							if (tmp != null && tmp.length > 0)
 								cv.put("subtitles", TextUtils.join(",", smap.get(episode)));
-							}
 							cv.put("timestamp", 1);
 							db.insertOrThrow("episode", null, cv);
 							chk.add(season + "|" + episode);
@@ -647,7 +640,8 @@ public class Service extends WakefulIntentService {
 			Movie.drop();
 			Series.drop();
 			Episode.drop();
-			Title.dispatch(OnTitleListener.READY, null);
+			sendNotification(session.getString(R.string.msg_restore_4));
+			Title.dispatch(OnTitleListener.RELOAD, null);
 		} catch (Exception err) {
 			Log.e(TAG, "driveRestore", err);
 			throw err;

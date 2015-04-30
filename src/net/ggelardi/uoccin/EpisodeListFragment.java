@@ -14,6 +14,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -121,7 +122,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 				@Override
 				public void onClick(View v) {
 					season = ser.seasons().get(ser.seasons().indexOf(season) - 1);
-					load();
+					reload();
 				}
 			});
 			
@@ -129,7 +130,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 				@Override
 				public void onClick(View v) {
 					season = ser.seasons().get(ser.seasons().indexOf(season) + 1);
-					load();
+					reload();
 				}
 			});
 			
@@ -202,6 +203,8 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
 							} else if (state.equals(OnTitleListener.WORKING)) {
 								showHourGlass(true);
+							} else if (state.equals(OnTitleListener.RELOAD)) {
+								reload();
 							} else if (state.equals(OnTitleListener.ERROR)) {
 								showHourGlass(false);
 								mAdapter.notifyDataSetChanged();
@@ -215,7 +218,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 			}
 		});
 		
-		load();
+		reload();
 	}
 	
 	@Override
@@ -282,7 +285,8 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 		mTask = null;
 	}
 	
-	private void load() {
+	private void reload() {
+		Log.v(getTag(), "reload()");
 		if (type.equals(EpisodeTask.LIST)) {
 			Series ser = Series.get(getActivity(), series);
 			getActivity().setTitle(ser.name);

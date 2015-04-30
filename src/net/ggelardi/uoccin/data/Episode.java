@@ -50,8 +50,6 @@ public class Episode extends Title {
 	public long firstAired;
 	public String imdb_id;
 	public List<String> subtitles = new ArrayList<String>();
-	public long timestamp = 0;
-	//public boolean modified = false;
 	
 	public Episode(Context context, String series, int season, int episode) {
 		this.session = Session.getInstance(context);
@@ -182,6 +180,8 @@ public class Episode extends Title {
 	}
 	
 	protected void load(Element xml) {
+		dispatch(OnTitleListener.WORKING, null);
+		
 		boolean modified = false;
 		String chk;
 		chk = Commons.XML.nodeText(xml, "seriesid");
@@ -284,11 +284,23 @@ public class Episode extends Title {
 			}
 		}
 		//
-		if (modified)
-			save(true);
+		if (modified) {
+			/*SQLiteDatabase db = session.getDB();
+			db.beginTransaction();
+			try {*/
+				save(true);
+				/*db.setTransactionSuccessful();
+			} finally {
+				db.endTransaction();
+			}*/
+		}
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 
 	protected void load(Cursor cr) {
+		dispatch(OnTitleListener.WORKING, null);
+		
 		Log.v(TAG, "Loading episode " + eid());
 		int ci;
 		tvdb_id = cr.getString(cr.getColumnIndex("tvdb_id"));
@@ -326,6 +338,8 @@ public class Episode extends Title {
 		watched = cr.getInt(cr.getColumnIndex("watched")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
 		Log.v(TAG, "Loaded episode " + eid());
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 	
 	protected void save(boolean metadata) {
@@ -420,19 +434,19 @@ public class Episode extends Title {
 		return !(TextUtils.isEmpty(tvdb_id) || TextUtils.isEmpty(series) || season < 0 || episode < 0);
 	}
 	
-	public boolean isNew() {
-		return timestamp <= 0;
-	}
-	
 	public boolean isOld() {
-		if (timestamp > 0 && firstAired > 0) {
+		if (timestamp > 0) {
+			if (timestamp == 1)
+				return true;
 			long now = System.currentTimeMillis();
-			long ageAired = Math.abs(now - firstAired);
 			long ageLocal = now - timestamp;
-			if (ageAired < Commons.weekLong)
-				return ageLocal > Commons.dayLong;
-			if (ageAired > Commons.yearLong)
-				return ageLocal > Commons.monthLong;
+			if (firstAired > 0) {
+				long ageAired = Math.abs(now - firstAired);
+				if (ageAired < Commons.weekLong)
+					return ageLocal > Commons.dayLong;
+				if (ageAired > Commons.yearLong)
+					return ageLocal > Commons.monthLong;
+			}
 			return ageLocal > Commons.weekLong;
 		}
 		return false;

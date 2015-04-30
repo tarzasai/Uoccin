@@ -9,8 +9,6 @@ public abstract class Title {
 	
 	protected static final List<OnTitleListener> listeners = new ArrayList<OnTitleListener>();
 	
-	protected Session session;
-	
 	public static boolean ongoingServiceOperation = false;
 	
 	public static void addOnTitleEventListener(OnTitleListener aListener) {
@@ -22,11 +20,24 @@ public abstract class Title {
 			listener.changed(state, error);
 	}
 	
+	protected Session session;
+	
+	public long timestamp = 0;
+	
+	public long age() {
+		return System.currentTimeMillis() - timestamp;
+	}
+	
+	public boolean isNew() {
+		return timestamp <= 0;
+	}
+	
 	public interface OnTitleListener {
-		public static String NOTFOUND = "TitleEvent.NOTFOUND";
-		public static String WORKING = "TitleEvent.WORKING";
-		public static String READY = "TitleEvent.READY";
-		public static String ERROR = "TitleEvent.ERROR";
+		public static String NOTFOUND = "OnTitleListener.NOTFOUND";
+		public static String WORKING = "OnTitleListener.WORKING";
+		public static String RELOAD = "OnTitleListener.RELOAD";
+		public static String READY = "OnTitleListener.READY";
+		public static String ERROR = "OnTitleListener.ERROR";
 		
 		void changed(final String state, final Throwable error);
 	}

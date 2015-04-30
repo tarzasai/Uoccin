@@ -139,9 +139,9 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		if (getSupportFragmentManager().findFragmentByTag(BaseFragment.ROOT_FRAGMENT) == null)
 			openDrawerItem(drawerData.findItem(lastView));
 		
-		if (session.driveSyncEnabled() && TextUtils.isEmpty(session.driveUserAccount())) {
+		if (session.driveSyncEnabled() && !session.driveAccountSet()) {
 			Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null,
-				new String[]{GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE},true,null,null,null,null) ;
+				new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE }, true, null, null, null, null);
 			startActivityForResult(googlePicker, REQUEST_ACCOUNT_PICKER);
 		}
 	}
@@ -199,7 +199,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			case R.id.action_settings:
 				startActivity(new Intent(this, SettingsActivity.class));
 				return true;
-			/////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			case R.id.action_test_clean:
 				WakefulIntentService.sendWakefulWork(this,
 					new Intent(this, Service.class).setAction(Service.CLEAN_DB_CACHE));
@@ -220,6 +221,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 				WakefulIntentService.sendWakefulWork(this,
 					new Intent(this, Service.class).setAction(Service.CHECK_TVDB_RSS));
 				return true;
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		}
 		return super.onOptionsItemSelected(item);
 	}

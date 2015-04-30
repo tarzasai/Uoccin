@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -120,6 +121,8 @@ public class MovieListFragment extends BaseFragment implements MovieTaskContaine
 									mAdapter.notifyDataSetChanged();
 							} else if (state.equals(OnTitleListener.WORKING)) {
 								showHourGlass(true);
+							} else if (state.equals(OnTitleListener.RELOAD)) {
+								reload();
 							} else if (state.equals(OnTitleListener.ERROR)) {
 								showHourGlass(false);
 								mAdapter.notifyDataSetChanged();
@@ -133,17 +136,7 @@ public class MovieListFragment extends BaseFragment implements MovieTaskContaine
 			}
 		});
 		
-		mTask = new MovieTask(this, type);
-		if (type.equals(MovieTask.SEARCH))
-			mTask.execute(search);
-		else if (params == null || params.length <= 0)
-			mTask.execute(new String[] { query });
-		else {
-			String[] args = new String[params.length + 1];
-			args[0] = query;
-			System.arraycopy(params, 0, args, 1, params.length);
-			mTask.execute(args);
-		}
+		reload();
 	}
 	
 	@Override
@@ -214,5 +207,20 @@ public class MovieListFragment extends BaseFragment implements MovieTaskContaine
 		mAdapter.setTitles(result);
 		showHourGlass(false);
 		mTask = null;
+	}
+	
+	private void reload() {
+		Log.v(getTag(), "reload()");
+		mTask = new MovieTask(this, type);
+		if (type.equals(MovieTask.SEARCH))
+			mTask.execute(search);
+		else if (params == null || params.length <= 0)
+			mTask.execute(new String[] { query });
+		else {
+			String[] args = new String[params.length + 1];
+			args[0] = query;
+			System.arraycopy(params, 0, args, 1, params.length);
+			mTask.execute(args);
+		}
 	}
 }

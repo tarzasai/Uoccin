@@ -21,7 +21,6 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -59,13 +58,14 @@ public class Session implements OnSharedPreferenceChangeListener {
 			registerAlarms();
 		else if (key.equals(PK.GDRVSYNC)) {
 			registerAlarms();
-			if (driveSyncEnabled() && TextUtils.isEmpty(driveUserAccount()))
+			if (driveSyncEnabled() && !driveAccountSet())
 				appContext.sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
-		} else if (key.equals(PK.GDRVAUTH) && !TextUtils.isEmpty(driveUserAccount())) {
+		} else if (key.equals(PK.GDRVAUTH) && driveAccountSet()) {
+			/*
 			Intent si = new Intent(appContext, Service.class);
 			si.setAction(Service.GDRIVE_RESTORE);
-			//appContext.startService(si);
 			WakefulIntentService.sendWakefulWork(appContext, si);
+			*/
 		}
 	}
 	
@@ -119,13 +119,13 @@ public class Session implements OnSharedPreferenceChangeListener {
 		PendingIntent tv = mkPI(Service.CHECK_TVDB_RSS);
 		am.cancel(tv);
 		if (checkPremieres())
-			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_DAY,
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_HALF_DAY,
 				AlarmManager.INTERVAL_HALF_DAY, tv);
 		// check Uoccin files changes in Drive every 15 mins
 		PendingIntent gd = mkPI(Service.GDRIVE_SYNC);
 		am.cancel(gd);
-		if (driveSyncEnabled())
-			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+		if (driveSyncEnabled() && driveAccountSet())
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, driveSyncInterval(),
 				driveSyncInterval(), gd);
 	}
 	
@@ -148,7 +148,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 	}
 	
 	public long driveSyncInterval() {
-		return prefs.getInt(PK.GDRVINTV, 15) * 60000;
+		return prefs.getInt(PK.GDRVINTV, 30) * 60000;
 	}
 	
 	// app saved stuff
@@ -166,8 +166,12 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return gdruid;
 	}
 	
-	public String driveUserAccount() {
-		return prefs.getString(PK.GDRVAUTH, null);
+	public boolean driveAccountSet() {
+		return !TextUtils.isEmpty(driveAccountName());
+	}
+	
+	public String driveAccountName() {
+		return prefs.getString(PK.GDRVAUTH, "");
 	}
 	
 	/*
