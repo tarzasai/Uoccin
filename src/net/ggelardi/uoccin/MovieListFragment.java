@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.ggelardi.uoccin.adapters.MovieAdapter;
 import net.ggelardi.uoccin.data.Movie;
+import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.MovieTask;
 import net.ggelardi.uoccin.serv.MovieTask.MovieTaskContainer;
@@ -26,13 +27,16 @@ import android.widget.Toast;
 
 import com.android.photos.views.HeaderGridView;
 
-public class MovieListFragment extends BaseFragment implements MovieTaskContainer, AbsListView.OnItemClickListener {
+public class MovieListFragment extends BaseFragment implements AbsListView.OnItemClickListener, OnTitleListener,
+	MovieTaskContainer {
 	
 	private String type;
 	private String title;
 	private String query;
 	private String[] params;
 	private String search;
+	
+	private boolean forceReload = false;
 	
 	private AbsListView mListView;
 	private MovieAdapter mAdapter;
@@ -103,39 +107,7 @@ public class MovieListFragment extends BaseFragment implements MovieTaskContaine
 		super.onResume();
 		
 		getActivity().setTitle(title);
-		
-		Movie.addOnTitleEventListener(new OnTitleListener() {
-			@Override
-			public void changed(final String state, final Throwable error) {
-				final Activity context = getActivity();
-				if (context != null)
-					context.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (state.equals(OnTitleListener.NOTFOUND)) {
-								showHourGlass(false);
-								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-								if (type.equals(MovieTask.SEARCH))
-									((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
-								else
-									mAdapter.notifyDataSetChanged();
-							} else if (state.equals(OnTitleListener.WORKING)) {
-								showHourGlass(true);
-							} else if (state.equals(OnTitleListener.RELOAD)) {
-								reload();
-							} else if (state.equals(OnTitleListener.ERROR)) {
-								showHourGlass(false);
-								mAdapter.notifyDataSetChanged();
-								Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
-							} else if (state.equals(OnTitleListener.READY)) {
-								showHourGlass(false);
-								mAdapter.notifyDataSetChanged();
-							}
-						}
-					});
-			}
-		});
-		
+		Title.addOnTitleEventListener(this);
 		reload();
 	}
 	
@@ -143,6 +115,7 @@ public class MovieListFragment extends BaseFragment implements MovieTaskContaine
 	public void onPause() {
 		super.onPause();
 		
+		Title.removeOnTitleEventListener(this);
 		if (mTask != null)
 			mTask.cancel(true);
 	}
@@ -204,9 +177,41 @@ public class MovieListFragment extends BaseFragment implements MovieTaskContaine
 
 	@Override
 	public void postExecuteTask(List<Movie> result) {
-		mAdapter.setTitles(result);
 		showHourGlass(false);
 		mTask = null;
+		mAdapter.setTitles(result, forceReload);
+		forceReload = false;
+	}
+	
+	@Override
+	public void onTitleEvent(final String state, final Throwable error) {
+		final Activity context = getActivity();
+		if (context != null)
+			context.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (state.equals(OnTitleListener.NOTFOUND)) {
+						showHourGlass(false);
+						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
+						if (type.equals(MovieTask.SEARCH))
+							((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
+						else
+							mAdapter.notifyDataSetChanged();
+					} else if (state.equals(OnTitleListener.WORKING)) {
+						showHourGlass(true);
+					} else if (state.equals(OnTitleListener.RELOAD)) {
+						forceReload = true;
+						reload();
+					} else if (state.equals(OnTitleListener.ERROR)) {
+						showHourGlass(false);
+						mAdapter.notifyDataSetChanged();
+						Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+					} else if (state.equals(OnTitleListener.READY)) {
+						showHourGlass(false);
+						mAdapter.notifyDataSetChanged();
+					}
+				}
+			});
 	}
 	
 	private void reload() {

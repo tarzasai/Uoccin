@@ -5,6 +5,7 @@ import java.util.List;
 import net.ggelardi.uoccin.adapters.SeriesAdapter;
 import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.SeriesTask;
 import net.ggelardi.uoccin.serv.SeriesTask.SeriesTaskContainer;
@@ -26,7 +27,8 @@ import android.widget.Toast;
 
 import com.android.photos.views.HeaderGridView;
 
-public class SeriesListFragment extends BaseFragment implements SeriesTaskContainer, AbsListView.OnItemClickListener {
+public class SeriesListFragment extends BaseFragment implements AbsListView.OnItemClickListener, OnTitleListener,
+	SeriesTaskContainer {
 	
 	private String type;
 	private String title;
@@ -34,6 +36,8 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	private String[] params;
 	private String details = SeriesAdapter.SERIES_STORY;
 	private String search;
+	
+	private boolean forceReload = false;
 	
 	private AbsListView mListView;
 	private SeriesAdapter mAdapter;
@@ -106,46 +110,15 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 		super.onResume();
 		
 		getActivity().setTitle(title);
-		
-		Series.addOnTitleEventListener(new OnTitleListener() {
-			@Override
-			public void changed(final String state, final Throwable error) {
-				final Activity context = getActivity();
-				if (context != null)
-					context.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (state.equals(OnTitleListener.NOTFOUND)) {
-								showHourGlass(false);
-								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-								if (type.equals(SeriesTask.SEARCH))
-									((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
-								else
-									mAdapter.notifyDataSetChanged();
-							} else if (state.equals(OnTitleListener.WORKING)) {
-								showHourGlass(true);
-							} else if (state.equals(OnTitleListener.RELOAD)) {
-								reload();
-							} else if (state.equals(OnTitleListener.ERROR)) {
-								showHourGlass(false);
-								mAdapter.notifyDataSetChanged();
-								Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
-							} else if (state.equals(OnTitleListener.READY)) {
-								showHourGlass(false);
-								mAdapter.notifyDataSetChanged();
-							}
-						}
-					});
-			}
-		});
-		
+		Title.addOnTitleEventListener(this);
 		reload();
 	}
 	
 	@Override
 	public void onPause() {
 		super.onPause();
-		
+
+		Title.removeOnTitleEventListener(this);
 		if (mTask != null)
 			mTask.cancel(true);
 	}
@@ -159,7 +132,6 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
 	}
 	
 	@Override
@@ -188,9 +160,34 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	}
 	
 	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		int pos = mListView instanceof GridView ? position - 2 : position - 1;
-		mListener.openSeriesInfo(mAdapter.getItem(pos).tvdb_id);
+	public void onTitleEvent(final String state, final Throwable error) {
+		final Activity context = getActivity();
+		if (context != null)
+			context.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (state.equals(OnTitleListener.NOTFOUND)) {
+						showHourGlass(false);
+						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
+						if (type.equals(SeriesTask.SEARCH))
+							((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
+						else
+							mAdapter.notifyDataSetChanged();
+					} else if (state.equals(OnTitleListener.WORKING)) {
+						showHourGlass(true);
+					} else if (state.equals(OnTitleListener.RELOAD)) {
+						forceReload = true;
+						reload();
+					} else if (state.equals(OnTitleListener.ERROR)) {
+						showHourGlass(false);
+						mAdapter.notifyDataSetChanged();
+						Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+					} else if (state.equals(OnTitleListener.READY)) {
+						showHourGlass(false);
+						mAdapter.notifyDataSetChanged();
+					}
+				}
+			});
 	}
 	
 	@Override
@@ -205,9 +202,16 @@ public class SeriesListFragment extends BaseFragment implements SeriesTaskContai
 	
 	@Override
 	public void postExecuteTask(List<Series> result) {
-		mAdapter.setTitles(result);
 		showHourGlass(false);
 		mTask = null;
+		mAdapter.setTitles(result, forceReload);
+		forceReload = false;
+	}
+	
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		int pos = mListView instanceof GridView ? position - 2 : position - 1;
+		mListener.openSeriesInfo(mAdapter.getItem(pos).tvdb_id);
 	}
 	
 	private void reload() {

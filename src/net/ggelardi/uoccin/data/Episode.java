@@ -62,20 +62,20 @@ public class Episode extends Title {
 		EID eid = new EID(series, season, episode);
 		Object tmp = cache.get(eid.toString());
 		if (tmp != null) {
+			
+			if (episode == 1)
+				Log.v("Title", "Episode E01 found, id = " + Integer.toString(tmp.hashCode()));
+			
 			Log.v(TAG, "Episode " + eid + " found in cache");
 			return (Episode) tmp;
 		}
 		Episode res = new Episode(context, series, season, episode);
+		
+		if (episode == 1)
+			Log.v("Title", "Episode E01 NOT found, new id = " + Integer.toString(res.hashCode()));
+		
 		cache.add(eid.toString(), res);
-		Cursor cur = Session.getInstance(context).getDB().query("episode", null, "series=? and season=? and episode=?",
-			new String[] { series, Integer.toString(season), Integer.toString(episode) }, null, null, null);
-		try {
-			if (cur.moveToFirst()) {
-				res.load(cur);
-			}
-		} finally {
-			cur.close();
-		}
+		res.reload();
 		return res;
 	}
 	
@@ -97,9 +97,9 @@ public class Episode extends Title {
 		}
 	}
 	
-	public static Episode get(Context context, String series, int season, int episode) {
+	public static Episode get(Context context, String series, int season, int episode, boolean checkRefresh) {
 		Episode res = Episode.getInstance(context, series, season, episode);
-		if (res.isNew() || res.isOld())
+		if (checkRefresh && (res.isNew() || res.isOld()))
 			res.refresh(false);
 		return res;
 	}
@@ -116,30 +116,6 @@ public class Episode extends Title {
 			}
 		} catch (Exception err) {
 			res = null;
-		}
-		return res;
-	}
-	
-	public static List<Episode> get(Context context, String query, String ... args) {
-		List<Episode> res = new ArrayList<Episode>();
-		Cursor cur = Session.getInstance(context).getDB().rawQuery(query, args);
-		try {
-			String series;
-			int season;
-			int episode;
-			if (cur.moveToFirst()) {
-				int c1 = cur.getColumnIndex("series");
-				int c2 = cur.getColumnIndex("season");
-				int c3 = cur.getColumnIndex("episode");
-				do {
-					series = cur.getString(c1);
-					season = cur.getInt(c2);
-					episode = cur.getInt(c3);
-					res.add(Episode.get(context, series, season, episode));
-				} while (cur.moveToNext());
-			}
-		} finally {
-			cur.close();
 		}
 		return res;
 	}
@@ -284,16 +260,8 @@ public class Episode extends Title {
 			}
 		}
 		//
-		if (modified) {
-			/*SQLiteDatabase db = session.getDB();
-			db.beginTransaction();
-			try {*/
-				save(true);
-				/*db.setTransactionSuccessful();
-			} finally {
-				db.endTransaction();
-			}*/
-		}
+		if (modified)
+			save(true);
 		
 		dispatch(OnTitleListener.READY, null);
 	}
@@ -398,7 +366,8 @@ public class Episode extends Title {
 		if (isnew)
 			session.getDB().insertOrThrow(TABLE, null, cv);
 		else
-			session.getDB().update(TABLE, cv, "tvdb_id=?", new String[] { tvdb_id });
+			session.getDB().update(TABLE, cv, "series = ? and season = ? and episode = ?",
+				new String[] { series, Integer.toString(season), Integer.toString(episode) });
 		Log.i(TAG, "Saved episode " + eid());
 		
 		dispatch(OnTitleListener.READY, null);
@@ -412,20 +381,28 @@ public class Episode extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
+	public void reload() {
+		Cursor cur = session.getDB().query("episode", null, "series=? and season=? and episode=?",
+			new String[] { series, Integer.toString(season), Integer.toString(episode) }, null, null, null);
+		try {
+			if (cur.moveToFirst())
+				load(cur);
+		} finally {
+			cur.close();
+		}
+	}
+	
 	public void refresh(boolean force) {
-		if (Title.ongoingServiceOperation)
-			return;
-		if (TextUtils.isEmpty(tvdb_id) && (TextUtils.isEmpty(series) || season <= 0 || episode <= 0)) {
-			Log.w(TAG, "Missing tvdb_id/series/season/episode, cannot update...");
+		if (TextUtils.isEmpty(series) || season <= 0 || episode <= 0) {
+			Log.w(TAG, "Missing series/season/episode, cannot update...");
 			return;
 		}
-		if (isOld() || force) {
+		if ((isOld() || force) && !Service.isQueued(eid().toString())) {
 			Intent si = new Intent(session.getContext(), Service.class);
 			si.setAction(Service.REFRESH_EPISODE);
 			si.putExtra("series", series);
 			si.putExtra("season", season);
 			si.putExtra("episode", episode);
-			//session.getContext().startService(si);
 			WakefulIntentService.sendWakefulWork(session.getContext(), si);
 		}
 	}
@@ -552,7 +529,7 @@ public class Episode extends Title {
 	
 	public String subtitles() {
 		if (!subtitles.isEmpty())
-			return TextUtils.join("/", subtitles);
+			return TextUtils.join(", ", subtitles);
 		return null;
 	}
 	

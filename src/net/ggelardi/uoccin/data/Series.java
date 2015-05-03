@@ -22,6 +22,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -41,8 +42,9 @@ public class Series extends Title {
 	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;
 	private boolean massUpd = false;
-	
+
 	public List<Episode> episodes = new ArrayList<Episode>();
+	//public List<String> episodes = new ArrayList<String>();
 	
 	public String tvdb_id;
 	public String name;
@@ -266,11 +268,9 @@ public class Series extends Title {
 			rated = chk;
 			modified = true;
 		}
-		/*
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			*/
 			if (modified)
 				save(true);
 			if (epsxml != null && epsxml.getLength() > 0) {
@@ -288,18 +288,15 @@ public class Series extends Title {
 					}
 				}
 				if (lastseason > 0)
-					//db.delete("episode", "series = ? and season > ?",
-					session.getDB().delete("episode", "series = ? and season > ?",
+					db.delete("episode", "series = ? and season > ?",
 						new String[] { tvdb_id, Integer.toString(lastseason) });
 				Collections.sort(lst, new Episode.EpisodeComparator());
 				episodes = lst;
 			}
-			/*
 			db.setTransactionSuccessful();
 		} finally {
 			db.endTransaction();
 		}
-		*/
 		
 		dispatch(OnTitleListener.READY, null);
 	}
@@ -489,8 +486,7 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public synchronized void reload() {
-		dispatch(OnTitleListener.WORKING, null);
+	public void reload() {
 		Cursor cur = session.getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
 			null, null, null);
 		try {
@@ -499,16 +495,24 @@ public class Series extends Title {
 		} finally {
 			cur.close();
 		}
-		episodes = Episode.get(session.getContext(), "select series, season, episode from episode " +
-			"where series = ? order by season, episode", new String[] { tvdb_id });
-		lastseason = episodes.size() > 0 ? episodes.get(episodes.size()-1).season : 0;
-		dispatch(OnTitleListener.READY, null);
+		List<Episode> lst = new ArrayList<Episode>();
+		int sno = 0;
+		cur = session.getDB().query("episode", new String[] { "season", "episode" },
+			"series = ?", new String[] { tvdb_id }, null, null, "season, episode");
+		try {
+			while (cur.moveToNext()) {
+				sno = cur.getInt(0);
+				lst.add(Episode.get(session.getContext(), tvdb_id, sno, cur.getInt(1), false));
+			}
+		} finally {
+			cur.close();
+		}
+		episodes = lst;
+		lastseason = sno;
 	}
 	
 	public void refresh(boolean force) {
-		if (Title.ongoingServiceOperation)
-			return;
-		if (isOld() || force) {
+		if ((isOld() || force) && !Service.isQueued(tvdb_id)) {
 			Intent si = new Intent(session.getContext(), Service.class);
 			si.setAction(Service.REFRESH_SERIES);
 			si.putExtra("tvdb_id", tvdb_id);
@@ -524,9 +528,6 @@ public class Series extends Title {
 		if (timestamp > 0) {
 			if (timestamp == 1)
 				return true;
-			for (Episode ep: episodes)
-				if (ep.isOld())
-					return true;
 			long now = System.currentTimeMillis();
 			long ageLocal = now - timestamp;
 			if (firstAired > 0) {

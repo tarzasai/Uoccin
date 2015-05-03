@@ -20,6 +20,7 @@ import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.GSA;
 import net.ggelardi.uoccin.api.XML;
 import net.ggelardi.uoccin.data.Episode;
+import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
@@ -53,6 +54,8 @@ import com.owlike.genson.GensonBuilder;
 public class Service extends WakefulIntentService {
 	private static final String TAG = "Service";
 	
+	private static final List<String> queue = new ArrayList<String>();
+	
 	public static final String CLEAN_DB_CACHE = "net.ggelardi.uoccin.CLEAN_DB_CACHE";
 	public static final String REFRESH_MOVIE = "net.ggelardi.uoccin.REFRESH_MOVIE";
 	public static final String REFRESH_SERIES = "net.ggelardi.uoccin.REFRESH_SERIES";
@@ -61,6 +64,10 @@ public class Service extends WakefulIntentService {
 	public static final String GDRIVE_SYNC = "net.ggelardi.uoccin.GDRIVE_SYNC";
 	public static final String GDRIVE_BACKUP = "net.ggelardi.uoccin.GDRIVE_BACKUP";
 	public static final String GDRIVE_RESTORE = "net.ggelardi.uoccin.GDRIVE_RESTORE";
+	
+	public static boolean isQueued(String titleId) {
+		return queue.contains(titleId);
+	}
 	
 	private Session session;
 	private GSA drive;
@@ -75,7 +82,6 @@ public class Service extends WakefulIntentService {
 		session = Session.getInstance(this);
 		String act = intent != null ? intent.getAction() : null;
 		Log.v(TAG, act);
-		Title.ongoingServiceOperation = true;
 		try {
 			if (TextUtils.isEmpty(act)) {
 				session.registerAlarms();
@@ -104,8 +110,6 @@ public class Service extends WakefulIntentService {
 			sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
 		} catch (Exception err) {
 			sendNotification(err);
-		} finally {
-			Title.ongoingServiceOperation = false;
 		}
 	}
 	
@@ -138,82 +142,91 @@ public class Service extends WakefulIntentService {
 	}
 	
 	private void refreshMovie(String imdb_id, boolean forceRefresh, boolean forceCommit) {
-		Movie mov = Movie.get(this, imdb_id);
-		if (!(forceRefresh || mov.isNew() || mov.isOld())) // TODO wifi check?
+		if (isQueued(imdb_id))
 			return;
-		Log.d(TAG, "refreshing movie " + imdb_id);
-		Document doc;
+		queue.add(imdb_id);
 		try {
-			doc = XML.OMDB.getInstance().getMovie(imdb_id);
-		} catch (Exception err) {
-			Log.e(TAG, "refreshMovie", err);
-			if (!err.getLocalizedMessage().startsWith("404"))
-				sendNotification(err);
-			return;
-		}
-		String res = Commons.XML.attrText(doc.getDocumentElement(), "response");
-		if (TextUtils.isEmpty(res)) {
-			Log.e(TAG, "Unknow response for imdb=" + imdb_id);
-			return;
-		}
-		if (!res.toLowerCase(Locale.getDefault()).equals("true")) {
-			String error;
+			Movie mov = Movie.get(this, imdb_id);
+			if (!(forceRefresh || mov.isNew() || mov.isOld())) // TODO wifi check?
+				return;
+			Log.d(TAG, "refreshing movie " + imdb_id);
+			Document doc;
 			try {
-				error = Commons.XML.nodeText(doc.getDocumentElement(), "error");
+				doc = XML.OMDB.getInstance().getMovie(imdb_id);
 			} catch (Exception err) {
-				error = "unknown error";
+				Log.e(TAG, "refreshMovie", err);
+				if (!err.getLocalizedMessage().startsWith("404"))
+					sendNotification(err);
+				return;
 			}
-			Log.e(TAG, "Error on imdb=" + imdb_id + ": " + error);
-			return;
+			String res = Commons.XML.attrText(doc.getDocumentElement(), "response");
+			if (TextUtils.isEmpty(res)) {
+				Log.e(TAG, "Unknow response for imdb=" + imdb_id);
+				return;
+			}
+			if (!res.toLowerCase(Locale.getDefault()).equals("true")) {
+				String error;
+				try {
+					error = Commons.XML.nodeText(doc.getDocumentElement(), "error");
+				} catch (Exception err) {
+					error = "unknown error";
+				}
+				Log.e(TAG, "Error on imdb=" + imdb_id + ": " + error);
+				return;
+			}
+			Movie.get(this, (Element) doc.getElementsByTagName("movie").item(0));
+		} finally {
+			queue.remove(imdb_id);
 		}
-		Movie.get(this, (Element) doc.getElementsByTagName("movie").item(0));
 	}
 	
 	private void refreshSeries(String tvdb_id, boolean forceRefresh, boolean forceCommit) {
-		Series ser = Series.get(this, tvdb_id);
-		if (!(forceRefresh || ser.isNew() || ser.isOld())) // TODO wifi check?
+		if (isQueued(tvdb_id))
 			return;
-		Log.d(TAG, "refreshing series " + tvdb_id);
-		Document doc;
+		queue.add(tvdb_id);
 		try {
-			doc = XML.TVDB.getInstance().getFullSeries(tvdb_id, session.language());
-		} catch (Exception err) {
-			Log.e(TAG, "refreshSeries", err);
-			if (!err.getLocalizedMessage().startsWith("404"))
-				sendNotification(err);
-			return;
-		}
-		SQLiteDatabase db = session.getDB();
-		db.beginTransaction();
-		try {
-			Series.get(this, (Element) doc.getElementsByTagName("Series").item(0), doc.getElementsByTagName("Episode"));
-			db.setTransactionSuccessful();
+			Series ser = Series.get(this, tvdb_id);
+			if (!(forceRefresh || ser.isNew() || ser.isOld())) // TODO wifi check?
+				return;
+			Log.d(TAG, "refreshing series " + tvdb_id);
+			Document doc;
+			try {
+				doc = XML.TVDB.getInstance().getFullSeries(tvdb_id, session.language());
+			} catch (Exception err) {
+				Log.e(TAG, "refreshSeries", err);
+				if (!err.getLocalizedMessage().startsWith("404"))
+					sendNotification(err);
+				return;
+			}
+			Series.get(this, (Element) doc.getElementsByTagName("Series").item(0),
+				doc.getElementsByTagName("Episode"));
 		} finally {
-			db.endTransaction();
+			queue.remove(tvdb_id);
 		}
 	}
 	
 	private void refreshEpisode(String series, int season, int episode) {
-		Episode epi = Episode.get(this, series, season, episode);
-		if (!(epi.isNew() || epi.isOld())) // TODO wifi check?
+		String eid = new EID(series, season, episode).toString();
+		if (isQueued(eid))
 			return;
-		Log.d(TAG, "refreshing episode " + epi.eid());
-		Document doc;
+		queue.add(eid);
 		try {
-			doc = XML.TVDB.getInstance().getEpisode(series, season, episode, session.language());
-		} catch (Exception err) {
-			Log.e(TAG, "refreshEpisode", err);
-			if (!err.getLocalizedMessage().startsWith("404"))
-				sendNotification(err);
-			return;
-		}
-		SQLiteDatabase db = session.getDB();
-		db.beginTransaction();
-		try {
+			Episode epi = Episode.get(this, series, season, episode, false);
+			if (!(epi.isNew() || epi.isOld())) // TODO wifi check?
+				return;
+			Log.d(TAG, "refreshing episode " + epi.eid());
+			Document doc;
+			try {
+				doc = XML.TVDB.getInstance().getEpisode(series, season, episode, session.language());
+			} catch (Exception err) {
+				Log.e(TAG, "refreshEpisode", err);
+				if (!err.getLocalizedMessage().startsWith("404"))
+					sendNotification(err);
+				return;
+			}
 			Episode.get(this, (Element) doc.getElementsByTagName("Episode").item(0));
-			db.setTransactionSuccessful();
 		} finally {
-			db.endTransaction();
+			queue.remove(eid);
 		}
 	}
 	
@@ -304,84 +317,131 @@ public class Service extends WakefulIntentService {
 		return res;
 	}
 	
-	private void checkRestoreMovie(String imdb_id) {
-		Log.d(TAG, "checkRestoreMovie: " + imdb_id);
-		Movie mov = Movie.get(this, imdb_id);
-		if (mov.isNew() || mov.isOld())
-			refreshMovie(imdb_id, false, true);
+	private void saveMovie(ContentValues data) {
+		SQLiteDatabase db = session.getDB();
+		String cond = "imdb_id = ?";
+		String[] args = new String[] { data.getAsString("imdb_id") };
+		boolean chk;
+		Cursor cur = db.query("movie", null, cond, args, null, null, null);
+		try {
+			chk = cur.moveToFirst();
+		} finally {
+			cur.close();
+		}
+		if (chk)
+			db.update("movie", data, cond, args);
+		else {
+			data.put("name", "N/A");
+			data.put("timestamp", 1);
+			db.insertOrThrow("movie", null, data);
+		}
 	}
 	
-	private void checkRestoreSeries(String tvdb_id, Integer season, Integer episode) {
-		Log.d(TAG, "checkRestoreSeries: " + tvdb_id);
-		Series ser = Series.get(this, tvdb_id);
-		if (ser.isNew() || ser.isOld())
-			refreshSeries(tvdb_id, false, true);
-		else if (season != null && !ser.seasons().contains(season))
-			refreshSeries(tvdb_id, false, true);
-		else if (season != null && episode != null) {
-			Episode ep = ser.lastEpisode(season);
-			if (ep == null || ep.episode < episode)
-				refreshSeries(tvdb_id, false, true);
+	private void saveSeries(ContentValues data) {
+		SQLiteDatabase db = session.getDB();
+		String cond = "tvdb_id = ?";
+		String[] args = new String[] { data.getAsString("tvdb_id") };
+		boolean chk;
+		Cursor cur = db.query("series", null, cond, args, null, null, null);
+		try {
+			chk = cur.moveToFirst();
+		} finally {
+			cur.close();
+		}
+		if (!chk) {
+			data.put("name", "N/A");
+			data.put("timestamp", 1);
+			db.insertOrThrow("series", null, data);
+		} else if (data.size() > 1) // saveEpisode() check
+			db.update("series", data, cond, args);
+	}
+	
+	private void saveEpisode(ContentValues data) {
+		SQLiteDatabase db = session.getDB();
+		String cond = "series = ? and season = ? and episode = ?";
+		String tvdb_id = data.getAsString("series");
+		String[] args = new String[] { tvdb_id, data.getAsString("season"), data.getAsString("episode") };
+		boolean chk;
+		Cursor cur = db.query("episode", null, cond, args, null, null, null);
+		try {
+			chk = cur.moveToFirst();
+		} finally {
+			cur.close();
+		}
+		ContentValues series = new ContentValues();
+		series.put("tvdb_id", tvdb_id);
+		saveSeries(series);
+		if (chk)
+			db.update("episode", data, cond, args);
+		else {
+			data.put("timestamp", 1);
+			db.insertOrThrow("episode", null, data);
 		}
 	}
 	
 	private void applyChange(long id, String target, String title, String field, String value) {
-		SQLiteDatabase db = session.getDB();
 		try {
 			ContentValues cv = new ContentValues();
-			cv.put("timestamp", System.currentTimeMillis());
 			if (target.equals(Session.QUEUE_MOVIE)) {
-				checkRestoreMovie(title);
+				cv.put("imdb_id", title);
 				if (field.equals("watchlist"))
 					cv.put("watchlist", Boolean.parseBoolean(value));
-				else if (field.equals("collected"))
-					cv.put("collected", Boolean.parseBoolean(value));
-				else if (field.equals("watched"))
+				else if (field.equals("collected")) {
+					boolean coll = Boolean.parseBoolean(value);
+					cv.put("collected", coll);
+					if (!coll)
+						cv.putNull("subtitles");
+				} else if (field.equals("watched"))
 					cv.put("watched", Boolean.parseBoolean(value));
-				else if (field.equals("rating"))
-					cv.put("rating", Integer.parseInt(value));
-				else if (field.equals("tags"))
+				else if (field.equals("rating")) {
+					int rating = Integer.parseInt(value);
+					cv.put("rating", rating);
+					if (rating > 0)
+						cv.put("watched", true);
+				} else if (field.equals("tags"))
 					cv.put("tags", value);
 				else if (field.equals("subtitles"))
 					cv.put("subtitles", value);
 				else
 					throw new Exception("Invalid field '" + field + "'");
-				db.update("movie", cv, "imdb_id = ?", new String[] { title });
-				Movie.get(this, title).reload();
+				saveMovie(cv);
 			} else if (target.equals(Session.QUEUE_SERIES)) {
 				String[] parts = title.split("\\.");
-				checkRestoreSeries(parts[0], parts.length > 1 ? Integer.parseInt(parts[1]) : null,
-					parts.length > 2 ? Integer.parseInt(parts[2]) : null);
-				String table = "watchlist|rating|tags".contains(field) ? "series" : "episode";
-				String where = table.equals("series") ? "tvdb_id = ?" : "series = ?";
-				List<String> args = new ArrayList<String>();
-				args.add(parts[0]);
-				if (table.equals("episode")) {
-					if (parts.length > 1) {
-						where += " and season = ?";
-						args.add(parts[1]);
-					}
-					if (parts.length > 2) {
-						where += " and episode = ?";
-						args.add(parts[2]);
-					}
-				}
-				if (field.equals("watchlist"))
+				if (parts.length != 1 && parts.length != 3)
+					throw new Exception("Invalid key '" + title + "'");
+				if (field.equals("watchlist")) {
+					cv.put("tvdb_id", title);
 					cv.put("watchlist", Boolean.parseBoolean(value));
-				else if (field.equals("rating"))
+				} else if (field.equals("rating")) {
+					cv.put("tvdb_id", title);
 					cv.put("rating", Integer.parseInt(value));
-				else if (field.equals("tags"))
+				} else if (field.equals("tags")) {
+					cv.put("tvdb_id", title);
 					cv.put("tags", value);
-				else if (field.equals("collected"))
-					cv.put("collected", Boolean.parseBoolean(value));
-				else if (field.equals("watched"))
+				} else if (field.equals("collected")) {
+					cv.put("series", parts[0]);
+					cv.put("season", Integer.parseInt(parts[1]));
+					cv.put("episode", Integer.parseInt(parts[2]));
+					boolean coll = Boolean.parseBoolean(value);
+					cv.put("collected", coll);
+					if (!coll)
+						cv.putNull("subtitles");
+				} else if (field.equals("watched")) {
+					cv.put("series", parts[0]);
+					cv.put("season", Integer.parseInt(parts[1]));
+					cv.put("episode", Integer.parseInt(parts[2]));
 					cv.put("watched", Boolean.parseBoolean(value));
-				else if (field.equals("subtitles"))
+				} else if (field.equals("subtitles")) {
+					cv.put("series", parts[0]);
+					cv.put("season", Integer.parseInt(parts[1]));
+					cv.put("episode", Integer.parseInt(parts[2]));
 					cv.put("subtitles", value);
-				else
+				} else
 					throw new Exception("Invalid field '" + field + "'");
-				db.update(table, cv, where, args.toArray(new String[args.size()]));
-				Series.get(this, parts[0]).reload();
+				if (cv.size() == 2)
+					saveSeries(cv);
+				else
+					saveEpisode(cv);
 			}
 		} catch (Exception err) {
 			Log.e(TAG, "Error on command " + Long.toString(id), err);
@@ -410,7 +470,7 @@ public class Service extends WakefulIntentService {
 				String fn = SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
 				drive.writeFile(null, fn, MIME.TEXT, sb.toString());
 			}
-			db.delete("queue_in", null, null);
+			db.delete("queue_out", null, null);
 			// load other devices' diffs
 			int lines = 0;
 			File file;
@@ -426,12 +486,15 @@ public class Service extends WakefulIntentService {
 			// apply changes
 			Cursor qi = db.query("queue_in", null, null, null, null, null, "timestamp");
 			try {
-				while (qi.moveToNext())
+				while (qi.moveToNext()) {
+					Log.d(TAG, Commons.logCursor("apply change", qi));
 					applyChange(qi.getLong(0), qi.getString(1), qi.getString(2), qi.getString(3), qi.getString(4));
+				}
 			} finally {
 				qi.close();
 				db.delete("queue_in", null, null);
 			}
+			Title.dispatch(OnTitleListener.RELOAD, null);
 		} catch (Exception err) {
 			Log.e(TAG, "driveSync", err);
 			throw err;

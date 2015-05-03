@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -510,8 +511,7 @@ public class Movie extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public synchronized void reload() {
-		//dispatch(OnTitleListener.WORKING, null);
+	public void reload() {
 		Cursor cur = session.getDB().query(TABLE, null, "imdb_id=?", new String[] { imdb_id },
 			null, null, null);
 		try {
@@ -520,13 +520,10 @@ public class Movie extends Title {
 		} finally {
 			cur.close();
 		}
-		//dispatch(OnTitleListener.READY, null);
 	}
 	
 	public void refresh(boolean force) {
-		if (Title.ongoingServiceOperation)
-			return;
-		if (isOld() || force) {
+		if ((isOld() || force) && !Service.isQueued(imdb_id)) {
 			Intent si = new Intent(session.getContext(), Service.class);
 			si.setAction(Service.REFRESH_MOVIE);
 			si.putExtra("imdb_id", imdb_id);
@@ -678,6 +675,42 @@ public class Movie extends Title {
 			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
 			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
+	}
+	
+	public String name() {
+		return TextUtils.isEmpty(name) ? "N/A" : name;
+	}
+	
+	public String plot() {
+		return TextUtils.isEmpty(plot) ? "N/A" : plot;
+	}
+	
+	public String released() {
+		if (released <= 0)
+			return "N/A";
+		long now = System.currentTimeMillis();
+		String res = DateUtils.getRelativeTimeSpanString(released, now, DateUtils.DAY_IN_MILLIS).toString();
+		if (Math.abs(now - released)/(1000 * 60 * 60) < 168)
+			res += " (" + Commons.SDF.loc("EEE").format(released) + ")";
+		return res;
+	}
+	
+	public String actors() {
+		return actors.isEmpty() ? "N/A" : TextUtils.join(", ", actors);
+	}
+	
+	public String writers() {
+		return writers.isEmpty() ? "N/A" : TextUtils.join(", ", writers);
+	}
+	
+	public String director() {
+		return TextUtils.isEmpty(director) ? "N/A" : director;
+	}
+	
+	public String subtitles() {
+		if (!subtitles.isEmpty())
+			return TextUtils.join(", ", subtitles);
+		return null;
 	}
 	
 	public String imdbUrl() {

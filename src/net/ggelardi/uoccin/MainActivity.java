@@ -12,6 +12,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
@@ -216,6 +217,16 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			case R.id.action_test_gdres:
 				WakefulIntentService.sendWakefulWork(this,
 					new Intent(this, Service.class).setAction(Service.GDRIVE_RESTORE));
+				return true;
+			case R.id.action_test_check:
+				Cursor cr = session.getDB().rawQuery("select episode, collected, watched, subtitles " +
+					"from episode where series = '82459' and season = 7 order by episode", null);
+				try {
+					while (cr.moveToNext())
+						Log.v("Title", Commons.logCursor("episode", cr));
+				} finally {
+					cr.close();
+				}
 				return true;
 			case R.id.action_test_tvdbn:
 				WakefulIntentService.sendWakefulWork(this,

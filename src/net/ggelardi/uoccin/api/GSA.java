@@ -130,7 +130,7 @@ public class GSA {
 			StringBuilder content = new StringBuilder();
 			String line;
 			while ((line = reader.readLine()) != null)
-				content.append(line);
+				content.append(line).append("\n");
 			return content.toString();
 		} finally {
 			if (inputStream != null)

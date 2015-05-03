@@ -111,8 +111,11 @@ public class EpisodeAdapter extends BaseAdapter {
 		return view;
 	}
 	
-	public void setTitles(List<Episode> titles) {
+	public void setTitles(List<Episode> titles, boolean forceReload) {
 		items = titles;
+		if (forceReload)
+			for (Episode ep: items)
+				ep.reload();
 		switches = false;
     	notifyDataSetChanged();
 	}

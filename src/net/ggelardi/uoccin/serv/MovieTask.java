@@ -26,7 +26,7 @@ public class MovieTask extends AsyncTask<String, Void, List<Movie>> {
     protected void onPreExecute() {
     	container.preExecuteTask();
 	}
-
+    
 	@Override
 	protected List<Movie> doInBackground(String... params) {
     	List<Movie> res;

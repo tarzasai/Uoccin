@@ -2,6 +2,7 @@ package net.ggelardi.uoccin;
 
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import android.app.Activity;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -20,7 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class EpisodeInfoFragment extends BaseFragment {
+public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener {
 	
 	private String series;
 	private int seasNo;
@@ -188,47 +190,64 @@ public class EpisodeInfoFragment extends BaseFragment {
 	public void onResume() {
 		super.onResume();
 		
-		Episode.addOnTitleEventListener(new OnTitleListener() {
-			@Override
-			public void changed(final String state, final Throwable error) {
-				final Activity context = getActivity();
-				if (context != null)
-					context.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (state.equals(OnTitleListener.NOTFOUND)) {
-								showHourGlass(false);
-								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-							} else if (state.equals(OnTitleListener.WORKING)) {
-								showHourGlass(true);
-							} else if (state.equals(OnTitleListener.ERROR)) {
-								showHourGlass(false);
-								Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
-							} else if (state.equals(OnTitleListener.READY)) {
-								showHourGlass(false);
-								showInfo();
-							}
-						}
-					});
-			}
-		});
-		
 		WindowManager wm = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
 		Point size = new Point();
 		wm.getDefaultDisplay().getSize(size);
 		pstWidth = size.x;
 		pstHeight = Math.round((pstWidth*225)/400);
 		
-		episode = Episode.get(getActivity(), series, seasNo, episNo);
+		episode = Episode.get(getActivity(), series, seasNo, episNo, true);
+		Title.addOnTitleEventListener(this);
+		
 		if (episode.isNew() || episode.isOld())
 			episode.refresh(true);
 		else
 			showInfo();
 	}
 	
+	@Override
+	public void onPause() {
+		super.onPause();
+		
+		Title.removeOnTitleEventListener(this);
+	}
+	
+	@Override
+	public void onTitleEvent(final String state, final Throwable error) {
+		final Activity context = getActivity();
+		if (context != null)
+			context.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (state.equals(OnTitleListener.NOTFOUND)) {
+						showHourGlass(false);
+						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
+					} else if (state.equals(OnTitleListener.WORKING)) {
+						showHourGlass(true);
+					} else if (state.equals(OnTitleListener.RELOAD)) {
+						episode.reload();
+						showInfo();
+					} else if (state.equals(OnTitleListener.ERROR)) {
+						showHourGlass(false);
+						Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+					} else if (state.equals(OnTitleListener.READY)) {
+						showHourGlass(false);
+						showInfo();
+					}
+				}
+			});
+	}
+	
 	private void showInfo() {
 		if (txt_seas == null)
 			return;
+		
+		
+		Log.v("Title", getTag());
+		Log.v("Title", getTag());
+		Log.v("Title", episode.eid().sequence() + "  -  " + Integer.toString(episode.hashCode()));
+		
+		
 		getActivity().setTitle(episode.getSeries().name);
 		lbl_seas.setCompoundDrawablesWithIntrinsicBounds(episode.isPilot() ? R.drawable.ics_action_news : 0, 0, 0, 0);
 		txt_seas.setText(Integer.toString(episode.season));

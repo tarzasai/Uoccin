@@ -38,21 +38,26 @@
     <string name="lbl_comm_tvdb">TVDB</string>
     <string name="lbl_comm_imdb">IMDB</string>
     <string name="lbl_comm_refr">Refresh</string>
+    <string name="lbl_comm_plot">plot</string>
     <string name="lbl_comm_link">links</string>
     <string name="lbl_comm_seas">season</string>
     <string name="lbl_comm_epis">episode</string>
+    <string name="lbl_comm_ratd">rated:</string>
+    <string name="lbl_comm_gens">genre</string>
+    <string name="lbl_comm_tags">tags</string>
     
-    <string name="lbl_serinf_ratd">rated:</string>
-    <string name="lbl_serinf_plot">plot</string>
     <string name="lbl_serinf_with">starring</string>
-    <string name="lbl_serinf_gens">genre</string>
-    <string name="lbl_serinf_tags">tags</string>
     <string name="lbl_serinf_seas">seasons</string>
     
-    <string name="lbl_epinf_plot">plot</string>
     <string name="lbl_epinf_gues">guest star(s)</string>
     <string name="lbl_epinf_writ">writer(s)</string>
     <string name="lbl_epinf_dire">director</string>
+    
+    <string name="lbl_movinf_dire">a film by</string>
+    <string name="lbl_movinf_cast">cast</string>
+    <string name="lbl_movinf_meta">Metascore:</string>
+    <string name="lbl_movinf_irat">IMDB rating:</string>
+    <string name="lbl_movinf_ivot">IMDB votes:</string>
     
     <string name="empty_text"></string>
     <string name="none_text">None</string>
@@ -115,24 +120,32 @@
     <string name="sample_number2">16</string>
     <string name="sample_number3">316</string>
     <string name="sample_number4">2016</string>
+    <string name="sample_year">2007</string>
     <string name="sample_date1">Oct 13, 2013</string>
     <string name="sample_date2">13/02/2013</string>
     <string name="sample_time1">Wed 10:00 PM</string>
     <string name="sample_network">CBS</string>
+    <string name="sample_country">USA, Canada</string>
     <string name="sample_info">History Channel - Wed 10:00 PM</string>
     <string name="sample_epnum">4x13</string>
     <string name="sample_episode">4x13 - M.I.A.</string>
     <string name="sample_plot1">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</string>
     <string name="sample_plot2">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</string>
-    <string name="sample_guy">Michael Kevin Shahi III</string>
+    <string name="sample_guy">George Washington</string>
     <string name="sample_people">Michael Emerson, Jim Caviezel, Kevin Chapman, Amy Acker, Sarah Shahi, Enrico Colantoni, Taraji P. Henson</string>
     <string name="sample_genres">Action, Adventure, Drama, Mystery, Thriller</string>
     <string name="sample_nextd">in 12 hours (Mon)</string>
     <string name="sample_rated">TV-14</string>
-    <string name="sample_subs">it/en</string>
+    <string name="sample_subs">eng, ita</string>
     <string name="sample_stat">12 / 43 collected</string>
     <string name="sample_stat1">121 (43 missing)</string>
     <string name="sample_tags">pippo, pluto, paperino, tafazzi, perdinci, drocopio</string>
     <string name="sample_season">S03</string>
+    <string name="sample_awards">Won 1 Oscar. Another 32 wins &amp; 93 nominations.</string>
+    <string name="sample_director">Joel Coen &amp; Ethan Coen</string>
+    <string name="sample_language">english, german</string>
+    <string name="sample_metascore">74</string>
+    <string name="sample_imdbrating">8.7</string>
+    <string name="sample_imdbvotes">573,918</string>
 
 </resources>

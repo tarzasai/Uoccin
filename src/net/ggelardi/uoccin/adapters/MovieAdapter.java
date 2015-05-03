@@ -75,8 +75,11 @@ public class MovieAdapter extends BaseAdapter {
 		return view;
 	}
 	
-	public void setTitles(List<Movie> titles) {
+	public void setTitles(List<Movie> titles, boolean forceReload) {
 		items = titles;
+		if (forceReload)
+			for (Movie mov: items)
+				mov.reload();
     	notifyDataSetChanged();
 	}
 	

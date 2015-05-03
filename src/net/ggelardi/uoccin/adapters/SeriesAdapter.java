@@ -191,8 +191,11 @@ public class SeriesAdapter extends BaseAdapter {
 		return view;
 	}
 	
-	public void setTitles(List<Series> titles) {
+	public void setTitles(List<Series> titles, boolean forceReload) {
 		items = titles;
+		if (forceReload)
+			for (Series ser: items)
+				ser.reload();
     	notifyDataSetChanged();
 	}
 	

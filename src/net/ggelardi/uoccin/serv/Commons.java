@@ -26,6 +26,7 @@ import retrofit.client.Request;
 import retrofit.client.Response;
 import retrofit.client.UrlConnectionClient;
 import retrofit.mime.TypedByteArray;
+import android.database.Cursor;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -55,9 +56,8 @@ public class Commons {
 	
 	public static class GD {
 		public static final String FOLDER = "uoccin";
-		//public static final String FOLDER = "uoccin_test";
-		//public static final String BACKUP = "uoccin.json";
-		public static final String BACKUP = "uoccin_test.json";
+		public static final String BACKUP = "uoccin.json";
+		//public static final String BACKUP = "uoccin_test.json";
 	}
 	
 	public static class SN {
@@ -154,6 +154,32 @@ public class Commons {
 		Log.v("RPC", msg);
 		Log.v("RPC", error.getUrl());
 		return msg;
+	}
+	
+	public static String logCursor(String prefix, Cursor cr) {
+		StringBuilder sb = new StringBuilder().append(prefix + ": ");
+		for (int i = 0; i < cr.getColumnCount(); i++) {
+			sb.append(cr.getColumnName(i)).append("=");
+			switch (cr.getType(i)) {
+				case Cursor.FIELD_TYPE_NULL:
+					sb.append("NULL");
+					break;
+				case Cursor.FIELD_TYPE_STRING:
+					sb.append("\"").append(cr.getString(i)).append("\"");
+					break;
+				case Cursor.FIELD_TYPE_INTEGER:
+					sb.append(cr.getInt(i));
+					break;
+				case Cursor.FIELD_TYPE_FLOAT:
+					sb.append(cr.getFloat(i));
+					break;
+				case Cursor.FIELD_TYPE_BLOB:
+					sb.append("BIN(").append(cr.getBlob(i).length).append("b)");
+					break;
+			}
+			sb.append(" ");
+		}
+		return sb.toString();
 	}
 	
 	public static class WaitingUCC extends UrlConnectionClient {

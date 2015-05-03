@@ -9,15 +9,17 @@ public abstract class Title {
 	
 	protected static final List<OnTitleListener> listeners = new ArrayList<OnTitleListener>();
 	
-	public static boolean ongoingServiceOperation = false;
-	
 	public static void addOnTitleEventListener(OnTitleListener aListener) {
 		listeners.add(aListener);
 	}
 	
+	public static void removeOnTitleEventListener(OnTitleListener aListener) {
+		listeners.remove(aListener);
+	}
+	
 	public static void dispatch(String state, Throwable error) {
 		for (OnTitleListener listener: listeners)
-			listener.changed(state, error);
+			listener.onTitleEvent(state, error);
 	}
 	
 	protected Session session;
@@ -39,6 +41,6 @@ public abstract class Title {
 		public static String READY = "OnTitleListener.READY";
 		public static String ERROR = "OnTitleListener.ERROR";
 		
-		void changed(final String state, final Throwable error);
+		void onTitleEvent(final String state, final Throwable error);
 	}
 }

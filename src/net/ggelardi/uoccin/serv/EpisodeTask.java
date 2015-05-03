@@ -44,7 +44,7 @@ public class EpisodeTask extends AsyncTask<String, Void, List<Episode>> {
 	    		int c2 = cr.getColumnIndex("season");
 	    		int c3 = cr.getColumnIndex("episode");
 	    		while (cr.moveToNext())
-	    			res.add(Episode.get(container.getContext(), cr.getString(c1), cr.getInt(c2), cr.getInt(c3)));
+	    			res.add(Episode.get(container.getContext(), cr.getString(c1), cr.getInt(c2), cr.getInt(c3), true));
 	    	} finally {
 	    		cr.close();
 	    	}

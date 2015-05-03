@@ -43,8 +43,14 @@
         android:title="(test) Restore"/>
     
     <item
-        android:id="@+id/action_test_tvdbn"
+        android:id="@+id/action_test_check"
         android:orderInCategory="5"
+        android:showAsAction="never"
+        android:title="(test) Check query"/>
+    
+    <item
+        android:id="@+id/action_test_tvdbn"
+        android:orderInCategory="6"
         android:showAsAction="never"
         android:title="(test) TVDB news"/>
 

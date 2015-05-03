@@ -4,7 +4,9 @@ import java.util.Locale;
 
 import net.ggelardi.uoccin.adapters.SeasonAdapter;
 import net.ggelardi.uoccin.comp.ExpandableHeightGridView;
+import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -15,6 +17,7 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,7 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class SeriesInfoFragment extends BaseFragment {
+public class SeriesInfoFragment extends BaseFragment implements OnTitleListener {
 
 	private String tvdb_id;
 	private Series series;
@@ -196,31 +199,6 @@ public class SeriesInfoFragment extends BaseFragment {
 	public void onResume() {
 		super.onResume();
 		
-		Series.addOnTitleEventListener(new OnTitleListener() {
-			@Override
-			public void changed(final String state, final Throwable error) {
-				final Activity context = getActivity();
-				if (context != null)
-					context.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (state.equals(OnTitleListener.NOTFOUND)) {
-								showHourGlass(false);
-								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-							} else if (state.equals(OnTitleListener.WORKING)) {
-								showHourGlass(true);
-							} else if (state.equals(OnTitleListener.ERROR)) {
-								showHourGlass(false);
-								Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
-							} else if (state.equals(OnTitleListener.READY)) {
-								showHourGlass(false);
-								showInfo();
-							}
-						}
-					});
-			}
-		});
-		
 		WindowManager wm = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
 		Point size = new Point();
 		wm.getDefaultDisplay().getSize(size);
@@ -228,15 +206,61 @@ public class SeriesInfoFragment extends BaseFragment {
 		pstHeight = Math.round((pstWidth*140)/758);
 		
 		series = Series.get(getActivity(), tvdb_id);
+		Title.addOnTitleEventListener(this);
+		
 		if (series.isNew() || series.isOld() || series.episodes.isEmpty())
 			series.refresh(true);
 		else
 			showInfo();
 	}
 	
+	@Override
+	public void onPause() {
+		super.onPause();
+		
+		Title.removeOnTitleEventListener(this);
+	}
+
+	@Override
+	public void onTitleEvent(final String state, final Throwable error) {
+		final Activity context = getActivity();
+		if (context != null)
+			context.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (state.equals(OnTitleListener.NOTFOUND)) {
+						showHourGlass(false);
+						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
+					} else if (state.equals(OnTitleListener.WORKING)) {
+						showHourGlass(true);
+					} else if (state.equals(OnTitleListener.RELOAD)) {
+						series.reload();
+						showInfo();
+					} else if (state.equals(OnTitleListener.ERROR)) {
+						showHourGlass(false);
+						Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+					} else if (state.equals(OnTitleListener.READY)) {
+						showHourGlass(false);
+						showInfo();
+					}
+				}
+			});
+	}
+	
 	private void showInfo() {
 		if (img_bann == null)
 			return;
+		
+		
+		Log.v("Title", getTag());
+		Log.v("Title", getTag());
+		Episode ep;
+		for (int i = 0; i < series.episodes.size(); i++) {
+			ep = series.episodes.get(i);
+			Log.v("Title", ep.eid().sequence() + "  -  " + Integer.toString(ep.hashCode()));
+		}
+		
+		
 		getActivity().setTitle(series.name);
 		session.picasso(series.banner).resize(pstWidth, pstHeight).into(img_bann);
 		txt_netw.setText(series.network());

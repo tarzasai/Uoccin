@@ -5,6 +5,7 @@ import java.util.List;
 import net.ggelardi.uoccin.adapters.EpisodeAdapter;
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.EpisodeTask;
 import net.ggelardi.uoccin.serv.EpisodeTask.EpisodeTaskContainer;
@@ -26,13 +27,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.photos.views.HeaderGridView;
 
-public class EpisodeListFragment extends BaseFragment implements EpisodeTaskContainer, AbsListView.OnItemClickListener {
+public class EpisodeListFragment extends BaseFragment implements AbsListView.OnItemClickListener, OnTitleListener,
+	EpisodeTaskContainer {
 	
 	private String type;
 	private String title;
@@ -41,11 +42,12 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 	private String series;
 	private int season;
 	
+	private boolean forceReload = false;
+	
 	private AbsListView mListView;
 	private EpisodeAdapter mAdapter;
 	private EpisodeTask mTask;
 	
-	private RelativeLayout rlSHeader;
 	private TextView txtShdrPrev;
 	private TextView txtShdrNext;
 	private TextView lblShdrSeas;
@@ -189,35 +191,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 	public void onResume() {
 		super.onResume();
 		
-		Series.addOnTitleEventListener(new OnTitleListener() {
-			@Override
-			public void changed(final String state, final Throwable error) {
-				final Activity context = getActivity();
-				if (context != null)
-					context.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (state.equals(OnTitleListener.NOTFOUND)) {
-								showHourGlass(false);
-								mAdapter.notifyDataSetChanged();
-								Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-							} else if (state.equals(OnTitleListener.WORKING)) {
-								showHourGlass(true);
-							} else if (state.equals(OnTitleListener.RELOAD)) {
-								reload();
-							} else if (state.equals(OnTitleListener.ERROR)) {
-								showHourGlass(false);
-								mAdapter.notifyDataSetChanged();
-								Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
-							} else if (state.equals(OnTitleListener.READY)) {
-								showHourGlass(false);
-								mAdapter.notifyDataSetChanged();
-							}
-						}
-					});
-			}
-		});
-		
+		Title.addOnTitleEventListener(this);
 		reload();
 	}
 	
@@ -225,6 +199,7 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 	public void onPause() {
 		super.onPause();
 		
+		Title.removeOnTitleEventListener(this);
 		if (mTask != null)
 			mTask.cancel(true);
 	}
@@ -269,6 +244,34 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 	}
 	
 	@Override
+	public void onTitleEvent(final String state, final Throwable error) {
+		final Activity context = getActivity();
+		if (context != null)
+			context.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (state.equals(OnTitleListener.NOTFOUND)) {
+						showHourGlass(false);
+						mAdapter.notifyDataSetChanged();
+						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
+					} else if (state.equals(OnTitleListener.WORKING)) {
+						showHourGlass(true);
+					} else if (state.equals(OnTitleListener.RELOAD)) {
+						forceReload = true;
+						reload();
+					} else if (state.equals(OnTitleListener.ERROR)) {
+						showHourGlass(false);
+						mAdapter.notifyDataSetChanged();
+						Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+					} else if (state.equals(OnTitleListener.READY)) {
+						showHourGlass(false);
+						mAdapter.notifyDataSetChanged();
+					}
+				}
+			});
+	}
+	
+	@Override
 	public Context getContext() {
 		return getActivity();
 	}
@@ -280,9 +283,10 @@ public class EpisodeListFragment extends BaseFragment implements EpisodeTaskCont
 	
 	@Override
 	public void postExecuteTask(List<Episode> result) {
-		mAdapter.setTitles(result);
 		showHourGlass(false);
 		mTask = null;
+		mAdapter.setTitles(result, forceReload);
+		forceReload = false;
 	}
 	
 	private void reload() {

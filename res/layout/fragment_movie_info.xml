@@ -5,6 +5,49 @@
     android:background="@color/windowBackground"
     android:orientation="vertical" >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:divider="@drawable/divider_4dp"
+        android:paddingBottom="5dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:showDividers="middle" >
+
+        <TextView
+            android:id="@+id/txt_movinf_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_year"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txt_movinf_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_country" />
+
+        <TextView
+            android:id="@+id/txt_movinf_ratd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_rated"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txt_movinf_subs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawablePadding="3dp"
+            android:drawableRight="@drawable/ics_action_subtitles"
+            android:gravity="right"
+            android:text="@string/sample_subs"
+            android:textAllCaps="true" />
+
+    </LinearLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
@@ -14,24 +57,18 @@
             android:layout_height="match_parent"
             android:orientation="vertical" >
 
-            <TextView
-                android:id="@+id/textView1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Large Text"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/contentBackground"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp" >
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingTop="10dp" >
 
                 <ImageView
                     android:id="@+id/imageView1"
                     android:layout_width="wrap_content"
-                    android:layout_height="190dp"
+                    android:layout_height="160dp"
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/empty_text"
                     android:src="@drawable/omdb_poster" />
@@ -40,84 +77,176 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:paddingLeft="5dp" >
+                    android:paddingLeft="10dp" >
 
                     <TextView
-                        android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Medium Text"
-	                        android:textAppearance="?android:attr/textAppearanceMedium" />
-	
-	            </LinearLayout>
-	
-	        </LinearLayout>
+                        android:text="@string/lbl_movinf_dire"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    <TextView
+                        android:id="@+id/txt_movinf_dire"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sample_director"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/contentBackground"
+                        android:gravity="center_horizontal"
+                        android:padding="10dp" >
+
+                        <TextView
+                            android:id="@+id/txt_movinf_wlst"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:drawableTop="@drawable/ic_action_loved"
+                            android:gravity="center_horizontal"
+                            android:text="@string/lbl_comm_wlst" />
+
+                        <TextView
+                            android:id="@+id/txt_movinf_coll"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:drawableTop="@drawable/ic_action_storage"
+                            android:gravity="center_horizontal"
+                            android:text="@string/lbl_comm_coll" />
+
+                        <TextView
+                            android:id="@+id/txt_movinf_seen"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:drawableTop="@drawable/ic_action_seen"
+                            android:gravity="center_horizontal"
+                            android:text="@string/lbl_comm_seen" />
+                    </LinearLayout>
+
+                    <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/contentBackground"
+                        android:gravity="center_horizontal"
+                        android:padding="10dp" >
+
+                        <TextView
+                            android:id="@+id/txt_movinf_shar"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:drawableTop="@drawable/ic_action_share"
+                            android:gravity="center_horizontal"
+                            android:text="@string/lbl_comm_shar" />
+
+                        <TextView
+                            android:id="@+id/txt_movinf_imdb"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:drawableTop="@drawable/ic_action_link"
+                            android:gravity="center_horizontal"
+                            android:text="@string/lbl_comm_imdb" />
+
+                        <TextView
+                            android:id="@+id/txt_movinf_refr"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:drawableTop="@drawable/ic_action_refresh"
+                            android:gravity="center_horizontal"
+                            android:text="@string/lbl_comm_refr" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/txt_movinf_lang"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ics_action_speaker"
+                android:drawablePadding="3dp"
+                android:text="@string/sample_language"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/contentBackground" >
+                android:background="@color/contentBackground"
+                android:divider="@drawable/divider_4dp"
+                android:paddingBottom="10dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingTop="5dp"
+                android:showDividers="middle" >
 
-                <Button
-                    android:id="@+id/button1"
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableTop="@drawable/ic_action_loved"
-                    android:paddingLeft="0dp"
-                    android:paddingRight="0dp"
-                    android:text="@string/lbl_comm_wlst"
-                    android:textAllCaps="false" />
+                    android:text="@string/lbl_movinf_meta"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                <Button
-                    android:id="@+id/button2"
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="0dp"
+                <TextView
+                    android:id="@+id/txt_movinf_meta"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableTop="@drawable/ic_action_storage"
-                    android:paddingLeft="0dp"
-                    android:paddingRight="0dp"
-                    android:text="@string/lbl_comm_coll"
-                    android:textAllCaps="false" />
+                    android:text="@string/sample_metascore"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/button3"
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableTop="@drawable/ic_action_seen"
-                    android:paddingLeft="0dp"
-                    android:paddingRight="0dp"
-                    android:text="@string/lbl_comm_seen"
-                    android:textAllCaps="false" />
+                    android:text="@string/lbl_movinf_irat"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                <Button
-                    android:id="@+id/button4"
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="0dp"
+                <TextView
+                    android:id="@+id/txt_movinf_irat"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableTop="@drawable/ic_action_share"
-                    android:paddingLeft="0dp"
-                    android:paddingRight="0dp"
-                    android:text="@string/lbl_comm_shar"
-                    android:textAllCaps="false" />
+                    android:text="@string/sample_imdbrating"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/button5"
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableTop="@drawable/ic_action_refresh"
-                    android:paddingLeft="0dp"
-                    android:paddingRight="0dp"
-                    android:text="@string/lbl_comm_refr"
-                    android:textAllCaps="false" />
+                    android:text="@string/lbl_movinf_ivot"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
 
+                <TextView
+                    android:id="@+id/txt_movinf_ivot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sample_imdbvotes"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@drawable/divider_4dp"
+                android:showDividers="middle" >
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@drawable/divider_4dp"
+                android:showDividers="middle" >
             </LinearLayout>
 
             <TextView
@@ -127,7 +256,7 @@
                 android:paddingBottom="2dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
-                android:text="@string/lbl_serinf_plot"
+                android:text="@string/lbl_comm_plot"
                 android:textSize="@dimen/mini_section_title"
                 android:textStyle="bold" />
 
@@ -142,8 +271,108 @@
                 android:paddingTop="5dp"
                 android:text="@string/sample_plot1" />
 
-		</LinearLayout>
+            <LinearLayout
+                android:id="@+id/box_movinf_acts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:text="@string/lbl_movinf_cast"
+                    android:textSize="@dimen/mini_section_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_movinf_acts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/contentBackground"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="5dp"
+                    android:text="@string/sample_people" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/box_movinf_gens"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:text="@string/lbl_comm_gens"
+                    android:textSize="@dimen/mini_section_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_movinf_gens"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/contentBackground"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="5dp"
+                    android:text="@string/sample_genres" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/box_movinf_tags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:text="@string/lbl_comm_tags"
+                    android:textSize="@dimen/mini_section_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_movinf_tags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/contentBackground"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="5dp"
+                    android:text="@string/sample_tags"
+                    android:textColor="@color/colorAccent" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="2dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:text="@string/lbl_comm_link"
+                android:textSize="@dimen/mini_section_title"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/contentBackground"
+                android:padding="10dp" >
+            </LinearLayout>
+        </LinearLayout>
     </ScrollView>
 
 </LinearLayout>

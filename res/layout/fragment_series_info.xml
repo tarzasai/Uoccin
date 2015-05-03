@@ -45,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="2dp"
                 android:layout_marginRight="2dp"
-                android:text="@string/lbl_serinf_ratd"
+                android:text="@string/lbl_comm_ratd"
                 android:textColor="@color/textColorSecondary" />
 
             <TextView
@@ -133,7 +133,7 @@
                 android:paddingBottom="2dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
-                android:text="@string/lbl_serinf_plot"
+                android:text="@string/lbl_comm_plot"
                 android:textSize="@dimen/mini_section_title"
                 android:textStyle="bold" />
 
@@ -188,7 +188,7 @@
                     android:paddingBottom="2dp"
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
-                    android:text="@string/lbl_serinf_gens"
+                    android:text="@string/lbl_comm_gens"
                     android:textSize="@dimen/mini_section_title"
                     android:textStyle="bold" />
 
@@ -216,7 +216,7 @@
                     android:paddingBottom="2dp"
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
-                    android:text="@string/lbl_serinf_tags"
+                    android:text="@string/lbl_comm_tags"
                     android:textSize="@dimen/mini_section_title"
                     android:textStyle="bold" />
 
@@ -231,7 +231,6 @@
                     android:paddingTop="5dp"
                     android:text="@string/sample_tags"
                     android:textColor="@color/colorAccent" />
-
             </LinearLayout>
 
             <LinearLayout
