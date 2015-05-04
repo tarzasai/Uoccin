@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.TVDB;
+import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
@@ -60,7 +61,6 @@ public class Series extends Title {
 	public int airsDay;
 	public long airsTime;
 	public int runtime;
-	public int lastseason = 0; // not stored
 	public String rated;
 	public String banner;
 	public String fanart;
@@ -275,22 +275,24 @@ public class Series extends Title {
 				save(true);
 			if (epsxml != null && epsxml.getLength() > 0) {
 				List<Episode> lst = new ArrayList<Episode>();
-				//Episode.drop(tvdb_id, null, null);
-				lastseason = 0;
+				EID last = new EID(0, 0);
 				Episode ep;
 				for (int i = 0; i < epsxml.getLength(); i++) {
-					ep = Episode.get(session.getContext(), (Element) epsxml.item(i));
-					if (ep != null) {
-						if (ep.season > lastseason)
-							lastseason = ep.season;
-						if (!lst.contains(ep))
+					ep = new Episode(session.getContext(), (Element) epsxml.item(i));
+					if (ep != null && ep.isValid()) {
+						if (lst.contains(ep))
+							Log.i(TAG, "Duplicate found in xml: " + ep.eid().toString());
+						else {
 							lst.add(ep);
+							if (last.compareTo(ep.eid()) < 0)
+								last = ep.eid();
+						}
 					}
 				}
-				if (lastseason > 0)
-					db.delete("episode", "series = ? and season > ?",
-						new String[] { tvdb_id, Integer.toString(lastseason) });
-				Collections.sort(lst, new Episode.EpisodeComparator());
+				db.delete("episode", "series = ? and (season > ? or (season = ? and episode > ?))",
+					new String[] { tvdb_id, Integer.toString(last.season), Integer.toString(last.season),
+					Integer.toString(last.episode) });
+				Collections.sort(lst);
 				episodes = lst;
 			}
 			db.setTransactionSuccessful();
@@ -486,7 +488,7 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public void reload() {
+	public synchronized void reload() {
 		Cursor cur = session.getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
 			null, null, null);
 		try {
@@ -496,19 +498,15 @@ public class Series extends Title {
 			cur.close();
 		}
 		List<Episode> lst = new ArrayList<Episode>();
-		int sno = 0;
 		cur = session.getDB().query("episode", new String[] { "season", "episode" },
 			"series = ?", new String[] { tvdb_id }, null, null, "season, episode");
 		try {
-			while (cur.moveToNext()) {
-				sno = cur.getInt(0);
-				lst.add(Episode.get(session.getContext(), tvdb_id, sno, cur.getInt(1), false));
-			}
+			while (cur.moveToNext())
+				lst.add(new Episode(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1)));
 		} finally {
 			cur.close();
 		}
 		episodes = lst;
-		lastseason = sno;
 	}
 	
 	public void refresh(boolean force) {
@@ -742,13 +740,9 @@ public class Series extends Title {
 	}
 	
 	public Episode nextEpisode() {
-		try {
 		for (Episode ep: episodes)
 			if (ep.firstAired >= System.currentTimeMillis())
 				return ep;
-		} catch (Exception err) {
-			Log.e(TAG, "nextEpisode", err);
-		}
 		return null;
 	}
 	

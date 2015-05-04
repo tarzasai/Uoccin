@@ -4,7 +4,6 @@ import java.util.Locale;
 
 import net.ggelardi.uoccin.adapters.SeasonAdapter;
 import net.ggelardi.uoccin.comp.ExpandableHeightGridView;
-import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
@@ -17,7 +16,6 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -250,17 +248,6 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 	private void showInfo() {
 		if (img_bann == null)
 			return;
-		
-		
-		Log.v("Title", getTag());
-		Log.v("Title", getTag());
-		Episode ep;
-		for (int i = 0; i < series.episodes.size(); i++) {
-			ep = series.episodes.get(i);
-			Log.v("Title", ep.eid().sequence() + "  -  " + Integer.toString(ep.hashCode()));
-		}
-		
-		
 		getActivity().setTitle(series.name);
 		session.picasso(series.banner).resize(pstWidth, pstHeight).into(img_bann);
 		txt_netw.setText(series.network());

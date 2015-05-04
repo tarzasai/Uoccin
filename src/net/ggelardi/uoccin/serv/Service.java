@@ -1,20 +1,10 @@
 package net.ggelardi.uoccin.serv;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.GSA;
@@ -32,14 +22,11 @@ import net.ggelardi.uoccin.serv.Service.UFile.USeries;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -211,10 +198,10 @@ public class Service extends WakefulIntentService {
 			return;
 		queue.add(eid);
 		try {
-			Episode epi = Episode.get(this, series, season, episode, false);
-			if (!(epi.isNew() || epi.isOld())) // TODO wifi check?
+			Episode ep = Series.get(this, series).checkEpisode(season, episode);
+			if (!(ep.isNew() || ep.isOld())) // TODO wifi check?
 				return;
-			Log.d(TAG, "refreshing episode " + epi.eid());
+			Log.d(TAG, "refreshing episode " + ep.eid());
 			Document doc;
 			try {
 				doc = XML.TVDB.getInstance().getEpisode(series, season, episode, session.language());
@@ -224,13 +211,14 @@ public class Service extends WakefulIntentService {
 					sendNotification(err);
 				return;
 			}
-			Episode.get(this, (Element) doc.getElementsByTagName("Episode").item(0));
+			ep.update((Element) doc.getElementsByTagName("Episode").item(0));
 		} finally {
 			queue.remove(eid);
 		}
 	}
 	
 	private void checkTVdbNews() throws Exception {
+		/*
 		String content = null;
 	    URL url = new URL("http://thetvdb.com/rss/newtoday.php");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -273,6 +261,7 @@ public class Service extends WakefulIntentService {
 				}
 			}
 		}
+		*/
 	}
 	
 	private void checkDrive() throws Exception {
@@ -572,7 +561,7 @@ public class Service extends WakefulIntentService {
 							if (coll) {
 								if (!ser.collected.containsKey(tmp))
 									ser.collected.put(tmp, new HashMap<String, String[]>());
-								strlst = eps.isNull(4) ? new String[] {} : cur.getString(7).split(",\\s*");
+								strlst = eps.isNull(4) ? new String[] {} : eps.getString(4).split(",\\s*");
 								ser.collected.get(tmp).put(Integer.toString(episode), strlst);
 							}
 							if (seen) {
@@ -702,7 +691,6 @@ public class Service extends WakefulIntentService {
 			}
 			Movie.drop();
 			Series.drop();
-			Episode.drop();
 			sendNotification(session.getString(R.string.msg_restore_4));
 			Title.dispatch(OnTitleListener.RELOAD, null);
 		} catch (Exception err) {

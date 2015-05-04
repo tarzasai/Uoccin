@@ -45,7 +45,6 @@
             android:gravity="right"
             android:text="@string/sample_subs"
             android:textAllCaps="true" />
-
     </LinearLayout>
 
     <ScrollView
@@ -61,14 +60,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/contentBackground"
+                android:divider="@drawable/divider_16dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
-                android:paddingTop="10dp" >
+                android:paddingTop="10dp"
+                android:showDividers="middle" >
 
                 <ImageView
                     android:id="@+id/imageView1"
                     android:layout_width="wrap_content"
-                    android:layout_height="160dp"
+                    android:layout_height="200dp"
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/empty_text"
                     android:src="@drawable/omdb_poster" />
@@ -76,8 +77,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:paddingLeft="10dp" >
+                    android:orientation="vertical" >
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -93,160 +93,121 @@
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@color/contentBackground"
-                        android:gravity="center_horizontal"
-                        android:padding="10dp" >
+                        android:text="@string/empty_text" />
+
+                    <TextView
+                        android:id="@+id/txt_movinf_lang"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ics_action_speaker"
+                        android:drawablePadding="3dp"
+                        android:text="@string/sample_language"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/empty_text" />
+
+                    <TextView
+                        android:id="@+id/textView1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ic_metacritic"
+                        android:drawablePadding="3dp"
+                        android:gravity="center_vertical"
+                        android:text="@string/sample_metascore"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:id="@+id/box_movinf_imdb"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:divider="@drawable/divider_8dp"
+                        android:showDividers="middle" >
 
                         <TextView
-                            android:id="@+id/txt_movinf_wlst"
-                            android:layout_width="0dp"
+                            android:id="@+id/textView3"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:drawableTop="@drawable/ic_action_loved"
-                            android:gravity="center_horizontal"
-                            android:text="@string/lbl_comm_wlst" />
+                            android:drawableLeft="@drawable/ic_imdb"
+                            android:drawablePadding="3dp"
+                            android:gravity="center_vertical"
+                            android:text="@string/sample_imdbrating"
+                            android:textAppearance="?android:attr/textAppearanceLarge"
+                            android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/txt_movinf_coll"
-                            android:layout_width="0dp"
+                            android:id="@+id/textView2"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:drawableTop="@drawable/ic_action_storage"
-                            android:gravity="center_horizontal"
-                            android:text="@string/lbl_comm_coll" />
+                            android:text="@string/sample_imdbvotes"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                        <TextView
-                            android:id="@+id/txt_movinf_seen"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:drawableTop="@drawable/ic_action_seen"
-                            android:gravity="center_horizontal"
-                            android:text="@string/lbl_comm_seen" />
                     </LinearLayout>
 
                     <Space
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@color/contentBackground"
-                        android:gravity="center_horizontal"
-                        android:padding="10dp" >
-
-                        <TextView
-                            android:id="@+id/txt_movinf_shar"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:drawableTop="@drawable/ic_action_share"
-                            android:gravity="center_horizontal"
-                            android:text="@string/lbl_comm_shar" />
-
-                        <TextView
-                            android:id="@+id/txt_movinf_imdb"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:drawableTop="@drawable/ic_action_link"
-                            android:gravity="center_horizontal"
-                            android:text="@string/lbl_comm_imdb" />
-
-                        <TextView
-                            android:id="@+id/txt_movinf_refr"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:drawableTop="@drawable/ic_action_refresh"
-                            android:gravity="center_horizontal"
-                            android:text="@string/lbl_comm_refr" />
-                    </LinearLayout>
-
                 </LinearLayout>
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/txt_movinf_lang"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ics_action_speaker"
-                android:drawablePadding="3dp"
-                android:text="@string/sample_language"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/contentBackground"
-                android:divider="@drawable/divider_4dp"
-                android:paddingBottom="10dp"
-                android:paddingLeft="15dp"
-                android:paddingRight="15dp"
-                android:paddingTop="5dp"
-                android:showDividers="middle" >
+                android:gravity="center_horizontal"
+                android:padding="10dp" >
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/txt_movinf_wlst"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/lbl_movinf_meta"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_action_loved"
+                    android:gravity="center_horizontal"
+                    android:text="@string/lbl_comm_wlst" />
 
                 <TextView
-                    android:id="@+id/txt_movinf_meta"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/txt_movinf_coll"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/sample_metascore"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textStyle="bold" />
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_action_storage"
+                    android:gravity="center_horizontal"
+                    android:text="@string/lbl_comm_coll" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/txt_movinf_seen"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/lbl_movinf_irat"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_action_seen"
+                    android:gravity="center_horizontal"
+                    android:text="@string/lbl_comm_seen" />
 
                 <TextView
-                    android:id="@+id/txt_movinf_irat"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/txt_movinf_shar"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/sample_imdbrating"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textStyle="bold" />
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_action_share"
+                    android:gravity="center_horizontal"
+                    android:text="@string/lbl_comm_shar" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/txt_movinf_refr"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/lbl_movinf_ivot"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                <TextView
-                    android:id="@+id/txt_movinf_ivot"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sample_imdbvotes"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:divider="@drawable/divider_4dp"
-                android:showDividers="middle" >
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:divider="@drawable/divider_4dp"
-                android:showDividers="middle" >
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_action_refresh"
+                    android:gravity="center_horizontal"
+                    android:text="@string/lbl_comm_refr" />
             </LinearLayout>
 
             <TextView
@@ -371,6 +332,15 @@
                 android:layout_height="wrap_content"
                 android:background="@color/contentBackground"
                 android:padding="10dp" >
+
+                <TextView
+                    android:id="@+id/txt_movinf_imdb"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_action_link"
+                    android:gravity="center_horizontal"
+                    android:text="@string/lbl_comm_imdb" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

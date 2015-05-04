@@ -1,6 +1,7 @@
 package net.ggelardi.uoccin;
 
 import net.ggelardi.uoccin.data.Episode;
+import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
@@ -196,7 +197,16 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 		pstWidth = size.x;
 		pstHeight = Math.round((pstWidth*225)/400);
 		
-		episode = Episode.get(getActivity(), series, seasNo, episNo, true);
+		episode = Series.get(getActivity(), series).checkEpisode(seasNo, episNo);
+		if (episode == null) {
+			EID eid = new EID(series, seasNo, episNo);
+			Log.i(getTag(), "Invalid episode " + eid.toString());
+			// TODO: dialog
+			Toast.makeText(getActivity(), "Invalid episode " + eid.sequence(), Toast.LENGTH_SHORT).show();
+			getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+			return;
+		}
+		
 		Title.addOnTitleEventListener(this);
 		
 		if (episode.isNew() || episode.isOld())
@@ -241,13 +251,6 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 	private void showInfo() {
 		if (txt_seas == null)
 			return;
-		
-		
-		Log.v("Title", getTag());
-		Log.v("Title", getTag());
-		Log.v("Title", episode.eid().sequence() + "  -  " + Integer.toString(episode.hashCode()));
-		
-		
 		getActivity().setTitle(episode.getSeries().name);
 		lbl_seas.setCompoundDrawablesWithIntrinsicBounds(episode.isPilot() ? R.drawable.ics_action_news : 0, 0, 0, 0);
 		txt_seas.setText(Integer.toString(episode.season));

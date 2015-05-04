@@ -1,18 +1,13 @@
 package net.ggelardi.uoccin;
 
-import java.util.List;
-
 import net.ggelardi.uoccin.adapters.EpisodeAdapter;
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
-import net.ggelardi.uoccin.serv.EpisodeTask;
-import net.ggelardi.uoccin.serv.EpisodeTask.EpisodeTaskContainer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,13 +27,8 @@ import android.widget.Toast;
 
 import com.android.photos.views.HeaderGridView;
 
-public class EpisodeListFragment extends BaseFragment implements AbsListView.OnItemClickListener, OnTitleListener,
-	EpisodeTaskContainer {
+public class EpisodeListFragment extends BaseFragment implements AbsListView.OnItemClickListener, OnTitleListener {
 	
-	private String type;
-	private String title;
-	private String query;
-	private String[] params;
 	private String series;
 	private int season;
 	
@@ -46,7 +36,6 @@ public class EpisodeListFragment extends BaseFragment implements AbsListView.OnI
 	
 	private AbsListView mListView;
 	private EpisodeAdapter mAdapter;
-	private EpisodeTask mTask;
 	
 	private TextView txtShdrPrev;
 	private TextView txtShdrNext;
@@ -55,21 +44,9 @@ public class EpisodeListFragment extends BaseFragment implements AbsListView.OnI
 	private ImageView imgShdrColl;
 	private ImageView imgShdrSeen;
 	
-	public static EpisodeListFragment newQuery(String title, String query, String ... params) {
-		EpisodeListFragment fragment = new EpisodeListFragment();
-		Bundle args = new Bundle();
-		args.putString("type", EpisodeTask.QUERY);
-		args.putString("title", title);
-		args.putString("query", query);
-		args.putStringArray("params", params);
-		fragment.setArguments(args);
-		return fragment;
-	}
-	
 	public static EpisodeListFragment newList(String series, int season) {
 		EpisodeListFragment fragment = new EpisodeListFragment();
 		Bundle args = new Bundle();
-		args.putString("type", EpisodeTask.LIST);
 		args.putString("series", series);
 		args.putInt("season", season);
 		fragment.setArguments(args);
@@ -81,15 +58,8 @@ public class EpisodeListFragment extends BaseFragment implements AbsListView.OnI
 		super.onCreate(savedInstanceState);
 		
 		Bundle args = getArguments();
-		type = args.getString("type");
-		if (type.equals(EpisodeTask.QUERY)) {
-			title = args.getString("title");
-			query = args.getString("query");
-			params = args.getStringArray("params");
-		} else {
-			series = args.getString("series");
-			season = args.getInt("season");
-		}
+		series = args.getString("series");
+		season = args.getInt("season");
 		
 		mAdapter = new EpisodeAdapter(getActivity(), this);
 	}
@@ -97,8 +67,7 @@ public class EpisodeListFragment extends BaseFragment implements AbsListView.OnI
 	@SuppressLint("InflateParams")
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(type.equals(EpisodeTask.QUERY) ? R.layout.fragment_episode_items :
-			R.layout.fragment_season_items, container, false);
+		View view = inflater.inflate(R.layout.fragment_season_items, container, false);
 		
 		mListView = (AbsListView) view.findViewById(android.R.id.list);
 		mListView.setOnItemClickListener(this);
@@ -110,77 +79,75 @@ public class EpisodeListFragment extends BaseFragment implements AbsListView.OnI
 			((ListView) mListView).addFooterView(inflater.inflate(R.layout.header_space, null));
 		}
 		
-		if (type.equals(EpisodeTask.LIST)) {
-			txtShdrPrev = (TextView) view.findViewById(R.id.txt_sehdr_prev);
-			txtShdrNext = (TextView) view.findViewById(R.id.txt_sehdr_next);
-			lblShdrSeas = (TextView) view.findViewById(R.id.txt_sehdr_seas);
-			boxShdrFlgs = (LinearLayout) view.findViewById(R.id.box_sehdr_flgs);
-			imgShdrColl = (ImageView) view.findViewById(R.id.img_sehdr_coll);
-			imgShdrSeen = (ImageView) view.findViewById(R.id.img_sehdr_seen);
-			
-			final Series ser = Series.get(getActivity(), series);
-			
-			txtShdrPrev.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					season = ser.seasons().get(ser.seasons().indexOf(season) - 1);
-					reload();
-				}
-			});
-			
-			txtShdrNext.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					season = ser.seasons().get(ser.seasons().indexOf(season) + 1);
-					reload();
-				}
-			});
-			
-			ImageView flgs = (ImageView) view.findViewById(R.id.img_sehdr_flgs);
-			flgs.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					mAdapter.setSwitches(!mAdapter.getSwitches());
-					boxShdrFlgs.setVisibility(mAdapter.getSwitches() ? View.VISIBLE : View.GONE);
-				}
-			});
-			
-			imgShdrColl.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					final boolean flag = ser.episodeCollected(season) < ser.episodeAired(season);
-					int msg = flag ? R.string.ask_set_season_coll_true : R.string.ask_set_season_coll_false;
-					new AlertDialog.Builder(getActivity()).setTitle(ser.name).setMessage(msg).
-						setIcon(R.drawable.ic_active_storage).setNegativeButton(R.string.dlg_btn_cancel, null).
-						setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								ser.setCollected(flag, season);
-								imgShdrColl.setImageResource(ser.episodeCollected(season) >= ser.episodeAired(season) ?
-									R.drawable.ic_active_storage : R.drawable.ic_action_storage);
-							}
-						}).show();
-				}
-			});
-			
-			imgShdrSeen.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					final boolean flag = ser.episodeWatched(season) < ser.episodeAired(season);
-					int msg = flag ? R.string.ask_set_season_seen_true : R.string.ask_set_season_seen_false;
-					new AlertDialog.Builder(getActivity()).setTitle(ser.name).setMessage(msg).
-						setIcon(R.drawable.ic_active_seen).setNegativeButton(R.string.dlg_btn_cancel, null).
-						setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								ser.setWatched(flag, season);
-								imgShdrSeen.setImageResource(ser.episodeWatched(season) >= ser.episodeAired(season) ?
-									R.drawable.ic_active_seen : R.drawable.ic_action_seen);
-							}
-						}).show();
-				}
-			});
-		}
+		txtShdrPrev = (TextView) view.findViewById(R.id.txt_sehdr_prev);
+		txtShdrNext = (TextView) view.findViewById(R.id.txt_sehdr_next);
+		lblShdrSeas = (TextView) view.findViewById(R.id.txt_sehdr_seas);
+		boxShdrFlgs = (LinearLayout) view.findViewById(R.id.box_sehdr_flgs);
+		imgShdrColl = (ImageView) view.findViewById(R.id.img_sehdr_coll);
+		imgShdrSeen = (ImageView) view.findViewById(R.id.img_sehdr_seen);
+		
+		final Series ser = Series.get(getActivity(), series);
+		
+		txtShdrPrev.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				season = ser.seasons().get(ser.seasons().indexOf(season) - 1);
+				reload();
+			}
+		});
+		
+		txtShdrNext.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				season = ser.seasons().get(ser.seasons().indexOf(season) + 1);
+				reload();
+			}
+		});
+		
+		ImageView flgs = (ImageView) view.findViewById(R.id.img_sehdr_flgs);
+		flgs.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mAdapter.setSwitches(!mAdapter.getSwitches());
+				boxShdrFlgs.setVisibility(mAdapter.getSwitches() ? View.VISIBLE : View.GONE);
+			}
+		});
+		
+		imgShdrColl.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				final boolean flag = ser.episodeCollected(season) < ser.episodeAired(season);
+				int msg = flag ? R.string.ask_set_season_coll_true : R.string.ask_set_season_coll_false;
+				new AlertDialog.Builder(getActivity()).setTitle(ser.name).setMessage(msg).
+					setIcon(R.drawable.ic_active_storage).setNegativeButton(R.string.dlg_btn_cancel, null).
+					setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							ser.setCollected(flag, season);
+							imgShdrColl.setImageResource(ser.episodeCollected(season) >= ser.episodeAired(season) ?
+								R.drawable.ic_active_storage : R.drawable.ic_action_storage);
+						}
+					}).show();
+			}
+		});
+		
+		imgShdrSeen.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				final boolean flag = ser.episodeWatched(season) < ser.episodeAired(season);
+				int msg = flag ? R.string.ask_set_season_seen_true : R.string.ask_set_season_seen_false;
+				new AlertDialog.Builder(getActivity()).setTitle(ser.name).setMessage(msg).
+					setIcon(R.drawable.ic_active_seen).setNegativeButton(R.string.dlg_btn_cancel, null).
+					setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							ser.setWatched(flag, season);
+							imgShdrSeen.setImageResource(ser.episodeWatched(season) >= ser.episodeAired(season) ?
+								R.drawable.ic_active_seen : R.drawable.ic_action_seen);
+						}
+					}).show();
+			}
+		});
 		
 		((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 		
@@ -200,8 +167,6 @@ public class EpisodeListFragment extends BaseFragment implements AbsListView.OnI
 		super.onPause();
 		
 		Title.removeOnTitleEventListener(this);
-		if (mTask != null)
-			mTask.cancel(true);
 	}
 	
 	@Override
@@ -271,58 +236,30 @@ public class EpisodeListFragment extends BaseFragment implements AbsListView.OnI
 			});
 	}
 	
-	@Override
-	public Context getContext() {
-		return getActivity();
-	}
-	
-	@Override
-	public void preExecuteTask() {
-		showHourGlass(true);
-	}
-	
-	@Override
-	public void postExecuteTask(List<Episode> result) {
-		showHourGlass(false);
-		mTask = null;
-		mAdapter.setTitles(result, forceReload);
-		forceReload = false;
-	}
-	
 	private void reload() {
 		Log.v(getTag(), "reload()");
-		if (type.equals(EpisodeTask.LIST)) {
-			Series ser = Series.get(getActivity(), series);
-			getActivity().setTitle(ser.name);
-			lblShdrSeas.setText(Integer.toString(season));
-			int sid = ser.seasons().indexOf(season);
-			if (sid <= 0)
-				txtShdrPrev.setVisibility(View.GONE);
-			else {
-				txtShdrPrev.setVisibility(View.VISIBLE);
-				txtShdrPrev.setText(Integer.toString(ser.seasons().get(sid - 1)));
-			}
-			if (sid >= ser.seasons().size() - 1)
-				txtShdrNext.setVisibility(View.GONE);
-			else {
-				txtShdrNext.setVisibility(View.VISIBLE);
-				txtShdrNext.setText(Integer.toString(ser.seasons().get(sid + 1)));
-			}
-			boxShdrFlgs.setVisibility(View.GONE);
-			imgShdrColl.setImageResource(ser.episodeCollected(season) >= ser.episodeAired(season) ?
-				R.drawable.ic_active_storage : R.drawable.ic_action_storage);
-			imgShdrSeen.setImageResource(ser.episodeWatched(season) >= ser.episodeAired(season) ?
-				R.drawable.ic_active_seen : R.drawable.ic_action_seen);
-		} else
-			getActivity().setTitle(title);
-		mTask = new EpisodeTask(this, type);
-		if (type.equals(EpisodeTask.LIST))
-			mTask.execute(new String[] { series, Integer.toString(season) });
+		Series ser = Series.get(getActivity(), series);
+		getActivity().setTitle(ser.name);
+		lblShdrSeas.setText(Integer.toString(season));
+		int sid = ser.seasons().indexOf(season);
+		if (sid <= 0)
+			txtShdrPrev.setVisibility(View.GONE);
 		else {
-			String[] args = new String[params.length + 1];
-			args[0] = query;
-			System.arraycopy(params, 0, args, 1, params.length);
-			mTask.execute(args);
+			txtShdrPrev.setVisibility(View.VISIBLE);
+			txtShdrPrev.setText(Integer.toString(ser.seasons().get(sid - 1)));
 		}
+		if (sid >= ser.seasons().size() - 1)
+			txtShdrNext.setVisibility(View.GONE);
+		else {
+			txtShdrNext.setVisibility(View.VISIBLE);
+			txtShdrNext.setText(Integer.toString(ser.seasons().get(sid + 1)));
+		}
+		boxShdrFlgs.setVisibility(View.GONE);
+		imgShdrColl.setImageResource(ser.episodeCollected(season) >= ser.episodeAired(season) ?
+			R.drawable.ic_active_storage : R.drawable.ic_action_storage);
+		imgShdrSeen.setImageResource(ser.episodeWatched(season) >= ser.episodeAired(season) ?
+			R.drawable.ic_active_seen : R.drawable.ic_action_seen);
+		mAdapter.setTitles(ser.episodes(season), forceReload);
+		forceReload = false;
 	}
 }

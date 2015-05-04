@@ -2,8 +2,6 @@ package net.ggelardi.uoccin.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -11,7 +9,6 @@ import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
-import net.ggelardi.uoccin.serv.SimpleCache;
 
 import org.w3c.dom.Element;
 
@@ -26,11 +23,9 @@ import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-public class Episode extends Title {
+public class Episode extends Title implements Comparable<Episode> {
 	private static final String TAG = "Episode";
 	private static final String TABLE = "episode";
-	
-	private static final SimpleCache cache = new SimpleCache(1000);
 	
 	private Episode epprev = null;
 	private Episode epnext = null;
@@ -56,106 +51,138 @@ public class Episode extends Title {
 		this.series = series;
 		this.season = season;
 		this.episode = episode;
+		reload();
 	}
 	
-	private static synchronized Episode getInstance(Context context, String series, int season, int episode) {
-		EID eid = new EID(series, season, episode);
-		Object tmp = cache.get(eid.toString());
-		if (tmp != null) {
-			
-			if (episode == 1)
-				Log.v("Title", "Episode E01 found, id = " + Integer.toString(tmp.hashCode()));
-			
-			Log.v(TAG, "Episode " + eid + " found in cache");
-			return (Episode) tmp;
-		}
-		Episode res = new Episode(context, series, season, episode);
-		
-		if (episode == 1)
-			Log.v("Title", "Episode E01 NOT found, new id = " + Integer.toString(res.hashCode()));
-		
-		cache.add(eid.toString(), res);
-		res.reload();
-		return res;
-	}
-	
-	public static void drop() {
-		cache.clear();
-	}
-	
-	public static synchronized void drop(String series, Integer season, Integer episode) {
-		Object tmp;
-		Episode ep;
-		for (String k: cache.getKeys()) {
-			tmp = cache.get(k);
-			if (tmp != null) {
-				ep = (Episode) tmp;
-				if (ep.series.equals(series) && (season == null || ep.season == season) &&
-					(episode == null || ep.episode == episode))
-					cache.del(k);
-			}
-		}
-	}
-	
-	public static Episode get(Context context, String series, int season, int episode, boolean checkRefresh) {
-		Episode res = Episode.getInstance(context, series, season, episode);
-		if (checkRefresh && (res.isNew() || res.isOld()))
-			res.refresh(false);
-		return res;
-	}
-	
-	public static Episode get(Context context, Element xml) {
-		Episode res = null;
+	public Episode(Context context, Element xml) {
+		session = Session.getInstance(context);
 		try {
-			String sid = xml.getElementsByTagName("seriesid").item(0).getTextContent();
-			int sen = Integer.parseInt(xml.getElementsByTagName("SeasonNumber").item(0).getTextContent());
-			int epn = Integer.parseInt(xml.getElementsByTagName("EpisodeNumber").item(0).getTextContent());
-			if ((sen > 0 && epn > 0) || Session.getInstance(context).specials()) {
-				res = Episode.getInstance(context, sid, sen, epn);
-				res.load(xml);
+			series = xml.getElementsByTagName("seriesid").item(0).getTextContent();
+			season = Integer.parseInt(xml.getElementsByTagName("SeasonNumber").item(0).getTextContent());
+			episode = Integer.parseInt(xml.getElementsByTagName("EpisodeNumber").item(0).getTextContent());
+			if (isValid()) {
+				reload();
+				update(xml);
 			}
 		} catch (Exception err) {
-			res = null;
+			Log.e(TAG, "Episode()", err);
+			series = "";
+			season = -1;
+			episode = -1;
 		}
-		return res;
+	}
+
+	protected void save(boolean metadata) {
+		dispatch(OnTitleListener.WORKING, null);
+		
+		Log.d(TAG, "Saving episode " + eid());
+		ContentValues cv = new ContentValues();
+		cv.put("tvdb_id", tvdb_id);
+		cv.put("series", series);
+		cv.put("season", season);
+		cv.put("episode", episode);
+		if (!TextUtils.isEmpty(name))
+			cv.put("name", name);
+		else
+			cv.putNull("name");
+		if (!TextUtils.isEmpty(plot))
+			cv.put("plot", plot);
+		else
+			cv.putNull("plot");
+		if (!TextUtils.isEmpty(poster))
+			cv.put("poster", poster);
+		else
+			cv.putNull("poster");
+		if (!writers.isEmpty())
+			cv.put("writers", TextUtils.join(",", writers));
+		else
+			cv.putNull("writers");
+		if (!TextUtils.isEmpty(director))
+			cv.put("director", director);
+		else
+			cv.putNull("director");
+		if (!guestStars.isEmpty())
+			cv.put("guestStars", TextUtils.join(",", guestStars));
+		else
+			cv.putNull("guestStars");
+		if (firstAired > 0)
+			cv.put("firstAired", firstAired);
+		else
+			cv.putNull("firstAired");
+		if (!TextUtils.isEmpty(imdb_id))
+			cv.put("imdb_id", imdb_id);
+		else
+			cv.putNull("imdb_id");
+		if (!subtitles.isEmpty())
+			cv.put("subtitles", TextUtils.join(",", subtitles));
+		else
+			cv.putNull("subtitles");
+		cv.put("collected", collected);
+		cv.put("watched", watched);
+		
+		boolean isnew = timestamp <= 0;
+		if (isnew || metadata) {
+			timestamp = System.currentTimeMillis();
+			cv.put("timestamp", timestamp);
+		}
+		if (isnew)
+			session.getDB().insertOrThrow(TABLE, null, cv);
+		else
+			session.getDB().update(TABLE, cv, "series = ? and season = ? and episode = ?",
+				new String[] { series, Integer.toString(season), Integer.toString(episode) });
+		Log.i(TAG, "Saved episode " + eid());
+		
+		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public static List<Episode> cached(String series, int season) {
-		List<Episode> res = new ArrayList<Episode>();
-		String chk = series + ".";
-		if (season >= 0)
-			chk += String.format("S%1$02d", season);
-		Object ep;
-		for (String k: cache.getKeys())
-			if (k.startsWith(chk)) {
-				ep = cache.get(k);
-				if (ep != null)
-					res.add((Episode) ep);
+	public void reload() {
+		dispatch(OnTitleListener.WORKING, null);
+		Cursor cur = session.getDB().query("episode", null, "series=? and season=? and episode=?",
+			new String[] { series, Integer.toString(season), Integer.toString(episode) }, null, null, null);
+		try {
+			if (cur.moveToFirst()) {
+				Log.v(TAG, "Loading episode " + eid());
+				int ci;
+				tvdb_id = cur.getString(cur.getColumnIndex("tvdb_id"));
+				ci = cur.getColumnIndex("name");
+				if (!cur.isNull(ci))
+					name = cur.getString(ci);
+				ci = cur.getColumnIndex("plot");
+				if (!cur.isNull(ci))
+					plot = cur.getString(ci);
+				ci = cur.getColumnIndex("poster");
+				if (!cur.isNull(ci))
+					poster = cur.getString(ci);
+				ci = cur.getColumnIndex("writers");
+				if (!cur.isNull(ci))
+					writers = Arrays.asList(cur.getString(ci).split(","));
+				ci = cur.getColumnIndex("director");
+				if (!cur.isNull(ci))
+					director = cur.getString(ci);
+				ci = cur.getColumnIndex("guestStars");
+				if (!cur.isNull(ci))
+					guestStars = Arrays.asList(cur.getString(ci).split(","));
+				ci = cur.getColumnIndex("firstAired");
+				if (!cur.isNull(ci))
+					firstAired = cur.getLong(ci);
+				ci = cur.getColumnIndex("imdb_id");
+				if (!cur.isNull(ci))
+					imdb_id = cur.getString(ci);
+				ci = cur.getColumnIndex("subtitles");
+				if (!cur.isNull(ci))
+					subtitles = Arrays.asList(cur.getString(ci).split(","));
+				collected = cur.getInt(cur.getColumnIndex("collected")) == 1;
+				watched = cur.getInt(cur.getColumnIndex("watched")) == 1;
+				timestamp = cur.getLong(cur.getColumnIndex("timestamp"));
+				Log.v(TAG, "Loaded episode " + eid());
 			}
-		Collections.sort(res, new EpisodeComparator());
-		return res;
+		} finally {
+			cur.close();
+		}
+		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public static synchronized void setDirtyFlags(String series, int season, Boolean collected, Boolean watched) {
-		if (collected == null && watched == null)
-			return;
-		String chk = series + ".";
-		if (season >= 0)
-			chk += String.format("S%1$02d", season);
-		Object ep;
-		for (String k: cache.getKeys())
-			if (k.startsWith(chk)) {
-				ep = cache.get(k);
-				if (ep != null) {
-					if (collected != null)
-						((Episode) ep).collected = collected;
-					if (watched != null)
-						((Episode) ep).watched = watched;
-				}
-			}
-	}
-	
-	protected void load(Element xml) {
+	public void update(Element xml) {
 		dispatch(OnTitleListener.WORKING, null);
 		
 		boolean modified = false;
@@ -265,132 +292,6 @@ public class Episode extends Title {
 		
 		dispatch(OnTitleListener.READY, null);
 	}
-
-	protected void load(Cursor cr) {
-		dispatch(OnTitleListener.WORKING, null);
-		
-		Log.v(TAG, "Loading episode " + eid());
-		int ci;
-		tvdb_id = cr.getString(cr.getColumnIndex("tvdb_id"));
-		series = cr.getString(cr.getColumnIndex("series"));
-		season = cr.getInt(cr.getColumnIndex("season"));
-		episode = cr.getInt(cr.getColumnIndex("episode"));
-		ci = cr.getColumnIndex("name");
-		if (!cr.isNull(ci))
-			name = cr.getString(ci);
-		ci = cr.getColumnIndex("plot");
-		if (!cr.isNull(ci))
-			plot = cr.getString(ci);
-		ci = cr.getColumnIndex("poster");
-		if (!cr.isNull(ci))
-			poster = cr.getString(ci);
-		ci = cr.getColumnIndex("writers");
-		if (!cr.isNull(ci))
-			writers = Arrays.asList(cr.getString(ci).split(","));
-		ci = cr.getColumnIndex("director");
-		if (!cr.isNull(ci))
-			director = cr.getString(ci);
-		ci = cr.getColumnIndex("guestStars");
-		if (!cr.isNull(ci))
-			guestStars = Arrays.asList(cr.getString(ci).split(","));
-		ci = cr.getColumnIndex("firstAired");
-		if (!cr.isNull(ci))
-			firstAired = cr.getLong(ci);
-		ci = cr.getColumnIndex("imdb_id");
-		if (!cr.isNull(ci))
-			imdb_id = cr.getString(ci);
-		ci = cr.getColumnIndex("subtitles");
-		if (!cr.isNull(ci))
-			subtitles = Arrays.asList(cr.getString(ci).split(","));
-		collected = cr.getInt(cr.getColumnIndex("collected")) == 1;
-		watched = cr.getInt(cr.getColumnIndex("watched")) == 1;
-		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
-		Log.v(TAG, "Loaded episode " + eid());
-		
-		dispatch(OnTitleListener.READY, null);
-	}
-	
-	protected void save(boolean metadata) {
-		dispatch(OnTitleListener.WORKING, null);
-		
-		Log.d(TAG, "Saving episode " + eid());
-		ContentValues cv = new ContentValues();
-		cv.put("tvdb_id", tvdb_id);
-		cv.put("series", series);
-		cv.put("season", season);
-		cv.put("episode", episode);
-		if (!TextUtils.isEmpty(name))
-			cv.put("name", name);
-		else
-			cv.putNull("name");
-		if (!TextUtils.isEmpty(plot))
-			cv.put("plot", plot);
-		else
-			cv.putNull("plot");
-		if (!TextUtils.isEmpty(poster))
-			cv.put("poster", poster);
-		else
-			cv.putNull("poster");
-		if (!writers.isEmpty())
-			cv.put("writers", TextUtils.join(",", writers));
-		else
-			cv.putNull("writers");
-		if (!TextUtils.isEmpty(director))
-			cv.put("director", director);
-		else
-			cv.putNull("director");
-		if (!guestStars.isEmpty())
-			cv.put("guestStars", TextUtils.join(",", guestStars));
-		else
-			cv.putNull("guestStars");
-		if (firstAired > 0)
-			cv.put("firstAired", firstAired);
-		else
-			cv.putNull("firstAired");
-		if (!TextUtils.isEmpty(imdb_id))
-			cv.put("imdb_id", imdb_id);
-		else
-			cv.putNull("imdb_id");
-		if (!subtitles.isEmpty())
-			cv.put("subtitles", TextUtils.join(",", subtitles));
-		else
-			cv.putNull("subtitles");
-		cv.put("collected", collected);
-		cv.put("watched", watched);
-		
-		boolean isnew = timestamp <= 0;
-		if (isnew || metadata) {
-			timestamp = System.currentTimeMillis();
-			cv.put("timestamp", timestamp);
-		}
-		if (isnew)
-			session.getDB().insertOrThrow(TABLE, null, cv);
-		else
-			session.getDB().update(TABLE, cv, "series = ? and season = ? and episode = ?",
-				new String[] { series, Integer.toString(season), Integer.toString(episode) });
-		Log.i(TAG, "Saved episode " + eid());
-		
-		dispatch(OnTitleListener.READY, null);
-	}
-	
-	protected void delete() {
-		dispatch(OnTitleListener.WORKING, null);
-		Log.d(TAG, "Deleting episode " + eid());
-		session.getDB().delete(TABLE, "tvdb_id=?", new String[] { tvdb_id });
-		Log.i(TAG, "Deleted episode " + eid());
-		dispatch(OnTitleListener.READY, null);
-	}
-	
-	public void reload() {
-		Cursor cur = session.getDB().query("episode", null, "series=? and season=? and episode=?",
-			new String[] { series, Integer.toString(season), Integer.toString(episode) }, null, null, null);
-		try {
-			if (cur.moveToFirst())
-				load(cur);
-		} finally {
-			cur.close();
-		}
-	}
 	
 	public void refresh(boolean force) {
 		if (TextUtils.isEmpty(series) || season <= 0 || episode <= 0) {
@@ -408,7 +309,8 @@ public class Episode extends Title {
 	}
 	
 	public boolean isValid() {
-		return !(TextUtils.isEmpty(tvdb_id) || TextUtils.isEmpty(series) || season < 0 || episode < 0);
+		return !TextUtils.isEmpty(series) && ((season > 0 && episode > 0) ||
+			(session.specials() && season >= 0 && episode >= 0));
 	}
 	
 	public boolean isOld() {
@@ -565,7 +467,12 @@ public class Episode extends Title {
 		return isBefore(ep.season, ep.episode);
 	}
 	
-	public static class EID {
+	@Override
+	public int compareTo(Episode another) {
+		return eid().compareTo(another.eid());
+	}
+	
+	public static class EID implements Comparable<EID> {
 		public final String series;
 		public final int season;
 		public final int episode;
@@ -594,15 +501,19 @@ public class Episode extends Title {
 		public String toString() {
 			return (TextUtils.isEmpty(series) ? "unknown" : series) + "." + sequence();
 		}
-	}
-	
-	public static class EpisodeComparator implements Comparator<Episode> {
-	    @Override
-	    public int compare(Episode o1, Episode o2) {
-	    	int res = o1.season - o2.season;
+		
+		@Override
+		public boolean equals(Object obj2) {
+			return obj2 instanceof EID && ((EID)obj2).series.equals(series) && ((EID)obj2).season == season &&
+				((EID)obj2).episode == episode;
+		}
+
+		@Override
+		public int compareTo(EID another) {
+			int res = season - another.season;
 	    	if (res == 0)
-	    		res = o1.episode - o2.episode;
+	    		res = episode - another.episode;
 	        return res;
-	    }
+		}
 	}
 }
