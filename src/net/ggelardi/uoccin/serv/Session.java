@@ -1,6 +1,9 @@
 package net.ggelardi.uoccin.serv;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -35,21 +38,20 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return singleton;
 	}
 	
-	private final Context appContext;
+	private final Context acntx;
 	private final SharedPreferences prefs;
 	private final Storage dbhlp;
+	private final List<String> dgnrf;
 	private SQLiteDatabase dbconn;
 	private String gdruid;
 	
 	public Session(Context context) {
-		appContext = context.getApplicationContext();
-		
-		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
-		prefs.registerOnSharedPreferenceChangeListener(this);
-		
-		dbhlp = new Storage(appContext);
-		
+		acntx = context.getApplicationContext();
+		prefs = PreferenceManager.getDefaultSharedPreferences(acntx);
+		dbhlp = new Storage(acntx);
+		dgnrf = new ArrayList<String>(Arrays.asList(getRes().getStringArray(R.array.def_tvdb_genres)));
 		driveDeviceID();
+		prefs.registerOnSharedPreferenceChangeListener(this);
 	}
 	
 	@Override
@@ -59,7 +61,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		else if (key.equals(PK.GDRVSYNC)) {
 			registerAlarms();
 			if (driveSyncEnabled() && !driveAccountSet())
-				appContext.sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
+				acntx.sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
 		} else if (key.equals(PK.GDRVAUTH) && driveAccountSet()) {
 			/*
 			Intent si = new Intent(appContext, Service.class);
@@ -70,7 +72,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 	}
 	
 	public Context getContext() {
-		return appContext;
+		return acntx;
 	}
 	
 	public SharedPreferences getPrefs() {
@@ -78,11 +80,11 @@ public class Session implements OnSharedPreferenceChangeListener {
 	}
 	
 	public Resources getRes() {
-		return appContext.getResources();
+		return acntx.getResources();
 	}
 	
 	public String getString(int id) {
-		return appContext.getResources().getString(id);
+		return acntx.getResources().getString(id);
 	}
 	
 	public SQLiteDatabase getDB() {
@@ -92,24 +94,24 @@ public class Session implements OnSharedPreferenceChangeListener {
 	}
 	
 	public boolean isConnected() {
-		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+		ConnectivityManager cm = (ConnectivityManager) acntx.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = cm.getActiveNetworkInfo();
 		return ni != null && ni.isConnectedOrConnecting();
 	}
 	
 	public boolean isOnWIFI() {
-		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+		ConnectivityManager cm = (ConnectivityManager) acntx.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = cm.getActiveNetworkInfo();
 		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
 	}
 	
 	private PendingIntent mkPI(String action) {
-		return PendingIntent.getBroadcast(appContext, 0, new Intent(appContext, Receiver.class).setAction(action),
+		return PendingIntent.getBroadcast(acntx, 0, new Intent(acntx, Receiver.class).setAction(action),
 			PendingIntent.FLAG_UPDATE_CURRENT);
 	}
 	
 	public void registerAlarms() {
-		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+		AlarmManager am = (AlarmManager) acntx.getSystemService(Context.ALARM_SERVICE);
 		// clean database cache every hour
 		PendingIntent cc = mkPI(Service.CLEAN_DB_CACHE);
 		am.cancel(cc);
@@ -119,7 +121,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 		PendingIntent tv = mkPI(Service.CHECK_TVDB_RSS);
 		am.cancel(tv);
 		if (checkPremieres())
-			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_HALF_DAY,
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
 				AlarmManager.INTERVAL_HALF_DAY, tv);
 		// check Uoccin files changes in Drive every 15 mins
 		PendingIntent gd = mkPI(Service.GDRIVE_SYNC);
@@ -141,6 +143,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	public boolean checkPremieres() {
 		return prefs.getBoolean(PK.TVDBFEED, false);
+	}
+	
+	public List<String> tvdbGenreFilter() {
+		return new ArrayList<String>(Arrays.asList(prefs.getString(PK.TVDBGFLT, "").toLowerCase(Locale.getDefault()).split(",")));
 	}
 	
 	public boolean driveSyncEnabled() {
@@ -244,22 +250,22 @@ public class Session implements OnSharedPreferenceChangeListener {
 	    return builder.build();
 	    */
 		// @formatter:on
-		return Picasso.with(appContext);
+		return Picasso.with(acntx);
 	}
 	
 	public RequestCreator picasso(String path) {
-		return Picasso.with(appContext).load(path).noPlaceholder();
+		return Picasso.with(acntx).load(path).noPlaceholder();
 	}
 	
 	public RequestCreator picasso(String path, boolean placeholder) {
 		if (!placeholder)
 			return picasso(path);
-		return Picasso.with(appContext).load(path).placeholder(R.drawable.ic_action_image);
+		return Picasso.with(acntx).load(path).placeholder(R.drawable.ic_action_image);
 	}
 	
 	public String defaultText(String value, int resId) {
 		if (TextUtils.isEmpty(value))
-			return appContext.getResources().getString(resId);
+			return acntx.getResources().getString(resId);
 		return value;
 	}
 	

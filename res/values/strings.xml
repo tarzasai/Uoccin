@@ -89,6 +89,7 @@
     <string name="msg_seen_del_epi">Episode \"%s\" set to be watched</string>
     <string name="msg_tags_add">Tag \"%s\" added</string>
     <string name="msg_tags_del">Tag \"%s\" removed</string>
+    <string name="msg_imdb_news">New series found! %s</string>
     
     <string name="msg_restore_1">Restoring database backup</string>
     <string name="msg_restore_2a">Uoccin backup not found</string>
@@ -104,8 +105,11 @@
     <string name="pk_startup_summ">The first view you want to see on startup.</string>
     <string name="pk_locale_title">Localization</string>
     <string name="pk_locale_summ">The language for titles and synopsis (where available).</string>
-    <string name="pk_tvdbrss_title">TVDB feed</string>
+    <string name="pc_tvdbcat_title">TVDB pptions</string>
+    <string name="pk_tvdbrss_title">Check premieres</string>
     <string name="pk_tvdbrss_summ">Periodically check TVDB\'s \"airing today\" feed for new TV shows.</string>
+    <string name="pk_tvdbgnf_title">Filter by genre</string>
+    <string name="pk_tvdbgnf_summ">Ignore new TV shows labeled by these categories.</string>
     <string name="pc_gdrvcat_title">Google Drive</string>
     <string name="pk_gdrvacc_title">Select a Google account</string>
     <string name="pk_gdrvbak_title">Synchronize</string>

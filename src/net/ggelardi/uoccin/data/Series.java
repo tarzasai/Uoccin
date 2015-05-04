@@ -34,8 +34,7 @@ public class Series extends Title {
     private static final String TAG = "Series";
 	private static final String TABLE = "series";
 	
-	public static final String ACTIVE = "Continuing";
-	public static final String ENDED = "Ended";
+	public static final String TAG_DISCOVER = "tvdb_premiere";
 	
 	private static final SimpleCache cache = new SimpleCache(500);
 	
@@ -149,8 +148,6 @@ public class Series extends Title {
 	}
 	
 	protected void load(Element serxml, NodeList epsxml) {
-		dispatch(OnTitleListener.WORKING, null);
-		
 		boolean modified = false;
 		String chk;
 		String lang = Commons.XML.nodeText(serxml, "language", "Language");
@@ -268,39 +265,45 @@ public class Series extends Title {
 			rated = chk;
 			modified = true;
 		}
+		int purged = 0;
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
 			if (modified)
 				save(true);
+			EID last = new EID(0, 0);
 			if (epsxml != null && epsxml.getLength() > 0) {
 				List<Episode> lst = new ArrayList<Episode>();
-				EID last = new EID(0, 0);
+				EID check;
+				Element node;
 				Episode ep;
 				for (int i = 0; i < epsxml.getLength(); i++) {
-					ep = new Episode(session.getContext(), (Element) epsxml.item(i));
-					if (ep != null && ep.isValid()) {
+					node = (Element) epsxml.item(i);
+					check = new EID(node);
+					if (check.isValid(session.specials())) {
+						ep = new Episode(session.getContext(), check);
 						if (lst.contains(ep))
 							Log.i(TAG, "Duplicate found in xml: " + ep.eid().toString());
 						else {
+							ep.update(node);
 							lst.add(ep);
-							if (last.compareTo(ep.eid()) < 0)
-								last = ep.eid();
+							if (last.compareTo(check) < 0)
+								last = check;
 						}
 					}
 				}
-				db.delete("episode", "series = ? and (season > ? or (season = ? and episode > ?))",
-					new String[] { tvdb_id, Integer.toString(last.season), Integer.toString(last.season),
-					Integer.toString(last.episode) });
 				Collections.sort(lst);
 				episodes = lst;
 			}
+			purged = db.delete("episode", "series = ? and (season > ? or (season = ? and episode > ?))",
+				new String[] { tvdb_id, Integer.toString(last.season), Integer.toString(last.season),
+				Integer.toString(last.episode) });
 			db.setTransactionSuccessful();
 		} finally {
 			db.endTransaction();
 		}
-		
-		dispatch(OnTitleListener.READY, null);
+		if (purged > 0)
+			dispatch(OnTitleListener.RELOAD, null);
 	}
 	
 	protected void load(Cursor cr) {
@@ -523,9 +526,9 @@ public class Series extends Title {
 	}
 	
 	public boolean isOld() {
+		if (timestamp == 1)
+			return true;
 		if (timestamp > 0) {
-			if (timestamp == 1)
-				return true;
 			long now = System.currentTimeMillis();
 			long ageLocal = now - timestamp;
 			if (firstAired > 0) {
@@ -671,7 +674,7 @@ public class Series extends Title {
 	}
 	
 	public boolean isEnded() {
-		return !TextUtils.isEmpty(status) && status.equals(ENDED);
+		return !TextUtils.isEmpty(status) && status.equals("Ended");
 	}
 	
 	public String plot() {

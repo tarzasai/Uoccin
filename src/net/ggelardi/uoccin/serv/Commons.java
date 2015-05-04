@@ -45,6 +45,7 @@ public class Commons {
 		public static final String LANGUAGE = "pk_locale";
 		public static final String SPECIALS = "pk_specials";
 		public static final String TVDBFEED = "pk_tvdbrss";
+		public static final String TVDBGFLT = "pk_tvdbgflt";
 		public static final String GDRVUUID = "pk_gdrvuid";
 		public static final String GDRVSYNC = "pk_gdrvbak";
 		public static final String GDRVWIFI = "pk_gdrvwifi";
@@ -243,6 +244,7 @@ public class Commons {
 				} catch (Exception err) {
 					//Log.e("Commons.XML", "nodeText(" + name + ")", err); // debug only.
 				}
+			Log.d("Commons.XML", "Node(s) not found in xml: " + TextUtils.join(", ", names));
 			return "";
 		}
 		
@@ -256,6 +258,7 @@ public class Commons {
 				} catch (Exception err) {
 					//Log.e("Commons.XML", "attrText(" + name + ")", err); // debug only.
 				}
+			Log.d("Commons.XML", "Attribute(s) not found in xml: " + TextUtils.join(", ", names));
 			return "";
 		}
 	}

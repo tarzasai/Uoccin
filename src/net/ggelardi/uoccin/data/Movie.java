@@ -536,9 +536,9 @@ public class Movie extends Title {
 	}
 	
 	public boolean isOld() {
+		if (timestamp == 1)
+			return true;
 		if (timestamp > 0) {
-			if (timestamp == 1)
-				return true;
 			long now = System.currentTimeMillis();
 			long ageLocal = now - timestamp;
 			if (released > 0) {

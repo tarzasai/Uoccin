@@ -7,6 +7,7 @@ import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Commons.XML;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 
@@ -46,30 +47,16 @@ public class Episode extends Title implements Comparable<Episode> {
 	public String imdb_id;
 	public List<String> subtitles = new ArrayList<String>();
 	
+	public Episode(Context context, EID eid) {
+		this(context, eid.series, eid.season, eid.episode);
+	}
+	
 	public Episode(Context context, String series, int season, int episode) {
 		this.session = Session.getInstance(context);
 		this.series = series;
 		this.season = season;
 		this.episode = episode;
 		reload();
-	}
-	
-	public Episode(Context context, Element xml) {
-		session = Session.getInstance(context);
-		try {
-			series = xml.getElementsByTagName("seriesid").item(0).getTextContent();
-			season = Integer.parseInt(xml.getElementsByTagName("SeasonNumber").item(0).getTextContent());
-			episode = Integer.parseInt(xml.getElementsByTagName("EpisodeNumber").item(0).getTextContent());
-			if (isValid()) {
-				reload();
-				update(xml);
-			}
-		} catch (Exception err) {
-			Log.e(TAG, "Episode()", err);
-			series = "";
-			season = -1;
-			episode = -1;
-		}
 	}
 
 	protected void save(boolean metadata) {
@@ -183,15 +170,8 @@ public class Episode extends Title implements Comparable<Episode> {
 	}
 	
 	public void update(Element xml) {
-		dispatch(OnTitleListener.WORKING, null);
-		
 		boolean modified = false;
 		String chk;
-		chk = Commons.XML.nodeText(xml, "seriesid");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(series) || !series.equals(chk))) {
-			series = chk;
-			modified = true;
-		}
 		chk = Commons.XML.nodeText(xml, "id");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(tvdb_id) || !tvdb_id.equals(chk))) {
 			tvdb_id = chk;
@@ -201,30 +181,6 @@ public class Episode extends Title implements Comparable<Episode> {
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(imdb_id) || !imdb_id.equals(chk))) {
 			imdb_id = chk;
 			modified = true;
-		}
-		chk = Commons.XML.nodeText(xml, "SeasonNumber");
-		if (!TextUtils.isEmpty(chk)) {
-			try {
-				int r = Integer.parseInt(chk);
-				if (r > 0 && r != season) {
-					season = r;
-					modified = true;
-				}
-			} catch (Exception err) {
-				Log.e(TAG, chk, err);
-			}
-		}
-		chk = Commons.XML.nodeText(xml, "EpisodeNumber");
-		if (!TextUtils.isEmpty(chk)) {
-			try {
-				int r = Integer.parseInt(chk);
-				if (r > 0 && r != episode) {
-					episode = r;
-					modified = true;
-				}
-			} catch (Exception err) {
-				Log.e(TAG, chk, err);
-			}
 		}
 		String lang = Commons.XML.nodeText(xml, "language", "Language");
 		if (!TextUtils.isEmpty(lang)) {
@@ -286,19 +242,12 @@ public class Episode extends Title implements Comparable<Episode> {
 				modified = true;
 			}
 		}
-		//
 		if (modified)
 			save(true);
-		
-		dispatch(OnTitleListener.READY, null);
 	}
 	
 	public void refresh(boolean force) {
-		if (TextUtils.isEmpty(series) || season <= 0 || episode <= 0) {
-			Log.w(TAG, "Missing series/season/episode, cannot update...");
-			return;
-		}
-		if ((isOld() || force) && !Service.isQueued(eid().toString())) {
+		if (isValid() && (isOld() || force) && !Service.isQueued(eid().toString())) {
 			Intent si = new Intent(session.getContext(), Service.class);
 			si.setAction(Service.REFRESH_EPISODE);
 			si.putExtra("series", series);
@@ -309,14 +258,13 @@ public class Episode extends Title implements Comparable<Episode> {
 	}
 	
 	public boolean isValid() {
-		return !TextUtils.isEmpty(series) && ((season > 0 && episode > 0) ||
-			(session.specials() && season >= 0 && episode >= 0));
+		return eid().isValid(session.specials());
 	}
 	
 	public boolean isOld() {
+		if (timestamp == 1)
+			return true;
 		if (timestamp > 0) {
-			if (timestamp == 1)
-				return true;
 			long now = System.currentTimeMillis();
 			long ageLocal = now - timestamp;
 			if (firstAired > 0) {
@@ -452,7 +400,7 @@ public class Episode extends Title implements Comparable<Episode> {
 	}
 	
 	public boolean isAfter(int seasonNo, int episodeNo) {
-		return season > seasonNo || (season == seasonNo && episode > episodeNo);
+		return eid().compareTo(new EID(seasonNo, episodeNo)) > 0;
 	}
 	
 	public boolean isAfter(Episode ep) {
@@ -460,7 +408,7 @@ public class Episode extends Title implements Comparable<Episode> {
 	}
 	
 	public boolean isBefore(int seasonNo, int episodeNo) {
-		return season < seasonNo || (season == seasonNo && episode < episodeNo);
+		return eid().compareTo(new EID(seasonNo, episodeNo)) < 0;
 	}
 	
 	public boolean isBefore(Episode ep) {
@@ -487,6 +435,33 @@ public class Episode extends Title implements Comparable<Episode> {
 			this.series = null;
 			this.season = season;
 			this.episode = episode;
+		}
+		
+		public EID(EID eid) {
+			this.series = eid.series;
+			this.season = eid.season;
+			this.episode = eid.episode;
+		}
+		
+		public EID(Element xml) {
+			String sid = "";
+			int sno = -1;
+			int eno = -1;
+			try {
+				sid = XML.nodeText(xml, "seriesid", "seriesId", "SeriesId");
+				sno = Integer.parseInt(XML.nodeText(xml, "SeasonNumber"));
+				eno = Integer.parseInt(XML.nodeText(xml, "EpisodeNumber"));
+			} catch (Exception err) {
+				Log.d(TAG, "EID() invalid XML", err);
+			}
+			this.series = sid;
+			this.season = sno;
+			this.episode = eno;
+		}
+		
+		public boolean isValid(boolean specials) {
+			return !TextUtils.isEmpty(series) &&
+				((season > 0 && episode > 0) || (specials && season >= 0 && episode >= 0));
 		}
 		
 		public String sequence() {

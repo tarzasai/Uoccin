@@ -1,10 +1,20 @@
 package net.ggelardi.uoccin.serv;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.GSA;
@@ -22,11 +32,14 @@ import net.ggelardi.uoccin.serv.Service.UFile.USeries;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -119,7 +132,9 @@ public class Service extends WakefulIntentService {
 		try {
 			db.execSQL("delete from movie where watchlist = 0 and collected = 0 and watched = 0");
 			db.execSQL("delete from series where watchlist = 0 and not tvdb_id in " +
-				"(select distinct series from episode where collected = 1 or watched = 1)");
+				"(select distinct series from episode where collected = 1 or watched = 1) and " +
+				"(instr(tags,'" + Series.TAG_DISCOVER + "') <= 0 or timestamp < " +
+				Long.toString(System.currentTimeMillis() - Commons.weekLong) + ")");
 			db.execSQL("update movie set subtitles = null where subtitles = ''");
 			db.execSQL("update episode set subtitles = null where subtitles = ''");
 			db.setTransactionSuccessful();
@@ -218,7 +233,6 @@ public class Service extends WakefulIntentService {
 	}
 	
 	private void checkTVdbNews() throws Exception {
-		/*
 		String content = null;
 	    URL url = new URL("http://thetvdb.com/rss/newtoday.php");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -243,6 +257,9 @@ public class Service extends WakefulIntentService {
 			XPathConstants.NODESET);
 		if (items != null && items.getLength() > 0) {
 			String link;
+			Element node;
+			EID check;
+			Series ser;
 			for (int i = 0; i < items.getLength(); i++) {
 				link = Commons.XML.nodeText((Element) items.item(i), "link");
 				try {
@@ -250,10 +267,28 @@ public class Service extends WakefulIntentService {
 					Document doc = XML.TVDB.getInstance().getEpisodeById(eid, "en");
 					NodeList lst = doc.getElementsByTagName("Episode");
 					if (lst != null && lst.getLength() > 0) {
-						Episode ep = Episode.get(session.getContext(), (Element) lst.item(0));
-						if (ep != null && ep.season == 1 && ep.episode == 1 && !ep.getSeries().inWatchlist()) {
-							Log.d(TAG, "New series found: " + ep.getSeries().name);
-							//ep.getSeries().addTag("premiere");
+						node = (Element) lst.item(0);
+						check = new EID(node);
+						if (check.isValid(session.specials()) && check.season == 1 && check.episode == 1) {
+							doc = XML.TVDB.getInstance().getSeries(check.series, session.language());
+							ser = Series.get(this, (Element)doc.getElementsByTagName("Series").item(0), null);
+							Log.d(TAG, "Evalutaing series: " + ser.name);
+							// check unwanted genres
+							List<String> gflt = session.tvdbGenreFilter();
+							if (gflt.size() <= 0 || ser.genres.size() <= 0) {
+								boolean good = true;
+								for (String g: ser.genres)
+									if (gflt.contains(g)) {
+										good = false;
+										break;
+									}
+								if (good) {
+									String msg = ser.name + " (" + ser.genres() + ")";
+									Log.d(TAG, "Tagging series: " + msg);
+									ser.addTag(Series.TAG_DISCOVER);
+									sendNotification(String.format(session.getString(R.string.msg_imdb_news), msg));
+								}
+							}
 						}
 					}
 				} catch (Exception err) {
@@ -261,7 +296,6 @@ public class Service extends WakefulIntentService {
 				}
 			}
 		}
-		*/
 	}
 	
 	private void checkDrive() throws Exception {

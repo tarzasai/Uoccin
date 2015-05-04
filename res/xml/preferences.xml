@@ -9,6 +9,7 @@
         android:key="pk_startup"
         android:summary="@string/pk_startup_summ"
         android:title="@string/pk_startup_title" />
+    
     <ListPreference
         android:defaultValue="en"
         android:dialogTitle="@string/pk_locale_title"
@@ -18,12 +19,24 @@
         android:summary="@string/pk_locale_summ"
         android:title="@string/pk_locale_title" />
 
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="pk_tvdbrss"
-        android:summary="@string/pk_tvdbrss_summ"
-        android:title="@string/pk_tvdbrss_title" />
-
+    <PreferenceCategory
+        android:key="pc_tvdbcat"
+        android:title="@string/pc_tvdbcat_title" >
+        
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pk_tvdbrss"
+            android:summary="@string/pk_tvdbrss_summ"
+            android:title="@string/pk_tvdbrss_title" />
+        
+        <net.ggelardi.uoccin.comp.GenreFilterDialog
+            android:key="pk_tvdbgflt"
+            android:dialogTitle="@string/pk_tvdbgnf_title"
+            android:summary="@string/pk_tvdbgnf_summ"
+            android:title="@string/pk_tvdbgnf_title" />
+        
+    </PreferenceCategory>
+    
     <PreferenceCategory
         android:key="pc_gdrvcat"
         android:title="@string/pc_gdrvcat_title" >
@@ -37,6 +50,7 @@
             android:key="pk_gdrvbak"
             android:summary="@string/pk_gdrvbak_summ"
             android:title="@string/pk_gdrvbak_title" />
+        
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pk_gdrvwifi"
