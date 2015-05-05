@@ -119,7 +119,7 @@
     
     <!-- sample text -->
     <string name="sample_title1">A Short Title</string>
-    <string name="sample_title2">A very very very very very very very very long title</string>
+    <string name="sample_title2">Pirates of the Caribbean: The Curse of the Black Pearl (2003)</string>
     <string name="sample_number1">2</string>
     <string name="sample_number2">16</string>
     <string name="sample_number3">316</string>
@@ -130,7 +130,8 @@
     <string name="sample_time1">Wed 10:00 PM</string>
     <string name="sample_network">CBS</string>
     <string name="sample_country">USA, Canada</string>
-    <string name="sample_info">History Channel - Wed 10:00 PM</string>
+    <string name="sample_ser_info">History Channel - Wed 10:00 PM</string>
+    <string name="sample_mov_info">Joel Coen &amp; Ethan Coen, 2004</string>
     <string name="sample_epnum">4x13</string>
     <string name="sample_episode">4x13 - M.I.A.</string>
     <string name="sample_plot1">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</string>
@@ -146,11 +147,11 @@
     <string name="sample_tags">pippo, pluto, paperino, tafazzi, perdinci, drocopio</string>
     <string name="sample_season">S03</string>
     <string name="sample_director">Joel Coen &amp; Ethan Coen</string>
-    <string name="sample_language">english, german</string>
+    <string name="sample_language">English, German</string>
     <string name="sample_metascore">74</string>
-    <string name="sample_imdbrating">8.7</string>
-    <string name="sample_imdbvotes">573,918</string>
-    <string name="sample_rottoen">68%</string>
+    <string name="sample_imdbrat">8.7</string>
+    <string name="sample_imdbvot">573,918</string>
+    <string name="sample_rotten">68%</string>
     <string name="sample_awards">Won 1 Oscar. Another 32 wins &amp; 93 nominations.</string>
 
 </resources>

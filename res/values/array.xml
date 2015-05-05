@@ -95,6 +95,39 @@ order by s.name collate nocase
         </item>
     </string-array>
     
+    <string-array name="view_defmov_ids">
+        <item>movfavs</item>
+        <item>mov2see</item>
+        <item>movrats</item>
+    </string-array>
+    
+    <string-array name="view_defmov_titles">
+        <item>Movies watchlist</item>
+        <item>Available movies</item>
+        <item>Watched movies</item>
+    </string-array>
+    
+    <string-array name="view_defmov_details">
+        <item>WATCHLIST</item>
+        <item>AVAILABLES</item>
+        <item>WATCHED</item>
+    </string-array>
+    
+    <string-array name="view_defmov_queries">
+        <!-- movfavs -->
+        <item>
+select imdb_id from movie where watchlist = 1 order by name collate nocase
+        </item>
+        <!-- mov2see -->
+        <item>
+select imdb_id from movie where collected = 1 and watched = 0 order by name collate nocase
+        </item>
+        <!-- movrats -->
+        <item>
+select imdb_id from movie where watched = 1 order by name collate nocase
+        </item>
+    </string-array>
+    
     <string-array name="def_tvdb_genres">
 		<item>Action</item>
 		<item>Adventure</item>

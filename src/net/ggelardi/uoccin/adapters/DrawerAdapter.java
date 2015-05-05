@@ -53,6 +53,21 @@ public class DrawerAdapter extends BaseAdapter {
 		di.label = context.getResources().getString(R.string.drwhdr_movies);
 		di.icon = R.drawable.ic_action_movie;
 		items.add(di);
+		// movies items
+		defids = context.getResources().getStringArray(R.array.view_defmov_ids);
+		deflbs = context.getResources().getStringArray(R.array.view_defmov_titles);
+		defqrs = context.getResources().getStringArray(R.array.view_defmov_queries);
+		defdet = context.getResources().getStringArray(R.array.view_defmov_details);
+		for (int i = 0; i < defids.length; i++) {
+			di = new DrawerItem();
+			di.type = DrawerItem.MOVIE;
+			di.id = defids[i];
+			di.label = deflbs[i];
+			di.query = defqrs[i];
+			di.details = defdet[i];
+			di.position = items.size();
+			items.add(di);
+		}
 	}
 	
 	@Override

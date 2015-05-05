@@ -8,7 +8,6 @@ import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.MovieTask;
 import net.ggelardi.uoccin.serv.MovieTask.MovieTaskContainer;
-import net.ggelardi.uoccin.serv.SeriesTask;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -34,6 +33,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	private String title;
 	private String query;
 	private String[] params;
+	private String details = MovieAdapter.SEARCH;
 	private String search;
 	
 	private boolean forceReload = false;
@@ -42,13 +42,14 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	private MovieAdapter mAdapter;
 	private MovieTask mTask;
 	
-	public static MovieListFragment newQuery(String title, String query, String ... params) {
+	public static MovieListFragment newQuery(String title, String query, String details, String ... params) {
 		MovieListFragment fragment = new MovieListFragment();
 		Bundle args = new Bundle();
 		args.putString("type", MovieTask.QUERY);
 		args.putString("title", title);
 		args.putString("query", query);
 		args.putStringArray("params", params);
+		args.putString("details", details);
 		fragment.setArguments(args);
 		return fragment;
 	}
@@ -68,16 +69,17 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 		
 		Bundle args = getArguments();
 		type = args.getString("type");
-		if (type.equals(SeriesTask.QUERY)) {
+		if (type.equals(MovieTask.QUERY)) {
 			title = args.getString("title");
 			query = args.getString("query");
 			params = args.getStringArray("params");
+			details = args.getString("details");
 		} else {
 			search = args.getString("search");
 			title = String.format(getString(R.string.title_search), search);
 		}
 		
-		mAdapter = new MovieAdapter(getActivity(), this);
+		mAdapter = new MovieAdapter(getActivity(), this, details);
 	}
 	
 	@SuppressLint("InflateParams")
@@ -134,53 +136,17 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	
 	@Override
 	public void onClick(View v) {
-		/*
 		if (v.getId() == R.id.img_im_star) {
 			int pos;
 			try {
 				pos = (Integer) v.getTag();
-				Movie ser = mAdapter.getItem(pos);
-				ser.setWatchlist(!ser.inWatchlist());
+				Movie mov = mAdapter.getItem(pos);
+				mov.setWatchlist(!mov.inWatchlist());
 			} catch (Exception err) {
 				Log.e(tag(), "onClick", err);
 			}
 			return;
 		}
-		if (v.getId() == R.id.box_im_avail) {
-			Object tmp = v.getTag();
-			if (tmp instanceof EID) {
-				EID eid = (EID) tmp;
-				mListener.openSeriesEpisode(eid.series, eid.season, eid.episode);
-			} else if (tmp instanceof String) {
-				mListener.openSeriesInfo((String) tmp);
-			}
-			return;
-		}
-		*/
-	}
-
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		int pos = mListView instanceof GridView ? position - 2 : position - 1;
-		mListener.openSeriesInfo(mAdapter.getItem(pos).imdb_id);
-	}
-
-	@Override
-	public Context getContext() {
-		return getActivity();
-	}
-
-	@Override
-	public void preExecuteTask() {
-		showHourGlass(true);
-	}
-
-	@Override
-	public void postExecuteTask(List<Movie> result) {
-		showHourGlass(false);
-		mTask = null;
-		mAdapter.setTitles(result, forceReload);
-		forceReload = false;
 	}
 	
 	@Override
@@ -212,6 +178,30 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 					}
 				}
 			});
+	}
+
+	@Override
+	public Context getContext() {
+		return getActivity();
+	}
+
+	@Override
+	public void preExecuteTask() {
+		showHourGlass(true);
+	}
+
+	@Override
+	public void postExecuteTask(List<Movie> result) {
+		showHourGlass(false);
+		mTask = null;
+		mAdapter.setTitles(result, forceReload);
+		forceReload = false;
+	}
+	
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		int pos = mListView instanceof GridView ? position - 2 : position - 1;
+		mListener.openMovieInfo(mAdapter.getItem(pos).imdb_id);
 	}
 	
 	private void reload() {

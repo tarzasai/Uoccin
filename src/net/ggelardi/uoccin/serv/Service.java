@@ -130,13 +130,15 @@ public class Service extends WakefulIntentService {
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			db.execSQL("delete from movie where watchlist = 0 and collected = 0 and watched = 0");
-			db.execSQL("delete from series where watchlist = 0 and not tvdb_id in " +
-				"(select distinct series from episode where collected = 1 or watched = 1) and " +
-				"(instr(tags,'" + Series.TAG_DISCOVER + "') <= 0 or timestamp < " +
-				Long.toString(System.currentTimeMillis() - Commons.weekLong) + ")");
+			String age = "timestamp < " + Long.toString(System.currentTimeMillis() - Commons.weekLong);
+			// old stuff
+			db.execSQL("delete from movie where " + age + " and watchlist = 0 and collected = 0 and watched = 0");
+			db.execSQL("delete from series where " + age + " and watchlist = 0 and not tvdb_id in " +
+				"(select distinct series from episode where collected = 1 or watched = 1)");
+			// fields cleaning
 			db.execSQL("update movie set subtitles = null where subtitles = ''");
 			db.execSQL("update episode set subtitles = null where subtitles = ''");
+			// done
 			db.setTransactionSuccessful();
 		} finally {
 			db.endTransaction();
@@ -247,6 +249,7 @@ public class Service extends WakefulIntentService {
 		}
 		if (TextUtils.isEmpty(content))
 			return;
+		// TODO: use XmlPullParser instead?
 		DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
 		DocumentBuilder bld = fac.newDocumentBuilder();
 		InputSource is = new InputSource(new StringReader(content));
@@ -278,7 +281,7 @@ public class Service extends WakefulIntentService {
 							if (gflt.size() <= 0 || ser.genres.size() <= 0) {
 								boolean good = true;
 								for (String g: ser.genres)
-									if (gflt.contains(g)) {
+									if (gflt.contains(g.toLowerCase(Locale.getDefault()))) {
 										good = false;
 										break;
 									}

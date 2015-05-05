@@ -70,6 +70,7 @@ public class Storage extends SQLiteOpenHelper {
 		"rated" + DT_STR + CS +
 		"awards" + DT_STR + CS +
 		"metascore" + DT_INT + CS +
+		"tomatoMeter" + DT_INT + CS +
 		"imdbRating" + DT_DBL + CS +
 		"imdbVotes" + DT_INT + CS +
 		"rating" + DT_INT + CS +

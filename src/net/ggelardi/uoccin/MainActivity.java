@@ -259,14 +259,11 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		lastView = selection.id;
 		drawerList.setItemChecked(selection.position, true);
 		BaseFragment f = null;
-		if (selection.type.equals(DrawerItem.SERIES)) {
-			f = SeriesListFragment.newQuery(selection.label, selection.query, selection.details,
-				(String[]) null);
-		} else if (selection.type.equals(DrawerItem.MOVIE)) {
-			f = MovieListFragment.newQuery(selection.label, selection.query, (String[]) null);
-		}
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
-			BaseFragment.ROOT_FRAGMENT).commit();
+		if (selection.type.equals(DrawerItem.SERIES))
+			f = SeriesListFragment.newQuery(selection.label, selection.query, selection.details, (String[]) null);
+		else if (selection.type.equals(DrawerItem.MOVIE))
+			f = MovieListFragment.newQuery(selection.label, selection.query, selection.details, (String[]) null);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f, BaseFragment.ROOT_FRAGMENT).commit();
 	}
 	
 	@Override

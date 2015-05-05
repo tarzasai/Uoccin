@@ -56,6 +56,7 @@ public class Movie extends Title {
 	public String rated;
 	public String awards;
 	public int metascore;
+	public int tomatoMeter;
 	public Double imdbRating;
 	public int imdbVotes;
 	public List<String> subtitles = new ArrayList<String>();
@@ -276,6 +277,18 @@ public class Movie extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
+		chk = Commons.XML.attrText(xml, "tomatoMeter");
+		if (!TextUtils.isEmpty(chk)) {
+			try {
+				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
+				if (r > 0 && r != tomatoMeter) {
+					tomatoMeter = r;
+					modified = true;
+				}
+			} catch (Exception err) {
+				Log.e(TAG, chk, err);
+			}
+		}
 		chk = Commons.XML.attrText(xml, "imdbRating");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
@@ -353,6 +366,9 @@ public class Movie extends Title {
 		ci = cr.getColumnIndex("metascore");
 		if (!cr.isNull(ci))
 			metascore = cr.getInt(ci);
+		ci = cr.getColumnIndex("tomatoMeter");
+		if (!cr.isNull(ci))
+			tomatoMeter = cr.getInt(ci);
 		ci = cr.getColumnIndex("imdbRating");
 		if (!cr.isNull(ci))
 			imdbRating = cr.getDouble(ci);
@@ -459,6 +475,11 @@ public class Movie extends Title {
 			cv.put("metascore", metascore);
 		else
 			cv.putNull("metascore");
+		
+		if (tomatoMeter > 0)
+			cv.put("tomatoMeter", tomatoMeter);
+		else
+			cv.putNull("tomatoMeter");
 		
 		if (imdbRating != null && imdbRating > 0)
 			cv.put("imdbRating", imdbRating);

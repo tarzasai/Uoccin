@@ -67,7 +67,7 @@ public class SeriesAdapter extends BaseAdapter {
 		if (view == null) {
 			view = inflater.inflate(R.layout.item_series, parent, false);
 			vh = new ViewHolder();
-			vh.img_pstr = (ImageView) view.findViewById(R.id.img_is_poster);
+			vh.img_post = (ImageView) view.findViewById(R.id.img_is_poster);
 			vh.box_size = (LinearLayout) view.findViewById(R.id.box_is_size);
 			vh.img_star = (ImageView) view.findViewById(R.id.img_is_star);
 			vh.txt_name = (TextView) view.findViewById(R.id.txt_is_series);
@@ -101,9 +101,9 @@ public class SeriesAdapter extends BaseAdapter {
 		vh.img_star.setTag(Integer.valueOf(position));
 		//
 		Series ser = getItem(position);
-		session.picasso(ser.poster, true).resize(pstWidth, pstHeight).into(vh.img_pstr);
+		session.picasso(ser.poster, true).resize(pstWidth, pstHeight).into(vh.img_post);
 		if (pstWidth > 1)
-			vh.img_pstr.setMinimumWidth(pstWidth);
+			vh.img_post.setMinimumWidth(pstWidth);
 		vh.img_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
 		vh.txt_name.setText(ser.name);
 		vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(ser.isRecent() ? R.drawable.ics_active_news : 0, 0, 0, 0);
@@ -175,13 +175,13 @@ public class SeriesAdapter extends BaseAdapter {
 			//
 			if (ep == null) {
 				vh.txt_epis.setText("N/A");
-				//vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+				vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 				vh.txt_date.setText("N/A");
 				vh.txt_date.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 			} else {
 				vh.txt_epis.setText(ep.eid().readable() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
-				/*vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(ep.isPilot() ?
-					R.drawable.ics_action_news : 0, 0, 0, 0);*/
+				vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(ep.inCollection() ?
+					R.drawable.ics_action_storage : 0, 0, 0, 0);
 				vh.txt_date.setText(ep.firstAired());
 				vh.txt_date.setCompoundDrawablesWithIntrinsicBounds(ep.isToday() ?
 					R.drawable.ics_action_calendar : 0, 0, 0, 0);
@@ -200,7 +200,7 @@ public class SeriesAdapter extends BaseAdapter {
 	}
 	
 	static class ViewHolder {
-		public ImageView img_pstr;
+		public ImageView img_post;
 		public LinearLayout box_size;
 		public ImageView img_star;
 		public TextView txt_name;
