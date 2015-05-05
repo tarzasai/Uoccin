@@ -150,6 +150,7 @@
     <string name="sample_metascore">74</string>
     <string name="sample_imdbrating">8.7</string>
     <string name="sample_imdbvotes">573,918</string>
+    <string name="sample_rottoen">68%</string>
     <string name="sample_awards">Won 1 Oscar. Another 32 wins &amp; 93 nominations.</string>
 
 </resources>

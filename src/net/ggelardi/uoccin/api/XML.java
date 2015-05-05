@@ -74,7 +74,7 @@ public class XML {
 			@GET("/?type=movie&r=xml")
 			Document findMovie(@Query("s") String text);
 			
-			@GET("/?plot=full&r=xml")
+			@GET("/?plot=full&r=xml&tomatoes=true")
 			Document getMovie(@Query("i") String imdb_id);
 		}
 		
