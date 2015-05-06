@@ -170,16 +170,16 @@ public class MovieAdapter extends BaseAdapter {
 	}
 	
 	static class ViewHolder {
-		public ImageView img_post;
-		public LinearLayout box_size;
-		public ImageView img_star;
-		public TextView txt_name;
-		public TextView txt_spac;
-		public TextView txt_acts;
-		public TextView txt_subs;
-		private RatingBar rat_myrt;
-		public TextView txt_meta;
-		public TextView txt_rott;
-		public TextView txt_imdb;
+		ImageView img_post;
+		LinearLayout box_size;
+		ImageView img_star;
+		TextView txt_name;
+		TextView txt_spac;
+		TextView txt_acts;
+		TextView txt_subs;
+		RatingBar rat_myrt;
+		TextView txt_meta;
+		TextView txt_rott;
+		TextView txt_imdb;
 	}
 }

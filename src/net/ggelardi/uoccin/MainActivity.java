@@ -54,6 +54,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	private ListView drawerList;
 	private ProgressBar progressBar;
 	private CharSequence lastTitle;
+	private int lastIcon;
 	private String lastView;
 	private int pbCount = 0;
 	
@@ -68,7 +69,6 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //toolbar.setNavigationIcon(R.drawable.ic_drawer);
         toolbar.setNavigationIcon(R.drawable.ic_navigation_menu);
         
         drawer = (DrawerLayout) findViewById(R.id.drawer);
@@ -105,7 +105,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         
 		lastTitle = getTitle();
-		
+		lastIcon = R.drawable.ic_navigation_menu;
 		lastView = session.getPrefs().getString(PK.STARTUPV, "sernext");
 		if (savedInstanceState != null)
 			lastView = savedInstanceState.getString("lastView", lastView);
@@ -175,9 +175,11 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		if (drawer.isDrawerOpen(Gravity.START)) {
 			getMenuInflater().inflate(R.menu.global, menu);
 			actionBar.setTitle(R.string.app_name);
+			toolbar.setNavigationIcon(R.drawable.ic_navigation_menu);
 		} else {
 			getMenuInflater().inflate(R.menu.main, menu);
 			actionBar.setTitle(lastTitle);
+			toolbar.setNavigationIcon(lastIcon);
 		}
 		return true;
 	}
@@ -269,7 +271,12 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	@Override
 	public void fragmentAttached(BaseFragment fragment) {
 		dropHourGlass();
-		// anything else?
+	}
+	
+	@Override
+	public void setIcon(int toolbarIcon) {
+		lastIcon = toolbarIcon;
+		toolbar.setNavigationIcon(lastIcon);
 	}
 	
 	@Override
@@ -283,11 +290,9 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	
 	@Override
 	public void openMovieInfo(String imdb_id) {
-		/*
 		BaseFragment f = MovieInfoFragment.newInstance(imdb_id);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
 			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
-		*/
 	}
 	
 	@Override

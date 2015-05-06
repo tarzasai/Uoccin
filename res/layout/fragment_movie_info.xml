@@ -25,10 +25,24 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/txt_movinf_count"
+            android:id="@+id/txt_movinf_coun"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:text="@string/sample_country" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/lbl_comm_ratd"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
             android:id="@+id/txt_movinf_ratd"
@@ -36,18 +50,6 @@
             android:layout_height="wrap_content"
             android:text="@string/sample_rated"
             android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/txt_movinf_subs"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:drawablePadding="3dp"
-            android:drawableRight="@drawable/ics_action_subtitles"
-            android:gravity="right"
-            android:text="@string/sample_subs"
-            android:textAllCaps="true"
-            tools:ignore="RtlHardcoded" />
     </LinearLayout>
 
     <ScrollView
@@ -72,28 +74,47 @@
                 <ImageView
                     android:id="@+id/img_movinf_post"
                     android:layout_width="wrap_content"
-                    android:layout_height="200dp"
-                    android:adjustViewBounds="true"
+                    android:layout_height="wrap_content"
+                    android:background="@color/contentBackground"
                     android:contentDescription="@string/empty_text"
-                    android:src="@drawable/omdb_poster" />
+                    android:src="@drawable/ic_action_image" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:divider="@drawable/divider_8dp"
+                    android:layout_height="wrap_content"
+                    android:divider="@drawable/divider_2dp"
                     android:orientation="vertical"
                     android:showDividers="middle" >
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical" >
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/lbl_movinf_dire"
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                            android:gravity="center_vertical" >
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/lbl_movinf_dire"
+                                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                            <TextView
+                                android:id="@+id/txt_movinf_subs"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:drawablePadding="3dp"
+                                android:drawableRight="@drawable/ics_active_subtitles"
+                                android:gravity="right"
+                                android:text="@string/sample_subs"
+                                android:textAllCaps="true"
+                                tools:ignore="RtlHardcoded" />
+
+                        </LinearLayout>
 
                         <TextView
                             android:id="@+id/txt_movinf_dire"
@@ -266,11 +287,40 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@color/contentBackground"
+                    android:linksClickable="true"
                     android:paddingBottom="10dp"
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
                     android:paddingTop="5dp"
                     android:text="@string/sample_people" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/box_movinf_lang"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:text="@string/lbl_comm_lang"
+                    android:textSize="@dimen/mini_section_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_movinf_lang"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/contentBackground"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="5dp"
+                    android:text="@string/sample_language" />
             </LinearLayout>
 
             <LinearLayout
@@ -299,6 +349,39 @@
                     android:paddingRight="15dp"
                     android:paddingTop="5dp"
                     android:text="@string/sample_genres" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/box_movinf_rats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:text="@string/lbl_comm_rats"
+                    android:textSize="@dimen/mini_section_title"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/contentBackground"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="5dp" >
+
+                    <RatingBar
+                        android:id="@+id/rat_movinf_myrt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:max="5"
+                        android:numStars="5" />
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout

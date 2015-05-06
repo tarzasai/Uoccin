@@ -39,12 +39,14 @@
     <string name="lbl_comm_imdb">IMDB</string>
     <string name="lbl_comm_refr">Refresh</string>
     <string name="lbl_comm_plot">plot</string>
+    <string name="lbl_comm_lang">language</string>
     <string name="lbl_comm_link">links</string>
     <string name="lbl_comm_seas">season</string>
     <string name="lbl_comm_epis">episode</string>
     <string name="lbl_comm_ratd">rated:</string>
     <string name="lbl_comm_gens">genre</string>
     <string name="lbl_comm_tags">tags</string>
+    <string name="lbl_comm_rats">your rating</string>
     
     <string name="lbl_serinf_with">starring</string>
     <string name="lbl_serinf_seas">seasons</string>
@@ -58,6 +60,7 @@
     <string name="lbl_movinf_awrd">scores/awards</string>
     <string name="lbl_movinf_meta">metacritic</string>
     <string name="lbl_movinf_imdb">imdb</string>
+    <string name="lnk_movinf_acts">[see IMDB full cast &amp; crew]</string>
     
     <string name="empty_text"></string>
     <string name="none_text">None</string>
@@ -116,6 +119,9 @@
     <string name="pk_gdrvbak_summ">Manage your data on multiple devices (phones or desktop apps).</string>
     <string name="pk_gdrvwif_title">Only on WiFi</string>
     <string name="pk_gdrvint_title">Sync interval</string>
+    <string name="pc_misccat_title">Miscellaneous</string>
+    <string name="pk_splrpro_title">Spoiler protection</string>
+    <string name="pk_splrpro_summ">Long texts might contain spoilers, cut them short.</string>
     
     <!-- sample text -->
     <string name="sample_title1">A Short Title</string>

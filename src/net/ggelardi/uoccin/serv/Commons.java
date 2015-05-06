@@ -52,6 +52,8 @@ public class Commons {
 		public static final String GDRVINTV = "pk_gdrvint";
 		public static final String GDRVAUTH = "pk_gdrv_account";
 		public static final String GDRVLCID = "pk_gdrv_lastcid";
+		public static final String SPLRPROT = "pk_splrpro";
+		
 		public static final String NOTIFSND = "pk_notif_sound";
 	}
 	
@@ -126,6 +128,13 @@ public class Commons {
 			Log.e("str2num", s, err);
 			return defVal;
 		}
+	}
+	
+	public static String shortenText(final String content, final int length) {
+	    String result = content.substring(0, length);
+	    if (content.charAt(length) != ' ')
+	        result = result.substring(0, result.lastIndexOf(" "));
+	    return result;
 	}
 
 	public static int retrofitErrorCode(RetrofitError error) {

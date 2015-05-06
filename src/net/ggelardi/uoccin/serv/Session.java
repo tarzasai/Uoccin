@@ -41,7 +41,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 	private final Context acntx;
 	private final SharedPreferences prefs;
 	private final Storage dbhlp;
-	private final List<String> dgnrf;
 	private SQLiteDatabase dbconn;
 	private String gdruid;
 	
@@ -49,7 +48,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 		acntx = context.getApplicationContext();
 		prefs = PreferenceManager.getDefaultSharedPreferences(acntx);
 		dbhlp = new Storage(acntx);
-		dgnrf = new ArrayList<String>(Arrays.asList(getRes().getStringArray(R.array.def_tvdb_genres)));
 		driveDeviceID();
 		prefs.registerOnSharedPreferenceChangeListener(this);
 	}
@@ -62,12 +60,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 			registerAlarms();
 			if (driveSyncEnabled() && !driveAccountSet())
 				acntx.sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
-		} else if (key.equals(PK.GDRVAUTH) && driveAccountSet()) {
-			/*
-			Intent si = new Intent(appContext, Service.class);
-			si.setAction(Service.GDRIVE_RESTORE);
-			WakefulIntentService.sendWakefulWork(appContext, si);
-			*/
 		}
 	}
 	
@@ -143,6 +135,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	public boolean checkPremieres() {
 		return prefs.getBoolean(PK.TVDBFEED, false);
+	}
+	
+	public boolean blockSpoilers() {
+		return prefs.getBoolean(PK.SPLRPROT, true);
 	}
 	
 	public List<String> tvdbGenreFilter() {

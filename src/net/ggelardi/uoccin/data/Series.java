@@ -44,7 +44,6 @@ public class Series extends Title {
 	private boolean massUpd = false;
 
 	public List<Episode> episodes = new ArrayList<Episode>();
-	//public List<String> episodes = new ArrayList<String>();
 	
 	public String tvdb_id;
 	public String name;
@@ -678,7 +677,9 @@ public class Series extends Title {
 	}
 	
 	public String plot() {
-		return TextUtils.isEmpty(plot) ? "N/A" : plot;
+		if (TextUtils.isEmpty(plot))
+			return "N/A";
+		return plot;
 	}
 	
 	public String network() {

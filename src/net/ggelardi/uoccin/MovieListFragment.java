@@ -125,13 +125,18 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		
 	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
 		
+		mListener.setIcon(R.drawable.ic_action_movie);
 	}
 	
 	@Override

@@ -183,7 +183,7 @@ public class Movie extends Title {
 			}
 		}
 		chk = Commons.XML.attrText(xml, "poster");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
+		if (!TextUtils.isEmpty(chk) && !chk.equals("N/A") && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
 			poster = chk;
 			modified = true;
 		}
@@ -702,8 +702,25 @@ public class Movie extends Title {
 		return TextUtils.isEmpty(name) ? "N/A" : name;
 	}
 	
+	public String year() {
+		return year <= 0 ? "N/A" : Integer.toString(year);
+	}
+	
 	public String plot() {
-		return TextUtils.isEmpty(plot) ? "N/A" : plot;
+		if (TextUtils.isEmpty(plot))
+			return "N/A";
+		if (plot.length() > 300 && session.blockSpoilers())
+			return Commons.shortenText(plot, 300) +
+				" ... <b><i>[spoiler protection enabled, see the complete synopsis on IMDB]</i></b>";
+		return plot;
+	}
+	
+	public String rated() {
+		return TextUtils.isEmpty(rated) ? "N/A" : rated;
+	}
+	
+	public String language() {
+		return TextUtils.isEmpty(language) ? "N/A" : language;
 	}
 	
 	public String released() {
@@ -728,6 +745,18 @@ public class Movie extends Title {
 		return TextUtils.isEmpty(director) ? "N/A" : director;
 	}
 	
+	public String country() {
+		return TextUtils.isEmpty(country) ? "N/A" : country;
+	}
+	
+	public String genres() {
+		return genres.isEmpty() ? "N/A" : TextUtils.join(", ", genres);
+	}
+	
+	public String tags() {
+		return tags.isEmpty() ? "N/D" : TextUtils.join(", ", tags);
+	}
+	
 	public String subtitles() {
 		if (!subtitles.isEmpty())
 			return TextUtils.join(", ", subtitles);
@@ -736,5 +765,9 @@ public class Movie extends Title {
 	
 	public String imdbUrl() {
 		return "http://www.imdb.com/title/" + imdb_id;
+	}
+	
+	public String imdbCast() {
+		return "http://www.imdb.com/title/" + imdb_id + "/fullcredits";
 	}
 }

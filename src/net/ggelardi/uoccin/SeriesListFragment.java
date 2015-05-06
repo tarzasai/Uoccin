@@ -135,6 +135,13 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	}
 	
 	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		
+		mListener.setIcon(R.drawable.ic_action_tv);
+	}
+	
+	@Override
 	public void onClick(View v) {
 		if (v.getId() == R.id.img_is_star) {
 			int pos;

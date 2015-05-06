@@ -28,13 +28,12 @@
             android:key="pk_tvdbrss"
             android:summary="@string/pk_tvdbrss_summ"
             android:title="@string/pk_tvdbrss_title" />
-        
+
         <net.ggelardi.uoccin.comp.GenreFilterDialog
-            android:key="pk_tvdbgflt"
             android:dialogTitle="@string/pk_tvdbgnf_title"
+            android:key="pk_tvdbgflt"
             android:summary="@string/pk_tvdbgnf_summ"
             android:title="@string/pk_tvdbgnf_title" />
-        
     </PreferenceCategory>
     
     <PreferenceCategory
@@ -63,6 +62,18 @@
             android:entryValues="@array/pk_gdrvint_values"
             android:key="pk_gdrvint"
             android:title="@string/pk_gdrvint_title" />
+    </PreferenceCategory>
+    
+    <PreferenceCategory
+        android:key="pc_misccat"
+        android:title="@string/pc_misccat_title" >
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pk_splrpro"
+            android:summary="@string/pk_splrpro_summ"
+            android:title="@string/pk_splrpro_title" />
+        
     </PreferenceCategory>
 
 </PreferenceScreen>

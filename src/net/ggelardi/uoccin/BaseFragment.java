@@ -98,8 +98,13 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 			mListener.showHourGlass(value);
 	}
 	
+	protected void setTitle(String text) {
+		getActivity().setTitle(text);
+	}
+	
 	public interface OnFragmentListener {
 		void fragmentAttached(BaseFragment fragment);
+		void setIcon(int toolbarIcon);
 		void showHourGlass(boolean value);
 		void openMovieInfo(String imdb_id);
 		void openSeriesInfo(String tvdb_id);

@@ -338,7 +338,12 @@ public class Episode extends Title implements Comparable<Episode> {
 	}
 	
 	public String plot() {
-		return TextUtils.isEmpty(plot) ? "N/A" : plot;
+		if (TextUtils.isEmpty(plot))
+			return "N/A";
+		if (plot.length() > 300 && session.blockSpoilers())
+			return Commons.shortenText(plot, 300) +
+				" ... <b><i>[spoiler protection enabled, see the complete synopsis on TVDB/IMDB]</i></b>";
+		return plot;
 	}
 	
 	public String firstAired() {

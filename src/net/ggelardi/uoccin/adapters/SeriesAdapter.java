@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 public class SeriesAdapter extends BaseAdapter {
@@ -82,6 +83,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.txt_coll = (TextView) view.findViewById(R.id.txt_seritm_coll);
 			vh.txt_seen = (TextView) view.findViewById(R.id.txt_seritm_seen);
 			vh.txt_subs = (TextView) view.findViewById(R.id.txt_is_subs);
+			vh.rat_myrt = (RatingBar) view.findViewById(R.id.rat_is_myrt);
 			vh.txt_info = (TextView) view.findViewById(R.id.txt_is_info);
 			//
 			vh.img_star.setOnClickListener(listener);
@@ -113,6 +115,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.box_2see.setVisibility(View.GONE);
 			vh.box_stat.setVisibility(View.GONE);
 			vh.txt_subs.setVisibility(View.GONE);
+			vh.rat_myrt.setVisibility(View.GONE);
 			//
 			vh.txt_plot.setText(ser.plot);
 		} else if (details.equals(EPI_AVAILABL)) {
@@ -120,6 +123,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.box_epis.setVisibility(View.GONE);
 			vh.box_2see.setVisibility(View.VISIBLE);
 			vh.box_stat.setVisibility(View.GONE);
+			vh.rat_myrt.setVisibility(View.GONE);
 			//
 			Episode ep = null;
 			for (int i = 0; i < ser.episodes.size(); i++) {
@@ -141,6 +145,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.box_2see.setVisibility(View.GONE);
 			vh.box_stat.setVisibility(View.VISIBLE);
 			vh.txt_subs.setVisibility(View.GONE);
+			vh.rat_myrt.setVisibility(View.VISIBLE);
 			//
 			int n = ser.episodeAired(null);
 			int m = ser.episodeCollected(null);
@@ -149,12 +154,16 @@ public class SeriesAdapter extends BaseAdapter {
 			m = ser.episodeWatched(null);
 			vh.txt_seen.setText(m == n ? String.format(session.getString(R.string.fmt_nums_done), m) :
 				String.format(session.getString(R.string.fmt_nums_seen), m, n - m));
+			vh.rat_myrt.setRating(ser.getRating());
 		} else {
 			vh.txt_plot.setVisibility(View.GONE);
 			vh.box_epis.setVisibility(View.VISIBLE);
 			vh.box_2see.setVisibility(View.GONE);
 			vh.box_stat.setVisibility(View.GONE);
 			vh.txt_subs.setVisibility(View.GONE);
+			vh.rat_myrt.setVisibility(View.VISIBLE);
+			//
+			vh.rat_myrt.setRating(ser.getRating());
 			//
 			List<Episode> chk = new ArrayList<Episode>();
 			chk.add(ser.lastEpisode());
@@ -200,21 +209,22 @@ public class SeriesAdapter extends BaseAdapter {
 	}
 	
 	static class ViewHolder {
-		public ImageView img_post;
-		public LinearLayout box_size;
-		public ImageView img_star;
-		public TextView txt_name;
-		public TextView txt_plot;
-		public TextView txt_info;
-		public TextView txt_subs;
-		public LinearLayout box_epis;
-		public TextView txt_epis;
-		public TextView txt_date;
-		public LinearLayout box_stat;
-		public TextView txt_coll;
-		public TextView txt_seen;
-		public LinearLayout box_2see;
-		public TextView txt_2tit;
-		public TextView txt_2plo;
+		ImageView img_post;
+		LinearLayout box_size;
+		ImageView img_star;
+		TextView txt_name;
+		TextView txt_plot;
+		TextView txt_info;
+		TextView txt_subs;
+		RatingBar rat_myrt;
+		LinearLayout box_epis;
+		TextView txt_epis;
+		TextView txt_date;
+		LinearLayout box_stat;
+		TextView txt_coll;
+		TextView txt_seen;
+		LinearLayout box_2see;
+		TextView txt_2tit;
+		TextView txt_2plo;
 	}
 }

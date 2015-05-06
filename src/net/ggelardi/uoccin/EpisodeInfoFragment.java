@@ -71,7 +71,6 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 		super.onCreate(savedInstanceState);
 		
 		Bundle args = getArguments();
-		
 		series = args.getString("series");
 		seasNo = args.getInt("season");
 		episNo = args.getInt("episode");
@@ -220,6 +219,13 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 		super.onPause();
 		
 		Title.removeOnTitleEventListener(this);
+	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		
+		mListener.setIcon(R.drawable.ic_action_tv);
 	}
 	
 	@Override

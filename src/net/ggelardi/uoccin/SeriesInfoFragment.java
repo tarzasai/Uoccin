@@ -24,6 +24,8 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.RatingBar.OnRatingBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +48,7 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 	private TextView txt_plot;
 	private TextView txt_acts;
 	private TextView txt_gens;
+	private RatingBar rat_myrt;
 	private TextView txt_tags;
 	private ExpandableHeightGridView grd_seas;
 	
@@ -65,7 +68,6 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		super.onCreate(savedInstanceState);
 		
 		Bundle args = getArguments();
-		
 		tvdb_id = args.getString("tvdb_id");
 	}
 	
@@ -87,6 +89,7 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		txt_plot = (TextView) view.findViewById(R.id.txt_serinf_plot);
 		txt_acts = (TextView) view.findViewById(R.id.txt_serinf_acts);
 		txt_gens = (TextView) view.findViewById(R.id.txt_serinf_gens);
+		rat_myrt = (RatingBar) view.findViewById(R.id.rat_serinf_myrt);
 		txt_tags = (TextView) view.findViewById(R.id.txt_serinf_tags);
 		grd_seas = (ExpandableHeightGridView) view.findViewById(R.id.grd_serinf_seas);
 		
@@ -161,6 +164,14 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 			}
 		});
 		
+		rat_myrt.setOnRatingBarChangeListener(new OnRatingBarChangeListener() {
+			@Override
+			public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+				if (fromUser)
+					series.setRating(Math.round(rating));
+			}
+		});
+		
 		txt_tags.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -218,6 +229,13 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		
 		Title.removeOnTitleEventListener(this);
 	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		
+		mListener.setIcon(R.drawable.ic_action_tv);
+	}
 
 	@Override
 	public void onTitleEvent(final String state, final Throwable error) {
@@ -250,6 +268,12 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 			return;
 		getActivity().setTitle(series.name);
 		session.picasso(series.banner).resize(pstWidth, pstHeight).into(img_bann);
+		if (pstWidth > 1) {
+			img_bann.setMinimumWidth(pstWidth);
+			img_bann.setMaxWidth(pstWidth);
+			img_bann.setMinimumHeight(pstHeight);
+			img_bann.setMaxHeight(pstHeight);
+		}
 		txt_netw.setText(series.network());
 		txt_airt.setText(series.airTime());
 		txt_airt.setTextColor(getResources().getColor(series.isEnded() ? android.R.color.holo_red_dark :
@@ -266,6 +290,7 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		txt_plot.setText(series.plot());
 		txt_acts.setText(series.actors());
 		txt_gens.setText(series.genres());
+		rat_myrt.setRating(series.getRating());
 		txt_tags.setText(series.tags());
 		grd_seas.setAdapter(new SeasonAdapter(getActivity(), series));
 		txt_imdb.setEnabled(!TextUtils.isEmpty(series.imdb_id));
