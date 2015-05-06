@@ -57,7 +57,7 @@ public class Movie extends Title {
 	public String awards;
 	public int metascore;
 	public int tomatoMeter;
-	public Double imdbRating;
+	public double imdbRating;
 	public int imdbVotes;
 	public List<String> subtitles = new ArrayList<String>();
 	
@@ -293,7 +293,7 @@ public class Movie extends Title {
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				double r = Double.parseDouble(chk);
-				if (r > 0 && (imdbRating == null || r != imdbRating)) {
+				if (r > 0 && r != imdbRating) {
 					imdbRating = r;
 					modified = true;
 				}
@@ -481,7 +481,7 @@ public class Movie extends Title {
 		else
 			cv.putNull("tomatoMeter");
 		
-		if (imdbRating != null && imdbRating > 0)
+		if (imdbRating > 0)
 			cv.put("imdbRating", imdbRating);
 		else
 			cv.putNull("imdbRating");

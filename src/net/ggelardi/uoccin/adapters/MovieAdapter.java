@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 public class MovieAdapter extends BaseAdapter {
@@ -71,6 +72,7 @@ public class MovieAdapter extends BaseAdapter {
 			vh.txt_spac = (TextView) view.findViewById(R.id.txt_im_spac);
 			vh.txt_acts = (TextView) view.findViewById(R.id.txt_im_acts);
 			vh.txt_subs = (TextView) view.findViewById(R.id.txt_im_subs);
+			vh.rat_myrt = (RatingBar) view.findViewById(R.id.rat_im_myrt);
 			vh.txt_meta = (TextView) view.findViewById(R.id.txt_im_meta);
 			vh.txt_rott = (TextView) view.findViewById(R.id.txt_im_rott);
 			vh.txt_imdb = (TextView) view.findViewById(R.id.txt_im_imdb);
@@ -93,31 +95,51 @@ public class MovieAdapter extends BaseAdapter {
 		//
 		Movie mov = getItem(position);
 		session.picasso(mov.poster, true).resize(pstWidth, pstHeight).into(vh.img_post);
+		
 		if (pstWidth > 1) {
 			vh.img_post.setMinimumWidth(pstWidth);
 			vh.img_post.setMaxWidth(pstWidth);
+			vh.img_post.setMinimumHeight(pstHeight);
+			vh.img_post.setMaxHeight(pstHeight);
 		}
+		
 		vh.txt_name.setText(String.format("%s (%d)", mov.name, mov.year));
 		if (details.equals(WATCHLIST)) {
 			vh.img_star.setVisibility(View.VISIBLE);
 			vh.txt_spac.setVisibility(View.VISIBLE);
+			vh.txt_subs.setVisibility(View.GONE);
+			vh.rat_myrt.setVisibility(View.GONE);
 		} else if (details.equals(AVAILABLES)) {
 			vh.img_star.setVisibility(View.GONE);
 			vh.txt_spac.setVisibility(View.GONE);
+			vh.txt_subs.setVisibility(View.VISIBLE);
+			vh.rat_myrt.setVisibility(View.GONE);
 		} else if (details.equals(WATCHED)) {
 			vh.img_star.setVisibility(View.GONE);
 			vh.txt_spac.setVisibility(View.GONE);
+			vh.txt_subs.setVisibility(View.GONE);
+			vh.rat_myrt.setVisibility(View.VISIBLE);
 		} else if (details.equals(SEARCH)) {
 			vh.img_star.setVisibility(View.VISIBLE);
 			vh.txt_spac.setVisibility(View.VISIBLE);
+			vh.txt_subs.setVisibility(View.GONE);
+			vh.rat_myrt.setVisibility(View.GONE);
 		}
 		vh.txt_acts.setText(mov.actors());
-		if (!(mov.inCollection() && mov.hasSubtitles()))
-			vh.txt_subs.setVisibility(View.GONE);
-		else {
-			vh.txt_subs.setVisibility(View.VISIBLE);
-			vh.txt_subs.setText(mov.subtitles());
+		
+		if (vh.txt_subs.getVisibility() == View.VISIBLE) {
+			if (!mov.hasSubtitles())
+				vh.txt_subs.setVisibility(View.GONE);
+			else
+				vh.txt_subs.setText(mov.subtitles());
 		}
+		if (vh.rat_myrt.getVisibility() == View.VISIBLE) {
+			if (mov.getRating() <= 0)
+				vh.rat_myrt.setVisibility(View.GONE);
+			else
+				vh.rat_myrt.setRating(mov.getRating());
+		}
+		
 		if (mov.metascore <= 0)
 			vh.txt_meta.setVisibility(View.GONE);
 		else {
@@ -155,6 +177,7 @@ public class MovieAdapter extends BaseAdapter {
 		public TextView txt_spac;
 		public TextView txt_acts;
 		public TextView txt_subs;
+		private RatingBar rat_myrt;
 		public TextView txt_meta;
 		public TextView txt_rott;
 		public TextView txt_imdb;

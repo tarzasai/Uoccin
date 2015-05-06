@@ -17,7 +17,7 @@
         android:src="@drawable/ic_action_image" />
 
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
 
         <LinearLayout
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
+            android:layout_centerVertical="true"
             android:layout_marginLeft="3dp"
             android:layout_marginRight="3dp"
             android:divider="@drawable/divider_2dp"
@@ -37,7 +37,8 @@
             <LinearLayout
                 android:id="@+id/box_im_name"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
 
                 <TextView
                     android:id="@+id/txt_im_name"
@@ -57,7 +58,6 @@
                     android:layout_marginLeft="28dp"
                     android:text="@string/empty_text"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
-
             </LinearLayout>
 
             <TextView
@@ -72,27 +72,42 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:divider="@drawable/divider_8dp"
+                android:gravity="center_vertical"
                 android:showDividers="middle" >
 
-                <TextView
-                    android:id="@+id/txt_im_subs"
+                <RelativeLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ics_action_subtitles"
-                    android:drawablePadding="3dp"
-                    android:ellipsize="end"
-                    android:lines="1"
-                    android:text="@string/sample_subs"
-                    android:textColor="@android:color/darker_gray" />
+                    android:layout_height="wrap_content" >
 
-                <TextView
+                    <TextView
+                        android:id="@+id/txt_im_subs"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:drawableLeft="@drawable/ics_action_subtitles"
+                        android:drawablePadding="3dp"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:text="@string/sample_subs"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <RatingBar
+                        android:id="@+id/rat_im_myrt"
+                        style="?android:attr/ratingBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:minHeight="16dp"
+                        android:numStars="5" />
+
+                </RelativeLayout>
+
+                <Space
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:gravity="end"
-                    android:lines="1"
-                    android:text="@string/empty_text" />
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/txt_im_meta"
@@ -123,7 +138,6 @@
                     android:text="@string/sample_imdbrat"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textStyle="bold" />
-
             </LinearLayout>
         </LinearLayout>
 
