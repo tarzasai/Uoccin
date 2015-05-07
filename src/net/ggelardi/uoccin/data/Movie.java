@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.OMDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Service;
@@ -24,7 +23,6 @@ import android.database.Cursor;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
@@ -84,7 +82,9 @@ public class Movie extends Title {
 	
 	public static Movie get(Context context, String imdb_id) {
 		Movie res = Movie.getInstance(context, imdb_id);
-		if (res.isOld())
+		if (res.isNew())
+			res.refresh(true);
+		else if (res.isOld())
 			res.refresh(false);
 		return res;
 	}
@@ -93,7 +93,6 @@ public class Movie extends Title {
 		String imdb_id = Commons.XML.attrText(xml, "imdbID");
 		Movie res = Movie.getInstance(context, imdb_id);
 		res.load(xml);
-		// no commit here
 		return res;
 	}
 	
@@ -133,7 +132,7 @@ public class Movie extends Title {
 		if (doc != null) {
 			NodeList lst = doc.getElementsByTagName("Movie");
 			for (int i = 0; i < lst.getLength(); i++) {
-				String imdbID = Commons.XML.nodeText((Element) lst.item(i), "imdbID");
+				String imdbID = Commons.XML.attrText((Element) lst.item(i), "imdbID");
 				// since OMDB search returns id and title only, we'll use the factory method that retrieves full data
 				if (!TextUtils.isEmpty(imdbID))
 					res.add(Movie.get(context, imdbID));
@@ -614,9 +613,6 @@ public class Movie extends Title {
 			else
 				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "watchlist", Boolean.toString(watchlist));
-			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_mov : R.string.msg_wlst_del_mov);
-			msg = String.format(msg, name);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
 	
@@ -628,9 +624,8 @@ public class Movie extends Title {
 			else
 				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "collected", Boolean.toString(collected));
-			String msg = session.getRes().getString(collected ? R.string.msg_coll_add_mov : R.string.msg_coll_del_mov);
-			msg = String.format(msg, name);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
+			if (collected && watchlist)
+				setWatchlist(false);
 		}
 	}
 	
@@ -642,22 +637,21 @@ public class Movie extends Title {
 			else
 				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "watched", Boolean.toString(watched));
-			String msg = session.getRes().getString(watched ? R.string.msg_seen_add_mov : R.string.msg_seen_del_mov);
-			msg = String.format(msg, name);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
+			if (watched && watchlist)
+				setWatchlist(false);
 		}
 	}
 	
 	public void setRating(int value) {
 		if (value != rating) {
-			watchlist = false;
-			watched = true;
 			rating = value;
 			if (isValid())
 				save(false);
 			else
 				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "rating", Integer.toString(rating));
+			if (!watched)
+				setWatched(true);
 		}
 	}
 	
@@ -679,8 +673,6 @@ public class Movie extends Title {
 			else
 				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
-			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), name);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
 	
@@ -693,8 +685,6 @@ public class Movie extends Title {
 			else
 				refresh(true);
 			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
-			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), name);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
 	

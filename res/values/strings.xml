@@ -39,7 +39,7 @@
     <string name="lbl_comm_imdb">IMDB</string>
     <string name="lbl_comm_refr">Refresh</string>
     <string name="lbl_comm_plot">plot</string>
-    <string name="lbl_comm_lang">language</string>
+    <string name="lbl_comm_lang">language(s)</string>
     <string name="lbl_comm_link">links</string>
     <string name="lbl_comm_seas">season</string>
     <string name="lbl_comm_epis">episode</string>

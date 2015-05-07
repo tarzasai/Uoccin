@@ -95,15 +95,14 @@ public class MovieAdapter extends BaseAdapter {
 		//
 		Movie mov = getItem(position);
 		session.picasso(mov.poster, true).resize(pstWidth, pstHeight).into(vh.img_post);
-		
 		if (pstWidth > 1) {
 			vh.img_post.setMinimumWidth(pstWidth);
 			vh.img_post.setMaxWidth(pstWidth);
 			vh.img_post.setMinimumHeight(pstHeight);
 			vh.img_post.setMaxHeight(pstHeight);
 		}
-		
 		vh.txt_name.setText(String.format("%s (%d)", mov.name, mov.year));
+		vh.img_star.setImageResource(mov.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
 		if (details.equals(WATCHLIST)) {
 			vh.img_star.setVisibility(View.VISIBLE);
 			vh.txt_spac.setVisibility(View.VISIBLE);
@@ -139,7 +138,6 @@ public class MovieAdapter extends BaseAdapter {
 			else
 				vh.rat_myrt.setRating(mov.getRating());
 		}
-		
 		if (mov.metascore <= 0)
 			vh.txt_meta.setVisibility(View.GONE);
 		else {

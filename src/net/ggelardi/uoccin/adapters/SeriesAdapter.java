@@ -104,11 +104,15 @@ public class SeriesAdapter extends BaseAdapter {
 		//
 		Series ser = getItem(position);
 		session.picasso(ser.poster, true).resize(pstWidth, pstHeight).into(vh.img_post);
-		if (pstWidth > 1)
+		if (pstWidth > 1) {
 			vh.img_post.setMinimumWidth(pstWidth);
-		vh.img_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
+			vh.img_post.setMaxWidth(pstWidth);
+			vh.img_post.setMinimumHeight(pstHeight);
+			vh.img_post.setMaxHeight(pstHeight);
+		}
 		vh.txt_name.setText(ser.name);
 		vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(ser.isRecent() ? R.drawable.ics_active_news : 0, 0, 0, 0);
+		vh.img_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
 		if (ser.isNew() || details.equals(SERIES_STORY)) {
 			vh.txt_plot.setVisibility(View.VISIBLE);
 			vh.box_epis.setVisibility(View.GONE);
