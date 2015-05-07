@@ -29,6 +29,7 @@ import retrofit.mime.TypedByteArray;
 import android.database.Cursor;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 
 public class Commons {
 	public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 5.1; rv:16.0) Gecko/20100101 Firefox/16.0";
@@ -128,6 +129,14 @@ public class Commons {
 			Log.e("str2num", s, err);
 			return defVal;
 		}
+	}
+	
+	public static String firstUrl(String text) {
+		if (!TextUtils.isEmpty(text))
+			for (String s : text.split("\\s+"))
+				if (Patterns.WEB_URL.matcher(s).matches())
+					return s;
+		return null;
 	}
 	
 	public static String shortenText(final String content, final int length) {

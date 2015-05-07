@@ -494,7 +494,7 @@ public class Service extends WakefulIntentService {
 			}
 			if (sb.length() > 0) {
 				String fn = SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
-				drive.writeFile(null, fn, MIME.TEXT, sb.toString());
+				drive.writeFile(null, fn, MIME.TEXT, sb.toString(), drive.getFolder(true));
 			}
 			db.delete("queue_out", null, null);
 			// load other devices' diffs
@@ -621,7 +621,8 @@ public class Service extends WakefulIntentService {
 			checkGenson();
 			String content = genson.serialize(file);
 			File bak = drive.getFile(Commons.GD.BACKUP, null);
-			drive.writeFile(bak != null ? bak.getId() : null, Commons.GD.BACKUP, MIME.JSON, content);
+			drive.writeFile(bak != null ? bak.getId() : null, Commons.GD.BACKUP, MIME.JSON, content,
+				drive.getFolder(true));
 			//session.setDriveLastFileUpdate(Commons.GD.BACKUP, System.currentTimeMillis());
 		} catch (Exception err) {
 			Log.e(TAG, "driveBackup", err);

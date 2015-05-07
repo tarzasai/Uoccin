@@ -29,6 +29,7 @@ import com.google.api.services.drive.Drive.Changes;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.Change;
 import com.google.api.services.drive.model.ChangeList;
+import com.google.api.services.drive.model.ChildList;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
@@ -39,6 +40,9 @@ public class GSA {
 	private final Session session;
 	private final Drive service;
 	private File folder;
+
+	private String deviceFolderId;
+	
 	
 	public GSA(Context context) throws Exception {
 		session = Session.getInstance(context);
@@ -105,6 +109,44 @@ public class GSA {
 		return folder;
 	}
 	
+	public String getDeviceFolder(boolean create) throws Exception {
+		if (!TextUtils.isEmpty(deviceFolderId))
+			return deviceFolderId;
+		if (getFolder(create) != null) {
+			Log.d(TAG, "Looking for device folder...");
+			String dfName = "device." + session.driveDeviceID();
+			ChildList children = service.children().list(folder.getId()).setQ("mimeType = '" +
+				DriveFolder.MIME_TYPE + "' and title = '" + dfName + "' and trashed = false").execute();
+			if (children != null && !children.isEmpty() && children.getItems().size() > 0) {
+				Log.d(TAG, "Device folder found");
+				deviceFolderId = children.getItems().get(0).getId();
+			} else if (create) {
+				Log.i(TAG, "Creating device folder...");
+				File body = new File();
+				body.setTitle(dfName);
+				body.setMimeType(DriveFolder.MIME_TYPE);
+				folder = service.files().insert(body).execute();
+			}
+			
+			
+			FileList files = service.files().list().setQ("mimeType = '" + DriveFolder.MIME_TYPE +
+				"' and title = '" + Commons.GD.FOLDER + "' and trashed = false").execute();
+			if (files != null && !files.isEmpty() && files.getItems().size() > 0) {
+				Log.d(TAG, "Uoccin folder found");
+				folder = files.getItems().get(0);
+			} else if (create) {
+				Log.i(TAG, "Creating Uoccin folder...");
+				File body = new File();
+				body.setTitle(Commons.GD.FOLDER);
+				body.setMimeType(DriveFolder.MIME_TYPE);
+				folder = service.files().insert(body).execute();
+			} else
+				Log.w(TAG, "Uoccin folder NOT found");
+			
+		}
+		return device;
+	}
+	
 	public File getFile(String filename, Long newerThanUTC) throws Exception {
 		Log.d(TAG, "Looking for file " + filename + "...");
 		String query = "title = '" + filename + "' and trashed = false and '" +
@@ -138,11 +180,12 @@ public class GSA {
 		}
 	}
 	
-	public void writeFile(String fileId, String title, String mime, String content) throws Exception {
+	public void writeFile(String fileId, String title, String mime, String content, File folder) throws Exception {
 		File body = new File();
 		body.setTitle(title);
 		body.setMimeType(mime);
-		body.setParents(Arrays.asList(new ParentReference().setId(getFolder(true).getId())));
+		//body.setParents(Arrays.asList(new ParentReference().setId(getFolder(true).getId())));
+		body.setParents(Arrays.asList(new ParentReference().setId(folder.getId())));
 		ByteArrayContent bac = ByteArrayContent.fromString(MIME.TEXT, content);
 		if (TextUtils.isEmpty(fileId)) {
 			File file = service.files().insert(body, bac).execute();

@@ -1,5 +1,8 @@
 package net.ggelardi.uoccin;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import net.ggelardi.uoccin.adapters.DrawerAdapter;
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
 import net.ggelardi.uoccin.api.GSA;
@@ -13,7 +16,9 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v7.app.ActionBar;
@@ -106,21 +111,23 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
         
 		lastTitle = getTitle();
 		lastIcon = R.drawable.ic_navigation_menu;
+		
 		lastView = session.getPrefs().getString(PK.STARTUPV, "sernext");
 		if (savedInstanceState != null)
 			lastView = savedInstanceState.getString("lastView", lastView);
-		
-		Intent intent = getIntent();
-		String action = intent.getAction();
-		if (!TextUtils.isEmpty(action) && action.equals(Commons.SN.CONNECT_FAIL))
-			checkDrive();
 	}
 	
 	@Override
 	protected void onNewIntent(Intent intent) {
+		Log.d(TAG, "onNewIntent: " + intent.toString());
+		
+		setIntent(intent);
+		
+		/*
 		String action = intent.getAction();
 		if (!TextUtils.isEmpty(action) && action.equals(Commons.SN.CONNECT_FAIL))
 			checkDrive();
+		*/
 	}
 	
 	@Override
@@ -137,14 +144,69 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		
 		dropHourGlass();
 		
-		if (getSupportFragmentManager().findFragmentByTag(BaseFragment.ROOT_FRAGMENT) == null)
-			openDrawerItem(drawerData.findItem(lastView));
-		
 		if (session.driveSyncEnabled() && !session.driveAccountSet()) {
 			Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null,
 				new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE }, true, null, null, null, null);
 			startActivityForResult(googlePicker, REQUEST_ACCOUNT_PICKER);
 		}
+		
+		Intent intent = getIntent();
+		String action = intent.getAction();
+		if (TextUtils.isEmpty(action)) // is it even possible?
+			action = Intent.ACTION_MAIN;
+		if (action.equals(Commons.SN.CONNECT_FAIL)) {
+			Thread t = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						new GSA(MainActivity.this).getFolder(true);
+					} catch (UserRecoverableAuthIOException e) {
+						startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+					} catch (Exception err) {
+						Log.e(TAG, "onResume", err);
+						Toast.makeText(MainActivity.this, err.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+					}
+				}
+			});
+			t.start();
+		} else if (action.equals(Intent.ACTION_SEND)) {
+			String err = "";
+			String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+			String url = Commons.firstUrl(text);
+			if (TextUtils.isEmpty(url))
+				err = "No url found in text: " + text;
+			else {
+				Uri uri = Uri.parse(url);
+				if (uri.getHost().endsWith("imdb.com")) {
+					// http://imdb.com/rg/an_share/title/title/tt1392190/
+					Pattern pattern = Pattern.compile("/(tt\\d+)/");
+					Matcher matcher = pattern.matcher(url);
+					if (matcher.find()) {
+						openMovieInfo(matcher.group(1));
+						return;
+					}
+				} else if (uri.getHost().endsWith("thetvdb.com")) {
+					// http://thetvdb.com/index.php?tab=series&id=78804
+					// http://thetvdb.com/?tab=season&seriesid=78804&seasonid=31270&lid=7
+					// http://thetvdb.com/?tab=episode&seriesid=78804&seasonid=31270&id=371448&lid=7
+					String tab = uri.getQueryParameter("tab");
+					if (!TextUtils.isEmpty(tab)) {
+						String tvdb_id = tab.equals("series") ? uri.getQueryParameter("id") :
+							"season|episode".contains(tab) ? uri.getQueryParameter("seriesid") : null;
+						if (!TextUtils.isEmpty(tvdb_id)) {
+							openSeriesInfo(tvdb_id);
+							return;
+						}
+					}
+				}
+				err = "Unknown url: " + url;
+			}
+			Log.d(TAG, err);
+			Toast.makeText(this, err, Toast.LENGTH_LONG).show();
+		}
+		
+		if (!hasRootFragment())
+			openDrawerItem(drawerData.findItem(lastView));
 	}
 	
 	@Override
@@ -203,6 +265,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 				startActivity(new Intent(this, SettingsActivity.class));
 				return true;
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			case R.id.action_test_clean:
 				WakefulIntentService.sendWakefulWork(this,
@@ -291,29 +354,41 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	@Override
 	public void openMovieInfo(String imdb_id) {
 		BaseFragment f = MovieInfoFragment.newInstance(imdb_id);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
-			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT);
+		if (hasRootFragment())
+			ft.addToBackStack(null);
+		ft.commit();
 	}
 	
 	@Override
 	public void openSeriesInfo(String tvdb_id) {
 		BaseFragment f = SeriesInfoFragment.newInstance(tvdb_id);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
-			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT);
+		if (hasRootFragment())
+			ft.addToBackStack(null);
+		ft.commit();
 	}
 	
 	@Override
 	public void openSeriesSeason(String tvdb_id, int season) {
 		BaseFragment f = EpisodeListFragment.newList(tvdb_id, season);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
-			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT);
+		if (hasRootFragment())
+			ft.addToBackStack(null);
+		ft.commit();
 	}
 	
 	@Override
 	public void openSeriesEpisode(String tvdb_id, int season, int episode) {
 		BaseFragment f = EpisodeInfoFragment.newInstance(tvdb_id, season, episode);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
-			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
+			BaseFragment.LEAF_FRAGMENT);
+		if (hasRootFragment())
+			ft.addToBackStack(null);
+		ft.commit();
 	}
 	
 	private void dropHourGlass() {
@@ -322,6 +397,11 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			progressBar.setVisibility(View.GONE);
 	}
 	
+	private boolean hasRootFragment() {
+		return getSupportFragmentManager().findFragmentByTag(BaseFragment.ROOT_FRAGMENT) != null;
+	}
+	
+	/*
 	private void checkDrive() {
 		Thread t = new Thread(new Runnable() {
 			@Override
@@ -338,6 +418,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		});
 		t.start();
 	}
+	*/
 	
 	@SuppressLint("InflateParams")
 	private void searchDialog() {
