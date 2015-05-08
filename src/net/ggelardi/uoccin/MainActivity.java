@@ -159,7 +159,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 				@Override
 				public void run() {
 					try {
-						new GSA(MainActivity.this).getFolder(true);
+						new GSA(MainActivity.this).getRootFolder(true);
 					} catch (UserRecoverableAuthIOException e) {
 						startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
 					} catch (Exception err) {
@@ -339,7 +339,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	@Override
 	public void setIcon(int toolbarIcon) {
 		lastIcon = toolbarIcon;
-		toolbar.setNavigationIcon(lastIcon);
+		if (toolbar != null)
+			toolbar.setNavigationIcon(lastIcon);
 	}
 	
 	@Override

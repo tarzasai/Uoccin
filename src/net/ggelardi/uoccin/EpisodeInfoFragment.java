@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -283,7 +284,7 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 			R.drawable.ic_active_storage : R.drawable.ic_action_storage, 0, 0);
 		txt_seen.setCompoundDrawablesWithIntrinsicBounds(0, episode.isWatched() ?
 			R.drawable.ic_active_seen : R.drawable.ic_action_seen, 0, 0);
-		txt_plot.setText(episode.plot());
+		txt_plot.setText(Html.fromHtml(episode.plot()));
 		if (episode.guestStars.isEmpty())
 			box_gues.setVisibility(View.GONE);
 		else {

@@ -26,6 +26,7 @@ import retrofit.client.Request;
 import retrofit.client.Response;
 import retrofit.client.UrlConnectionClient;
 import retrofit.mime.TypedByteArray;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.text.TextUtils;
 import android.util.Log;
@@ -198,6 +199,13 @@ public class Commons {
 			}
 			sb.append(" ");
 		}
+		return sb.toString();
+	}
+	
+	public static String logContentValue(String prefix, ContentValues cv) {
+		StringBuilder sb = new StringBuilder().append(prefix + ": ");
+		for (String key: cv.keySet())
+			sb.append(key).append("=").append(cv.getAsString(key)).append(" ");
 		return sb.toString();
 	}
 	

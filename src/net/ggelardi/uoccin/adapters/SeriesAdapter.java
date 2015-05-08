@@ -25,6 +25,7 @@ public class SeriesAdapter extends BaseAdapter {
 	public static final String SERIES_STORY = "SERIES_STORY";
 	public static final String EPI_AIR_NEAR = "EPI_AIR_NEAR";
 	public static final String EPI_AIR_NEXT = "EPI_AIR_NEXT";
+	public static final String EPI_AIR_MISS = "EPI_AIR_MISS";
 	public static final String EPI_AVAILABL = "EPI_AVAILABL";
 	public static final String EPI_COUNTERS = "EPI_COUNTERS";
 	
@@ -122,6 +123,27 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.rat_myrt.setVisibility(View.GONE);
 			//
 			vh.txt_plot.setText(ser.plot);
+		} else if (details.equals(EPI_AIR_MISS)) {
+			vh.txt_plot.setVisibility(View.GONE);
+			vh.box_epis.setVisibility(View.GONE);
+			vh.box_2see.setVisibility(View.VISIBLE);
+			vh.box_stat.setVisibility(View.GONE);
+			vh.rat_myrt.setVisibility(View.GONE);
+			//
+			Episode ep = null;
+			for (int i = 0; i < ser.episodes.size(); i++) {
+				ep = ser.episodes.get(i);
+				if (!(ep.inCollection() || ep.isWatched()))
+					break;
+			}
+			vh.box_2see.setTag(ep.eid());
+			String title = ep.eid().readable() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name);
+			int miss = ser.episodeMissing();
+			if (miss > 1)
+				title += " (+" + Integer.toString(miss - 1) + ")";
+			vh.txt_2tit.setText(title);
+			vh.txt_2plo.setText(ep.plot());
+			vh.txt_subs.setVisibility(View.GONE);
 		} else if (details.equals(EPI_AVAILABL)) {
 			vh.txt_plot.setVisibility(View.GONE);
 			vh.box_epis.setVisibility(View.GONE);
@@ -137,8 +159,9 @@ public class SeriesAdapter extends BaseAdapter {
 			}
 			vh.box_2see.setTag(ep.eid());
 			String title = ep.eid().readable() + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name);
-			if (ser.episodeWaiting(null) > 1)
-				title += " (+" + Integer.toString(ser.episodeWaiting(null) - 1) + ")";
+			int waits = ser.episodeWaiting(null);
+			if (waits > 1)
+				title += " (+" + Integer.toString(waits - 1) + ")";
 			vh.txt_2tit.setText(title);
 			vh.txt_2plo.setText(ep.plot());
 			vh.txt_subs.setText(ep.subtitles());

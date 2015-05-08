@@ -818,4 +818,12 @@ public class Series extends Title {
 				res++;
 		return res;
 	}
+	
+	public int episodeMissing() {
+		int res = 0;
+		for (Episode ep: episodes)
+			if (!ep.inCollection() && !ep.isWatched() && ep.firstAired > 0 && ep.firstAired < System.currentTimeMillis())
+				res++;
+		return res;
+	}
 }

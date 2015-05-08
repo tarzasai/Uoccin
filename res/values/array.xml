@@ -62,6 +62,7 @@
     <string-array name="view_defser_details">
         <item>EPI_AIR_NEAR</item>
         <item>EPI_AIR_NEXT</item>
+        <item>EPI_AIR_MISS</item>
         <item>EPI_AVAILABL</item>
         <item>EPI_AIR_NEAR</item>
         <item>EPI_COUNTERS</item>
@@ -78,6 +79,12 @@ select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id)
 where datetime(e.firstAired/1000, \'unixepoch\') between datetime(\'now\') 
 and datetime(\'now\', \'+6 days\') and (s.watchlist = 1 or (e.season = 1 and e.episode = 1)) 
 order by e.firstAired
+        </item>
+        <!-- sermiss -->
+        <item>
+select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
+where datetime(e.firstAired/1000, \'unixepoch\') &lt; datetime(\'now\', \'-12 hours\') 
+and s.watchlist = 1 and e.collected = 0 and e.watched = 0 order by s.name collate nocase
         </item>
         <!-- ser2see -->
         <item>

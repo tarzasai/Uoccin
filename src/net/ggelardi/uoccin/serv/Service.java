@@ -46,7 +46,6 @@ import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.services.drive.model.Change;
 import com.google.api.services.drive.model.File;
 import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
@@ -313,16 +312,14 @@ public class Service extends WakefulIntentService {
 				create();
 	}
 	
-	private int loadDiff(File file) {
+	private int loadDiff(String fileId) {
 		String[] lines = null;
 		try {
-			Log.d(TAG, "Loading file " + file.getTitle());
-			lines = drive.readFile(file).split("\n");
+			lines = drive.readFile(fileId).split("\n");
 		} catch (Exception err) {
-			Log.e(TAG, "Error loading file " + file.getTitle(), err);
+			Log.e(TAG, "Error loading file " + fileId, err);
 			return 0;
 		}
-		Log.d(TAG, "Loading " + Integer.toString(lines.length) + " commands from " + file.getTitle());
 		ContentValues cv;
 		String[] fields;
 		int res = 0;
@@ -335,6 +332,7 @@ public class Service extends WakefulIntentService {
 				cv.put("title", fields[2]);
 				cv.put("field", fields[3]);
 				cv.put("value", fields[4]);
+				Log.d(TAG, Commons.logContentValue("Adding command", cv));
 				session.getDB().insertOrThrow("queue_in", null, cv);
 				res++;
 			} catch (Exception err) {
@@ -479,31 +477,33 @@ public class Service extends WakefulIntentService {
 		try {
 			checkDrive();
 			// write diff
-			StringBuilder sb = new StringBuilder();
-			Cursor qo = db.query("queue_out", null, null, null, null, null, "timestamp");
-			try {
-				while (qo.moveToNext()) {
-					sb.append(qo.getLong(0)).append('|');
-					sb.append(qo.getString(1)).append('|');
-					sb.append(qo.getString(2)).append('|');
-					sb.append(qo.getString(3)).append('|');
-					sb.append(qo.getString(4)).append("\n");
+			List<String> others = drive.getOtherFoldersIds();
+			if (others.size() > 0) {
+				StringBuilder sb = new StringBuilder();
+				Cursor qo = db.query("queue_out", null, null, null, null, null, "timestamp");
+				try {
+					while (qo.moveToNext()) {
+						sb.append(qo.getLong(0)).append('|');
+						sb.append(qo.getString(1)).append('|');
+						sb.append(qo.getString(2)).append('|');
+						sb.append(qo.getString(3)).append('|');
+						sb.append(qo.getString(4)).append("\n");
+					}
+				} finally {
+					qo.close();
 				}
-			} finally {
-				qo.close();
-			}
-			if (sb.length() > 0) {
-				String fn = SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
-				drive.writeFile(null, fn, MIME.TEXT, sb.toString(), drive.getFolder(true));
+				if (sb.length() > 0) {
+					String fn = SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
+					for (String fid: others)
+						drive.writeFile(null, fid, fn, MIME.TEXT, sb.toString());
+				}
 			}
 			db.delete("queue_out", null, null);
 			// load other devices' diffs
 			int lines = 0;
-			File file;
-			for (Change ch: drive.getChanges()) {
-				file = ch.getFile();
-				if (file.getTitle().endsWith(".diff") && !file.getTitle().contains(session.driveDeviceID()))
-					lines += loadDiff(file);
+			for (String fid: drive.getNewDiffs()) {
+				lines += loadDiff(fid);
+				drive.deleteFile(fid); // yes, we might have found errors, so what?
 			}
 			if (lines <= 0) {
 				Log.d(TAG, "Nothing to process, drive sync terminated.");
@@ -620,10 +620,9 @@ public class Service extends WakefulIntentService {
 			}
 			checkGenson();
 			String content = genson.serialize(file);
-			File bak = drive.getFile(Commons.GD.BACKUP, null);
-			drive.writeFile(bak != null ? bak.getId() : null, Commons.GD.BACKUP, MIME.JSON, content,
-				drive.getFolder(true));
-			//session.setDriveLastFileUpdate(Commons.GD.BACKUP, System.currentTimeMillis());
+			File bak = drive.getFile(Commons.GD.BACKUP, drive.getRootFolder(true), null);
+			drive.writeFile(bak != null ? bak.getId() : null, drive.getRootFolder(true), Commons.GD.BACKUP,
+				MIME.JSON, content);
 		} catch (Exception err) {
 			Log.e(TAG, "driveBackup", err);
 			throw err;
@@ -635,7 +634,7 @@ public class Service extends WakefulIntentService {
 		SQLiteDatabase db = session.getDB();
 		try {
 			checkDrive();
-			File bak = drive.getFile(Commons.GD.BACKUP, null);
+			File bak = drive.getFile(Commons.GD.BACKUP, drive.getRootFolder(true), null);
 			if (bak == null) {
 				sendNotification(session.getString(R.string.msg_restore_2a));
 				return;
