@@ -18,30 +18,24 @@
         android:showDividers="middle" >
 
         <TextView
-            android:id="@+id/txt_movinf_year"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/sample_year"
-            android:textStyle="bold" />
+            android:text="@string/lbl_movinf_dire"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
-            android:id="@+id/txt_movinf_coun"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="@string/sample_country" />
-
-        <Space
+            android:id="@+id/txt_movinf_dire"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/sample_director"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/lbl_comm_ratd"
-            android:textAllCaps="true"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
@@ -97,10 +91,13 @@
                             android:gravity="center_vertical" >
 
                             <TextView
+                                android:id="@+id/txt_movinf_time"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="@string/lbl_movinf_dire"
+                                android:drawableLeft="@drawable/ics_action_length"
+                                android:drawablePadding="3dp"
+                                android:text="@string/sample_runtime"
                                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
                             <TextView
@@ -116,13 +113,29 @@
 
                         </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/txt_movinf_dire"
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/sample_director"
-                            android:textAppearance="?android:attr/textAppearanceSmall"
-                            android:textStyle="bold" />
+                            android:divider="@drawable/divider_4dp"
+                            android:showDividers="middle" >
+
+                            <TextView
+                                android:id="@+id/txt_movinf_year"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/sample_year"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/txt_movinf_coun"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:text="@string/sample_country" />
+
+                        </LinearLayout>
+
                     </LinearLayout>
 
                     <TextView
@@ -296,7 +309,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/box_movinf_lang"
+                android:id="@+id/box_movinf_wrts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" >
@@ -307,12 +320,12 @@
                     android:paddingBottom="2dp"
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
-                    android:text="@string/lbl_comm_lang"
+                    android:text="@string/lbl_comm_wrts"
                     android:textSize="@dimen/mini_section_title"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/txt_movinf_lang"
+                    android:id="@+id/txt_movinf_wrts"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@color/contentBackground"
@@ -320,7 +333,7 @@
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
                     android:paddingTop="5dp"
-                    android:text="@string/sample_language" />
+                    android:text="@string/sample_people" />
             </LinearLayout>
 
             <LinearLayout
@@ -349,6 +362,62 @@
                     android:paddingRight="15dp"
                     android:paddingTop="5dp"
                     android:text="@string/sample_genres" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/box_movinf_awrd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:text="@string/lbl_movinf_awrd"
+                    android:textSize="@dimen/mini_section_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_movinf_awrd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/contentBackground"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="5dp"
+                    android:text="@string/sample_awards" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/box_movinf_lang"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:text="@string/lbl_comm_lang"
+                    android:textSize="@dimen/mini_section_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_movinf_lang"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/contentBackground"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="5dp"
+                    android:text="@string/sample_language" />
             </LinearLayout>
 
             <LinearLayout

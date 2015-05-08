@@ -232,7 +232,7 @@
                     android:paddingBottom="2dp"
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
-                    android:text="@string/lbl_epinf_writ"
+                    android:text="@string/lbl_comm_wrts"
                     android:textSize="@dimen/mini_section_title"
                     android:textStyle="bold" />
 

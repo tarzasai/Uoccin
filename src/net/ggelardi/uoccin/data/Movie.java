@@ -713,6 +713,22 @@ public class Movie extends Title {
 		return TextUtils.isEmpty(language) ? "N/A" : language;
 	}
 	
+	public String director() {
+		return TextUtils.isEmpty(director) ? "N/A" : director;
+	}
+	
+	public String writers() {
+		return writers.isEmpty() ? "N/A" : TextUtils.join(", ", writers);
+	}
+	
+	public String actors() {
+		return actors.isEmpty() ? "N/A" : TextUtils.join(", ", actors);
+	}
+	
+	public String country() {
+		return TextUtils.isEmpty(country) ? "N/A" : country;
+	}
+	
 	public String released() {
 		if (released <= 0)
 			return "N/A";
@@ -723,20 +739,8 @@ public class Movie extends Title {
 		return res;
 	}
 	
-	public String actors() {
-		return actors.isEmpty() ? "N/A" : TextUtils.join(", ", actors);
-	}
-	
-	public String writers() {
-		return writers.isEmpty() ? "N/A" : TextUtils.join(", ", writers);
-	}
-	
-	public String director() {
-		return TextUtils.isEmpty(director) ? "N/A" : director;
-	}
-	
-	public String country() {
-		return TextUtils.isEmpty(country) ? "N/A" : country;
+	public String runtime() {
+		return runtime > 0 ? DateUtils.formatElapsedTime(runtime * 60) : "N/A";
 	}
 	
 	public String genres() {

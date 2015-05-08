@@ -39,6 +39,7 @@
     <string name="lbl_comm_imdb">IMDB</string>
     <string name="lbl_comm_refr">Refresh</string>
     <string name="lbl_comm_plot">plot</string>
+    <string name="lbl_comm_wrts">writer(s)</string>
     <string name="lbl_comm_lang">language(s)</string>
     <string name="lbl_comm_link">links</string>
     <string name="lbl_comm_seas">season</string>
@@ -52,7 +53,6 @@
     <string name="lbl_serinf_seas">seasons</string>
     
     <string name="lbl_epinf_gues">guest star(s)</string>
-    <string name="lbl_epinf_writ">writer(s)</string>
     <string name="lbl_epinf_dire">director</string>
     
     <string name="lbl_movinf_dire">a film by</string>
@@ -158,6 +158,7 @@
     <string name="sample_imdbrat">8.7</string>
     <string name="sample_imdbvot">573,918</string>
     <string name="sample_rotten">68%</string>
+    <string name="sample_runtime">107 min</string>
     <string name="sample_awards">Won 1 Oscar. Another 32 wins &amp; 93 nominations.</string>
 
 </resources>

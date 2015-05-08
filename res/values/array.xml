@@ -44,6 +44,7 @@
     <string-array name="view_defser_ids">
         <item>serfavs</item>
         <item>sernext</item>
+        <item>sermiss</item>
         <item>ser2see</item>
         <item>sernews</item>
         <item>serstat</item>
@@ -52,6 +53,7 @@
     <string-array name="view_defser_titles">
         <item>Series watchlist</item>
         <item>Upcoming episodes</item>
+        <item>Missing episodes</item>
         <item>Available episodes</item>
         <item>New TV shows</item>
         <item>Series stats</item>

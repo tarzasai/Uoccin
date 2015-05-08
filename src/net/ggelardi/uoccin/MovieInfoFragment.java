@@ -32,12 +32,12 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 	private Movie movie;
 	
 	private ImageView img_post;
+	private TextView txt_dire;
+	private TextView txt_ratd;
+	private TextView txt_time;
+	private TextView txt_subs;
 	private TextView txt_year;
 	private TextView txt_coun;
-	private TextView txt_ratd;
-	private TextView txt_lang;
-	private TextView txt_subs;
-	private TextView txt_dire;
 	private TextView txt_meta;
 	private TextView txt_rott;
 	private TextView txt_imrt;
@@ -50,6 +50,7 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 	private TextView txt_refr;
 	private TextView txt_plot;
 	private TextView txt_acts;
+	private TextView txt_lang;
 	private TextView txt_gens;
 	private RatingBar rat_myrt;
 	private TextView txt_tags;
@@ -80,6 +81,7 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 		img_post = (ImageView) view.findViewById(R.id.img_movinf_post);
 		txt_year = (TextView) view.findViewById(R.id.txt_movinf_year);
 		txt_coun = (TextView) view.findViewById(R.id.txt_movinf_coun);
+		txt_time = (TextView) view.findViewById(R.id.txt_movinf_time);
 		txt_ratd = (TextView) view.findViewById(R.id.txt_movinf_ratd);
 		txt_lang = (TextView) view.findViewById(R.id.txt_movinf_lang);
 		txt_subs = (TextView) view.findViewById(R.id.txt_movinf_subs);
@@ -248,16 +250,17 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 			img_post.setMinimumHeight(pstHeight);
 			img_post.setMaxHeight(pstHeight);
 		}
-		txt_year.setText(movie.year());
-		txt_coun.setText(movie.country());
+		txt_dire.setText(movie.director());
 		txt_ratd.setText(movie.rated());
+		txt_time.setText(movie.runtime());
 		if (!movie.hasSubtitles())
 			txt_subs.setVisibility(View.GONE);
 		else {
 			txt_subs.setVisibility(View.VISIBLE);
 			txt_subs.setText(movie.subtitles());
 		}
-		txt_dire.setText(movie.director());
+		txt_year.setText(movie.year());
+		txt_coun.setText(movie.country());
 		if (movie.metascore <= 0)
 			txt_meta.setVisibility(View.GONE);
 		else {
