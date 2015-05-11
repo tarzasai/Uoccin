@@ -37,6 +37,7 @@ public class Movie extends Title {
 	private boolean watchlist = false;
 	private boolean collected = false;
 	private boolean watched = false;
+	private boolean updated = false;
 	
 	public String imdb_id;
 	public String name;
@@ -76,46 +77,21 @@ public class Movie extends Title {
 		return res;
 	}
 	
-	public static void drop() {
-		cache.clear();
-	}
-	
 	public static Movie get(Context context, String imdb_id) {
 		Movie res = Movie.getInstance(context, imdb_id);
 		if (res.isNew())
 			res.refresh(true);
 		else if (res.isOld())
 			res.refresh(false);
+		else if (res.updated)
+			res.reload();
 		return res;
 	}
-
+	
 	public static Movie get(Context context, Element xml) {
 		String imdb_id = Commons.XML.attrText(xml, "imdbID");
 		Movie res = Movie.getInstance(context, imdb_id);
 		res.load(xml);
-		return res;
-	}
-	
-	public static List<Movie> get(Context context, List<String> imdb_ids) {
-		List<Movie> res = new ArrayList<Movie>();
-		for (String id: imdb_ids)
-			res.add(Movie.get(context, id));
-		return res;
-	}
-	
-	public static List<Movie> get(Context context, String query, String ... args) {
-		List<Movie> res = new ArrayList<Movie>();
-		Cursor cur = Session.getInstance(context).getDB().rawQuery(query, args);
-		try {
-			int ci = cur.getColumnIndex("imdb_id");
-			String imdb_id;
-			while (cur.moveToNext()) {
-				imdb_id = cur.getString(ci);
-				res.add(Movie.get(context, imdb_id));
-			}
-		} finally {
-			cur.close();
-		}
 		return res;
 	}
 	
@@ -143,15 +119,14 @@ public class Movie extends Title {
 		return res;
 	}
 	
-	public static List<Movie> cached() {
-		List<Movie> res = new ArrayList<Movie>();
-		Object mov;
-		for (String k: cache.getKeys()) {
-			mov = cache.get(k);
-			if (mov != null)
-				res.add((Movie) mov);
-		}
-		return res;
+	public static void setUpdated(String imdb_id) {
+		Object tmp = cache.get(imdb_id);
+		if (tmp != null)
+			((Movie) tmp).updated = true;
+	}
+	
+	public static void resetCache() {
+		cache.clear();
 	}
 	
 	protected void load(Element xml) {
@@ -539,6 +514,7 @@ public class Movie extends Title {
 				load(cur);
 		} finally {
 			cur.close();
+			updated = false;
 		}
 	}
 	

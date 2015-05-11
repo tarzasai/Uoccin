@@ -312,7 +312,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	
 	@Override
 	protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-		if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == RESULT_OK)
+		if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == RESULT_OK && data != null)
 			session.setDriveUserAccount(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
 	}
 	
@@ -346,6 +346,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	
 	@Override
 	public void showHourGlass(boolean value) {
+		if (progressBar == null)
+			return;
 		if (value)
 			pbCount++;
 		else
@@ -402,25 +404,6 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	private boolean hasRootFragment() {
 		return getSupportFragmentManager().findFragmentByTag(BaseFragment.ROOT_FRAGMENT) != null;
 	}
-	
-	/*
-	private void checkDrive() {
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					new GSA(MainActivity.this).getFolder(true);
-				} catch (UserRecoverableAuthIOException e) {
-					startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
-				} catch (Exception err) {
-					Log.e(TAG, "checkDrive", err);
-					Toast.makeText(MainActivity.this, err.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-				}
-			}
-		});
-		t.start();
-	}
-	*/
 	
 	@SuppressLint("InflateParams")
 	private void searchDialog() {

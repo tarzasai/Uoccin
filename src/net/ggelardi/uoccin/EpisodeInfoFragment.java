@@ -223,6 +223,24 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 	}
 	
 	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+
+		outState.putInt("season", seasNo);
+		outState.putInt("episode", episNo);
+	}
+	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		
+		if (savedInstanceState != null) {
+			seasNo = savedInstanceState.getInt("season", seasNo);
+			episNo = savedInstanceState.getInt("episode", episNo);
+		}
+	}
+	
+	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		

@@ -352,9 +352,10 @@ public class Service extends WakefulIntentService {
 		} finally {
 			cur.close();
 		}
-		if (chk)
+		if (chk) {
 			db.update("movie", data, cond, args);
-		else {
+			Movie.setUpdated(args[0]);
+		} else {
 			data.put("name", "N/A");
 			data.put("timestamp", 1);
 			db.insertOrThrow("movie", null, data);
@@ -372,12 +373,15 @@ public class Service extends WakefulIntentService {
 		} finally {
 			cur.close();
 		}
-		if (!chk) {
+		if (chk) {
+			if (data.size() > 1) // saveEpisode() check
+				db.update("series", data, cond, args);
+			Series.setUpdated(args[0]);
+		} else {
 			data.put("name", "N/A");
 			data.put("timestamp", 1);
 			db.insertOrThrow("series", null, data);
-		} else if (data.size() > 1) // saveEpisode() check
-			db.update("series", data, cond, args);
+		}
 	}
 	
 	private void saveEpisode(ContentValues data) {
@@ -726,8 +730,8 @@ public class Service extends WakefulIntentService {
 			} finally {
 				db.endTransaction();
 			}
-			Movie.drop();
-			Series.drop();
+			Movie.resetCache();
+			Series.resetCache();
 			sendNotification(session.getString(R.string.msg_restore_4));
 			Title.dispatch(OnTitleListener.RELOAD, null);
 		} catch (Exception err) {

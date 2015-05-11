@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.XML;
 import net.ggelardi.uoccin.serv.Service;
@@ -20,7 +19,6 @@ import android.database.Cursor;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
@@ -296,11 +294,6 @@ public class Episode extends Title implements Comparable<Episode> {
 				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
 				Integer.toString(episode), "collected", Boolean.toString(collected));
-			if (!getSeries().massUpdate()) {
-				String msg = session.getRes().getString(collected ? R.string.msg_coll_add_epi : R.string.msg_coll_del_epi);
-				msg = String.format(msg, eid().readable());
-				Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
-			}
 		}
 	}
 	
@@ -313,11 +306,6 @@ public class Episode extends Title implements Comparable<Episode> {
 				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
 				Integer.toString(episode), "watched", Boolean.toString(watched));
-			if (!getSeries().massUpdate()) {
-				String msg = session.getRes().getString(watched ? R.string.msg_seen_add_epi : R.string.msg_seen_del_epi);
-				msg = String.format(msg, eid().readable());
-				Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
-			}
 		}
 	}
 	

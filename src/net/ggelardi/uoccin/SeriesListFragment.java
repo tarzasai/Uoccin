@@ -132,6 +132,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		
 	}
 	
 	@Override

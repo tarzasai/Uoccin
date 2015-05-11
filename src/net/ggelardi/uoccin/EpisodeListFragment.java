@@ -172,11 +172,16 @@ public class EpisodeListFragment extends BaseFragment implements AbsListView.OnI
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
+		
+		outState.putInt("season", season);
 	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		
+		if (savedInstanceState != null)
+			season = savedInstanceState.getInt("season", season);
 	}
 	
 	@Override

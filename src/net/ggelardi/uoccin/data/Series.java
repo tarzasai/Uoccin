@@ -41,7 +41,7 @@ public class Series extends Title {
 	private int rating = 0;
 	private List<String> tags = new ArrayList<String>();
 	private boolean watchlist = false;
-	private boolean massUpd = false;
+	private boolean updated = false;
 
 	public List<Episode> episodes = new ArrayList<Episode>();
 	
@@ -81,14 +81,12 @@ public class Series extends Title {
 		return res;
 	}
 	
-	public static void drop() {
-		cache.clear();
-	}
-	
 	public static Series get(Context context, String tvdb_id) {
 		Series res = Series.getInstance(context, tvdb_id);
 		if (res.isOld())
 			res.refresh(false);
+		else if (res.updated)
+			res.reload();
 		return res;
 	}
 	
@@ -96,13 +94,6 @@ public class Series extends Title {
 		String tvdb_id = xml.getElementsByTagName("id").item(0).getTextContent();
 		Series res = Series.getInstance(context, tvdb_id);
 		res.load(xml, episodes);
-		return res;
-	}
-	
-	public static List<Series> get(Context context, List<String> tvdb_ids) {
-		List<Series> res = new ArrayList<Series>();
-		for (String sid: tvdb_ids)
-			res.add(Series.get(context, sid));
 		return res;
 	}
 	
@@ -135,15 +126,14 @@ public class Series extends Title {
 		return res;
 	}
 	
-	public static List<Series> cached() {
-		List<Series> res = new ArrayList<Series>();
-		Object ser;
-		for (String k: cache.getKeys()) {
-			ser = cache.get(k);
-			if (ser != null)
-				res.add((Series) ser);
-		}
-		return res;
+	public static void setUpdated(String tvdb_id) {
+		Object tmp = cache.get(tvdb_id);
+		if (tmp != null)
+			((Series) tmp).updated = true;
+	}
+	
+	public static void resetCache() {
+		cache.clear();
 	}
 	
 	protected void load(Element serxml, NodeList epsxml) {
@@ -507,6 +497,7 @@ public class Series extends Title {
 				lst.add(new Episode(session.getContext(), tvdb_id, cur.getInt(0), cur.getInt(1)));
 		} finally {
 			cur.close();
+			updated = false;
 		}
 		episodes = lst;
 	}
@@ -562,10 +553,6 @@ public class Series extends Title {
 		return tags.contains(tag);
 	}
 	
-	public boolean massUpdate() {
-		return massUpd;
-	}
-	
 	public void setWatchlist(boolean value) {
 		if (value != watchlist) {
 			watchlist = value;
@@ -581,14 +568,9 @@ public class Series extends Title {
 	}
 	
 	public void setCollected(boolean flag, Integer season) {
-		massUpd = true;
-		try {
-			for (Episode ep: episodes)
-				if (season == null || ep.season == season)
-					ep.setCollected(flag);
-		} finally {
-			massUpd = false;
-		}
+		for (Episode ep: episodes)
+			if (season == null || ep.season == season)
+				ep.setCollected(flag);
 		if (isValid())
 			save(false);
 		else
@@ -596,14 +578,9 @@ public class Series extends Title {
 	}
 	
 	public void setWatched(boolean flag, Integer season) {
-		massUpd = true;
-		try {
-			for (Episode ep: episodes)
-				if (season == null || ep.season == season)
-					ep.setWatched(flag);
-		} finally {
-			massUpd = false;
-		}
+		for (Episode ep: episodes)
+			if (season == null || ep.season == season)
+				ep.setWatched(flag);
 		if (isValid())
 			save(false);
 		else
