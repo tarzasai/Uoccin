@@ -76,6 +76,11 @@ public class Commons {
 		public static final String JSON = "application/json";
 	}
 	
+	public static class TitleList {
+		public static final String QUERY = "QUERY";
+		public static final String SEARCH = "SEARCH";
+	}
+	
 	public static long convertTZ(long timestamp, String fromTimeZone, String toTimeZone) {
 		Calendar fromCal = new GregorianCalendar(TimeZone.getTimeZone(fromTimeZone));
 		fromCal.setTimeInMillis(timestamp);

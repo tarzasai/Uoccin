@@ -8,6 +8,7 @@ import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
 import net.ggelardi.uoccin.api.GSA;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.PK;
+import net.ggelardi.uoccin.serv.Commons.TitleList;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import android.accounts.AccountManager;
@@ -324,11 +325,9 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		dropHourGlass();
 		lastView = selection.id;
 		drawerList.setItemChecked(selection.position, true);
-		BaseFragment f = null;
-		if (selection.type.equals(DrawerItem.SERIES))
-			f = SeriesListFragment.newQuery(selection.label, selection.query, selection.details, (String[]) null);
-		else if (selection.type.equals(DrawerItem.MOVIE))
-			f = MovieListFragment.newQuery(selection.label, selection.query, selection.details, (String[]) null);
+		BaseFragment f = selection.type.equals(DrawerItem.SERIES) ?
+			SeriesListFragment.newFragment(TitleList.QUERY, selection.id) :
+			MovieListFragment.newFragment(TitleList.QUERY, selection.id);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f, BaseFragment.ROOT_FRAGMENT).commit();
 	}
 	
@@ -441,13 +440,13 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	}
 	
 	private void searchSeries(String text) {
-		BaseFragment f = SeriesListFragment.newSearch(text);
+		BaseFragment f = SeriesListFragment.newFragment(TitleList.SEARCH, text);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
 			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
 	}
 	
 	private void searchMovies(String text) {
-		BaseFragment f = MovieListFragment.newSearch(text);
+		BaseFragment f = MovieListFragment.newFragment(TitleList.SEARCH, text);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
 			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
 	}

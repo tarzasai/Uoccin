@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.ggelardi.uoccin.data.Movie;
+import net.ggelardi.uoccin.serv.Commons.TitleList;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 
 public class MovieTask extends AsyncTask<String, Void, List<Movie>> {
-	public static final String QUERY = "MovieTask.QUERY";
-	public static final String SEARCH = "MovieTask.SEARCH";
 	
 	private final MovieTaskContainer container;
 	private final String type;
@@ -30,7 +29,7 @@ public class MovieTask extends AsyncTask<String, Void, List<Movie>> {
 	@Override
 	protected List<Movie> doInBackground(String... params) {
     	List<Movie> res;
-    	if (type.equals(SEARCH)) {
+    	if (type.equals(TitleList.SEARCH)) {
     		res = Movie.find(container.getContext(), params[0]);
     	} else {
     		String query = params[0];

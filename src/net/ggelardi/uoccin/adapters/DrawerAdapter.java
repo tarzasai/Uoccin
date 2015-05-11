@@ -31,17 +31,13 @@ public class DrawerAdapter extends BaseAdapter {
 		di.icon = R.drawable.ic_action_tv;
 		items.add(di);
 		// series items
-		String[] defids = context.getResources().getStringArray(R.array.view_defser_ids);
-		String[] deflbs = context.getResources().getStringArray(R.array.view_defser_titles);
-		String[] defqrs = context.getResources().getStringArray(R.array.view_defser_queries);
-		String[] defdet = context.getResources().getStringArray(R.array.view_defser_details);
-		for (int i = 0; i < defids.length; i++) {
+		String[] views = context.getResources().getStringArray(R.array.view_defser_ids);
+		String[] titles = context.getResources().getStringArray(R.array.view_defser_titles);
+		for (int i = 0; i < views.length; i++) {
 			di = new DrawerItem();
 			di.type = DrawerItem.SERIES;
-			di.id = defids[i];
-			di.label = deflbs[i];
-			di.query = defqrs[i];
-			di.details = defdet[i];
+			di.id = views[i];
+			di.label = titles[i];
 			di.position = items.size();
 			items.add(di);
 		}
@@ -54,17 +50,13 @@ public class DrawerAdapter extends BaseAdapter {
 		di.icon = R.drawable.ic_action_movie;
 		items.add(di);
 		// movies items
-		defids = context.getResources().getStringArray(R.array.view_defmov_ids);
-		deflbs = context.getResources().getStringArray(R.array.view_defmov_titles);
-		defqrs = context.getResources().getStringArray(R.array.view_defmov_queries);
-		defdet = context.getResources().getStringArray(R.array.view_defmov_details);
-		for (int i = 0; i < defids.length; i++) {
+		views = context.getResources().getStringArray(R.array.view_defmov_ids);
+		titles = context.getResources().getStringArray(R.array.view_defmov_titles);
+		for (int i = 0; i < views.length; i++) {
 			di = new DrawerItem();
 			di.type = DrawerItem.MOVIE;
-			di.id = defids[i];
-			di.label = deflbs[i];
-			di.query = defqrs[i];
-			di.details = defdet[i];
+			di.id = views[i];
+			di.label = titles[i];
 			di.position = items.size();
 			items.add(di);
 		}
@@ -143,7 +135,5 @@ public class DrawerAdapter extends BaseAdapter {
 		public String id;
 		public String type;
 		public String label;
-		public String query;
-		public String details;
 	}
 }

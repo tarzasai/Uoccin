@@ -1,11 +1,13 @@
 package net.ggelardi.uoccin;
 
+import java.util.Arrays;
 import java.util.List;
 
 import net.ggelardi.uoccin.adapters.MovieAdapter;
 import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
+import net.ggelardi.uoccin.serv.Commons.TitleList;
 import net.ggelardi.uoccin.serv.MovieTask;
 import net.ggelardi.uoccin.serv.MovieTask.MovieTaskContainer;
 import android.annotation.SuppressLint;
@@ -29,12 +31,14 @@ import com.android.photos.views.HeaderGridView;
 public class MovieListFragment extends BaseFragment implements AbsListView.OnItemClickListener, OnTitleListener,
 	MovieTaskContainer {
 	
+	private static final String[] QUERIES = new String[] {
+		"select imdb_id from movie where watchlist = 1",
+		"select imdb_id from movie where collected = 1 and watched = 0",
+		"select imdb_id from movie where watched = 1"
+	};
+	
 	private String type;
-	private String title;
-	private String query;
-	private String[] params;
-	private String details = MovieAdapter.SEARCH;
-	private String search;
+	private String data;
 	
 	private boolean forceReload = false;
 	
@@ -42,23 +46,11 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	private MovieAdapter mAdapter;
 	private MovieTask mTask;
 	
-	public static MovieListFragment newQuery(String title, String query, String details, String ... params) {
+	public static MovieListFragment newFragment(String type, String data) {
 		MovieListFragment fragment = new MovieListFragment();
 		Bundle args = new Bundle();
-		args.putString("type", MovieTask.QUERY);
-		args.putString("title", title);
-		args.putString("query", query);
-		args.putStringArray("params", params);
-		args.putString("details", details);
-		fragment.setArguments(args);
-		return fragment;
-	}
-	
-	public static MovieListFragment newSearch(String search) {
-		MovieListFragment fragment = new MovieListFragment();
-		Bundle args = new Bundle();
-		args.putString("type", MovieTask.SEARCH);
-		args.putString("search", search);
+		args.putString("type", type);
+		args.putString("data", data);
 		fragment.setArguments(args);
 		return fragment;
 	}
@@ -69,17 +61,9 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 		
 		Bundle args = getArguments();
 		type = args.getString("type");
-		if (type.equals(MovieTask.QUERY)) {
-			title = args.getString("title");
-			query = args.getString("query");
-			params = args.getStringArray("params");
-			details = args.getString("details");
-		} else {
-			search = args.getString("search");
-			title = String.format(getString(R.string.title_search), search);
-		}
+		data = args.getString("data");
 		
-		mAdapter = new MovieAdapter(getActivity(), this, details);
+		mAdapter = new MovieAdapter(getActivity(), this, type, data);
 	}
 	
 	@SuppressLint("InflateParams")
@@ -108,8 +92,12 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	public void onResume() {
 		super.onResume();
 		
-		getActivity().setTitle(title);
+		getActivity().setTitle(type.equals(TitleList.SEARCH) ?
+			String.format(getString(R.string.title_search), data) :
+			session.getRes().getStringArray(R.array.view_defmov_titles)[queryIdx()]);
+		
 		Title.addOnTitleEventListener(this);
+		
 		reload();
 	}
 	
@@ -164,7 +152,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 					if (state.equals(OnTitleListener.NOTFOUND)) {
 						showHourGlass(false);
 						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-						if (type.equals(MovieTask.SEARCH))
+						if (type.equals(TitleList.SEARCH))
 							((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
 						else
 							mAdapter.notifyDataSetChanged();
@@ -209,18 +197,13 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 		mListener.openMovieInfo(mAdapter.getItem(pos).imdb_id);
 	}
 	
+	private int queryIdx() {
+		return Arrays.asList(getResources().getStringArray(R.array.view_defmov_ids)).indexOf(data);
+	}
+	
 	private void reload() {
 		Log.v(getTag(), "reload()");
 		mTask = new MovieTask(this, type);
-		if (type.equals(MovieTask.SEARCH))
-			mTask.execute(search);
-		else if (params == null || params.length <= 0)
-			mTask.execute(new String[] { query });
-		else {
-			String[] args = new String[params.length + 1];
-			args[0] = query;
-			System.arraycopy(params, 0, args, 1, params.length);
-			mTask.execute(args);
-		}
+		mTask.execute(type.equals(TitleList.SEARCH) ? data : QUERIES[queryIdx()]);
 	}
 }

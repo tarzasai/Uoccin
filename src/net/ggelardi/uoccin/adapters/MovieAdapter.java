@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.data.Movie;
+import net.ggelardi.uoccin.serv.Commons.TitleList;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
 import android.util.Log;
@@ -20,26 +21,24 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 public class MovieAdapter extends BaseAdapter {
-	public static final String WATCHLIST = "WATCHLIST";
-	public static final String AVAILABLES = "AVAILABLES";
-	public static final String WATCHED = "WATCHED";
-	public static final String SEARCH = "SEARCH";
 	
 	private final Session session;
 	private final OnClickListener listener;
 	private final LayoutInflater inflater;
-	private final String details;
+	private final String type;
+	private final String data;
 	private List<Movie> items;
 	private int pstHeight = 1;
 	private int pstWidth = 1;
 	
-	public MovieAdapter(Context context, OnClickListener clickListener, String details) {
+	public MovieAdapter(Context context, OnClickListener clickListener, String type, String data) {
 		super();
 		
 		session = Session.getInstance(context);
 		listener = clickListener;
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		this.details = details;
+		this.type = type;
+		this.data = data;
 		items = new ArrayList<Movie>();
 	}
 	
@@ -103,26 +102,26 @@ public class MovieAdapter extends BaseAdapter {
 		}
 		vh.txt_name.setText(String.format("%s (%d)", mov.name, mov.year));
 		vh.img_star.setImageResource(mov.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
-		if (details.equals(WATCHLIST)) {
+		if (type.equals(TitleList.SEARCH)) {
 			vh.img_star.setVisibility(View.VISIBLE);
 			vh.txt_spac.setVisibility(View.VISIBLE);
 			vh.txt_subs.setVisibility(View.GONE);
 			vh.rat_myrt.setVisibility(View.GONE);
-		} else if (details.equals(AVAILABLES)) {
+		} else if (data.equals("movfavs")) {
+			vh.img_star.setVisibility(View.VISIBLE);
+			vh.txt_spac.setVisibility(View.VISIBLE);
+			vh.txt_subs.setVisibility(View.GONE);
+			vh.rat_myrt.setVisibility(View.GONE);
+		} else if (type.equals("mov2see")) {
 			vh.img_star.setVisibility(View.GONE);
 			vh.txt_spac.setVisibility(View.GONE);
 			vh.txt_subs.setVisibility(View.VISIBLE);
 			vh.rat_myrt.setVisibility(View.GONE);
-		} else if (details.equals(WATCHED)) {
+		} else if (type.equals("movrats")) {
 			vh.img_star.setVisibility(View.GONE);
 			vh.txt_spac.setVisibility(View.GONE);
 			vh.txt_subs.setVisibility(View.GONE);
 			vh.rat_myrt.setVisibility(View.VISIBLE);
-		} else if (details.equals(SEARCH)) {
-			vh.img_star.setVisibility(View.VISIBLE);
-			vh.txt_spac.setVisibility(View.VISIBLE);
-			vh.txt_subs.setVisibility(View.GONE);
-			vh.rat_myrt.setVisibility(View.GONE);
 		}
 		vh.txt_acts.setText(mov.actors());
 		

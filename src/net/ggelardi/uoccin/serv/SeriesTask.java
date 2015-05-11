@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.serv.Commons.TitleList;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 
 public class SeriesTask extends AsyncTask<String, Void, List<Series>> {
-	public static final String QUERY = "SeriesTask.QUERY";
-	public static final String SEARCH = "SeriesTask.SEARCH";
 	
 	private final SeriesTaskContainer container;
 	private final String type;
@@ -30,7 +29,7 @@ public class SeriesTask extends AsyncTask<String, Void, List<Series>> {
     @Override
 	protected List<Series> doInBackground(String... params) {
     	List<Series> res;
-    	if (type.equals(SEARCH)) {
+    	if (type.equals(TitleList.SEARCH)) {
     		res = Series.find(container.getContext(), params[0]);
     	} else {
     		String query = params[0];

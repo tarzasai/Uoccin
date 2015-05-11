@@ -7,6 +7,7 @@ import java.util.List;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.serv.Commons.TitleList;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
 import android.text.TextUtils;
@@ -22,28 +23,32 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 public class SeriesAdapter extends BaseAdapter {
+	/*
 	public static final String SERIES_STORY = "SERIES_STORY";
 	public static final String EPI_AIR_NEAR = "EPI_AIR_NEAR";
 	public static final String EPI_AIR_NEXT = "EPI_AIR_NEXT";
 	public static final String EPI_AIR_MISS = "EPI_AIR_MISS";
 	public static final String EPI_AVAILABL = "EPI_AVAILABL";
 	public static final String EPI_COUNTERS = "EPI_COUNTERS";
+	*/
 	
 	private final Session session;
 	private final OnClickListener listener;
 	private final LayoutInflater inflater;
-	private final String details;
+	private final String type;
+	private final String data;
 	private List<Series> items;
 	private int pstHeight = 1;
 	private int pstWidth = 1;
 	
-	public SeriesAdapter(Context context, OnClickListener clickListener, String details) {
+	public SeriesAdapter(Context context, OnClickListener clickListener, String type, String data) {
 		super();
 		
 		session = Session.getInstance(context);
 		listener = clickListener;
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		this.details = details;
+		this.type = type;
+		this.data = data;
 		items = new ArrayList<Series>();
 	}
 	
@@ -114,7 +119,7 @@ public class SeriesAdapter extends BaseAdapter {
 		vh.txt_name.setText(ser.name);
 		vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(ser.isRecent() ? R.drawable.ics_active_news : 0, 0, 0, 0);
 		vh.img_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
-		if (ser.isNew() || details.equals(SERIES_STORY)) {
+		if (ser.isNew() || type.equals(TitleList.SEARCH)) {
 			vh.txt_plot.setVisibility(View.VISIBLE);
 			vh.box_epis.setVisibility(View.GONE);
 			vh.box_2see.setVisibility(View.GONE);
@@ -123,7 +128,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.rat_myrt.setVisibility(View.GONE);
 			//
 			vh.txt_plot.setText(ser.plot);
-		} else if (details.equals(EPI_AIR_MISS)) {
+		} else if (data.equals("sermiss")) {
 			vh.txt_plot.setVisibility(View.GONE);
 			vh.box_epis.setVisibility(View.GONE);
 			vh.box_2see.setVisibility(View.VISIBLE);
@@ -144,7 +149,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.txt_2tit.setText(title);
 			vh.txt_2plo.setText(ep.plot());
 			vh.txt_subs.setVisibility(View.GONE);
-		} else if (details.equals(EPI_AVAILABL)) {
+		} else if (data.equals("ser2see")) {
 			vh.txt_plot.setVisibility(View.GONE);
 			vh.box_epis.setVisibility(View.GONE);
 			vh.box_2see.setVisibility(View.VISIBLE);
@@ -166,7 +171,7 @@ public class SeriesAdapter extends BaseAdapter {
 			vh.txt_2plo.setText(ep.plot());
 			vh.txt_subs.setText(ep.subtitles());
 			vh.txt_subs.setVisibility(ep.hasSubtitles() ? View.VISIBLE : View.GONE);
-		} else if (details.equals(EPI_COUNTERS)) {
+		} else if (data.equals("serstat")) {
 			vh.txt_plot.setVisibility(View.GONE);
 			vh.box_epis.setVisibility(View.GONE);
 			vh.box_2see.setVisibility(View.GONE);
@@ -202,7 +207,7 @@ public class SeriesAdapter extends BaseAdapter {
 				ep = null;
 			else if (chk.size() == 1)
 				ep = chk.get(0);
-			else if (details.equals(EPI_AIR_NEXT))
+			else if (data.equals("sernext"))
 				ep = chk.get(1);
 			else if ((now - chk.get(0).firstAired) >= (chk.get(1).firstAired - now))
 				ep = chk.get(1);

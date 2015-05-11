@@ -1,5 +1,6 @@
 package net.ggelardi.uoccin;
 
+import java.util.Arrays;
 import java.util.List;
 
 import net.ggelardi.uoccin.adapters.SeriesAdapter;
@@ -7,6 +8,7 @@ import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
+import net.ggelardi.uoccin.serv.Commons.TitleList;
 import net.ggelardi.uoccin.serv.SeriesTask;
 import net.ggelardi.uoccin.serv.SeriesTask.SeriesTaskContainer;
 import android.annotation.SuppressLint;
@@ -30,12 +32,30 @@ import com.android.photos.views.HeaderGridView;
 public class SeriesListFragment extends BaseFragment implements AbsListView.OnItemClickListener, OnTitleListener,
 	SeriesTaskContainer {
 	
+	private static final String[] QUERIES = new String[] {
+		//
+		"select s.tvdb_id from series s where s.watchlist = 1",
+		//
+		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) where " +
+			"datetime(e.firstAired/1000, 'unixepoch') between datetime('now') and datetime('now', '+6 days') " +
+			"and (s.watchlist = 1 or (e.season = 1 and e.episode = 1))",
+		//
+		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) where " +
+			"datetime(e.firstAired/1000, 'unixepoch') < datetime('now', '-12 hours') and " +
+			"s.watchlist = 1 and e.collected = 0 and e.watched = 0",
+		//
+		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) where " +
+			"e.collected = 1 and e.watched = 0",
+		//
+		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) where " +
+			"datetime(e.firstAired/1000, 'unixepoch') between datetime('now', '-7 days') " +
+			"and datetime('now', '+7 days') and e.season = 1 and e.episode = 1",
+		//
+		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id)"
+	};
+	
 	private String type;
-	private String title;
-	private String query;
-	private String[] params;
-	private String details = SeriesAdapter.SERIES_STORY;
-	private String search;
+	private String data;
 	
 	private boolean forceReload = false;
 	
@@ -43,23 +63,11 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	private SeriesAdapter mAdapter;
 	private SeriesTask mTask;
 	
-	public static SeriesListFragment newQuery(String title, String query, String details, String ... params) {
+	public static SeriesListFragment newFragment(String type, String data) {
 		SeriesListFragment fragment = new SeriesListFragment();
 		Bundle args = new Bundle();
-		args.putString("type", SeriesTask.QUERY);
-		args.putString("title", title);
-		args.putString("query", query);
-		args.putStringArray("params", params);
-		args.putString("details", details);
-		fragment.setArguments(args);
-		return fragment;
-	}
-	
-	public static SeriesListFragment newSearch(String search) {
-		SeriesListFragment fragment = new SeriesListFragment();
-		Bundle args = new Bundle();
-		args.putString("type", SeriesTask.SEARCH);
-		args.putString("search", search);
+		args.putString("type", type);
+		args.putString("data", data);
 		fragment.setArguments(args);
 		return fragment;
 	}
@@ -70,17 +78,9 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 		
 		Bundle args = getArguments();
 		type = args.getString("type");
-		if (type.equals(SeriesTask.QUERY)) {
-			title = args.getString("title");
-			query = args.getString("query");
-			params = args.getStringArray("params");
-			details = args.getString("details");
-		} else {
-			search = args.getString("search");
-			title = String.format(getString(R.string.title_search), search);
-		}
+		data = args.getString("data");
 		
-		mAdapter = new SeriesAdapter(getActivity(), this, details);
+		mAdapter = new SeriesAdapter(getActivity(), this, type, data);
 	}
 	
 	@SuppressLint("InflateParams")
@@ -109,8 +109,12 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	public void onResume() {
 		super.onResume();
 		
-		getActivity().setTitle(title);
+		getActivity().setTitle(type.equals(TitleList.SEARCH) ?
+			String.format(getString(R.string.title_search), data) :
+			session.getRes().getStringArray(R.array.view_defser_titles)[queryIdx()]);
+		
 		Title.addOnTitleEventListener(this);
+		
 		reload();
 	}
 	
@@ -177,7 +181,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 					if (state.equals(OnTitleListener.NOTFOUND)) {
 						showHourGlass(false);
 						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-						if (type.equals(SeriesTask.SEARCH))
+						if (type.equals(TitleList.SEARCH))
 							((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
 						else
 							mAdapter.notifyDataSetChanged();
@@ -222,18 +226,13 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 		mListener.openSeriesInfo(mAdapter.getItem(pos).tvdb_id);
 	}
 	
+	private int queryIdx() {
+		return Arrays.asList(getResources().getStringArray(R.array.view_defser_ids)).indexOf(data);
+	}
+	
 	private void reload() {
 		Log.v(getTag(), "reload()");
 		mTask = new SeriesTask(this, type);
-		if (type.equals(SeriesTask.SEARCH))
-			mTask.execute(search);
-		else if (params == null || params.length <= 0)
-			mTask.execute(new String[] { query });
-		else {
-			String[] args = new String[params.length + 1];
-			args[0] = query;
-			System.arraycopy(params, 0, args, 1, params.length);
-			mTask.execute(args);
-		}
+		mTask.execute(type.equals(TitleList.SEARCH) ? data : QUERIES[queryIdx()]);
 	}
 }

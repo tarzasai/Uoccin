@@ -59,51 +59,6 @@
         <item>Series stats</item>
     </string-array>
     
-    <string-array name="view_defser_details">
-        <item>EPI_AIR_NEAR</item>
-        <item>EPI_AIR_NEXT</item>
-        <item>EPI_AIR_MISS</item>
-        <item>EPI_AVAILABL</item>
-        <item>EPI_AIR_NEAR</item>
-        <item>EPI_COUNTERS</item>
-    </string-array>
-    
-    <string-array name="view_defser_queries">
-        <!-- serfavs -->
-        <item>
-select tvdb_id from series where watchlist = 1 order by name collate nocase
-        </item>
-        <!-- sernext -->
-        <item>
-select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where datetime(e.firstAired/1000, \'unixepoch\') between datetime(\'now\') 
-and datetime(\'now\', \'+6 days\') and (s.watchlist = 1 or (e.season = 1 and e.episode = 1)) 
-order by e.firstAired
-        </item>
-        <!-- sermiss -->
-        <item>
-select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where datetime(e.firstAired/1000, \'unixepoch\') &lt; datetime(\'now\', \'-12 hours\') 
-and s.watchlist = 1 and e.collected = 0 and e.watched = 0 order by s.name collate nocase
-        </item>
-        <!-- ser2see -->
-        <item>
-select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where e.collected = 1 and e.watched = 0 order by s.name collate nocase
-        </item>
-        <!-- sernews -->
-        <item>
-select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-where datetime(e.firstAired/1000, \'unixepoch\') between datetime(\'now\', \'-7 days\') 
-and datetime(\'now\', \'+7 days\') and e.season = 1 and e.episode = 1 order by e.firstAired
-        </item>
-        <!-- serstat -->
-        <item>
-select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) 
-order by s.name collate nocase
-        </item>
-    </string-array>
-    
     <string-array name="view_defmov_ids">
         <item>movfavs</item>
         <item>mov2see</item>
@@ -114,27 +69,6 @@ order by s.name collate nocase
         <item>Movies watchlist</item>
         <item>Available movies</item>
         <item>Watched movies</item>
-    </string-array>
-    
-    <string-array name="view_defmov_details">
-        <item>WATCHLIST</item>
-        <item>AVAILABLES</item>
-        <item>WATCHED</item>
-    </string-array>
-    
-    <string-array name="view_defmov_queries">
-        <!-- movfavs -->
-        <item>
-select imdb_id from movie where watchlist = 1 order by name collate nocase
-        </item>
-        <!-- mov2see -->
-        <item>
-select imdb_id from movie where collected = 1 and watched = 0 order by name collate nocase
-        </item>
-        <!-- movrats -->
-        <item>
-select imdb_id from movie where watched = 1 order by name collate nocase
-        </item>
     </string-array>
     
     <string-array name="def_tvdb_genres">
