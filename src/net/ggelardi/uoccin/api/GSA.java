@@ -90,6 +90,7 @@ public class GSA {
 				File body = new File();
 				body.setTitle(dfName);
 				body.setMimeType(DriveFolder.MIME_TYPE);
+				body.setParents(Arrays.asList(new ParentReference().setId(rootId)));
 				deviceId = service.files().insert(body).execute().getId();
 			} else
 				Log.w(TAG, "Device folder NOT found");

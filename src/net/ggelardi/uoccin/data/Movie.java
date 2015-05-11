@@ -740,7 +740,12 @@ public class Movie extends Title {
 	}
 	
 	public String runtime() {
-		return runtime > 0 ? DateUtils.formatElapsedTime(runtime * 60) : "N/A";
+		String res = "N/A";
+		if (runtime > 0)
+			res = DateUtils.formatElapsedTime(runtime * 60);
+		if (res.length() > 2)
+			res = res.substring(0, res.length()-3);
+		return res;
 	}
 	
 	public String genres() {

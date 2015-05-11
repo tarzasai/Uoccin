@@ -226,7 +226,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		
-		outState.putString("lastView", lastView);
+		if (!TextUtils.isEmpty(lastView))
+			outState.putString("lastView", lastView);
 	}
 	
 	@Override

@@ -21,6 +21,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.RatingBar.OnRatingBarChangeListener;
 import android.widget.TextView;
@@ -50,10 +51,14 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 	private TextView txt_refr;
 	private TextView txt_plot;
 	private TextView txt_acts;
+	private TextView txt_wrts;
 	private TextView txt_lang;
+	private TextView txt_awrd;
 	private TextView txt_gens;
 	private RatingBar rat_myrt;
 	private TextView txt_tags;
+	private LinearLayout box_wrts;
+	private LinearLayout box_awrd;
 	
 	private int pstHeight = 1;
 	private int pstWidth = 1;
@@ -98,9 +103,13 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 		txt_refr = (TextView) view.findViewById(R.id.txt_movinf_refr);
 		txt_plot = (TextView) view.findViewById(R.id.txt_movinf_plot);
 		txt_acts = (TextView) view.findViewById(R.id.txt_movinf_acts);
+		txt_wrts = (TextView) view.findViewById(R.id.txt_movinf_wrts);
 		txt_gens = (TextView) view.findViewById(R.id.txt_movinf_gens);
+		txt_awrd = (TextView) view.findViewById(R.id.txt_movinf_awrd);
 		rat_myrt = (RatingBar) view.findViewById(R.id.rat_movinf_myrt);
 		txt_tags = (TextView) view.findViewById(R.id.txt_movinf_tags);
+		box_wrts = (LinearLayout) view.findViewById(R.id.box_movinf_wrts);
+		box_awrd = (LinearLayout) view.findViewById(R.id.box_movinf_awrd);
 		
 		img_post.setOnClickListener(new OnClickListener() {
 			@Override
@@ -294,6 +303,18 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 		txt_acts.setText(Html.fromHtml(movie.actors() + " ... <a href=\"" + movie.imdbCast() + "\">" +
 			session.getString(R.string.lnk_movinf_acts) + "</a>"));
 		txt_acts.setMovementMethod(LinkMovementMethod.getInstance());
+		if (movie.writers.isEmpty())
+			box_wrts.setVisibility(View.GONE);
+		else {
+			box_wrts.setVisibility(View.VISIBLE);
+			txt_wrts.setText(Html.fromHtml(movie.writers()));
+		}
+		if (TextUtils.isEmpty(movie.awards))
+			box_awrd.setVisibility(View.GONE);
+		else {
+			box_awrd.setVisibility(View.VISIBLE);
+			txt_awrd.setText(movie.awards);
+		}
 		txt_lang.setText(movie.language());
 		txt_gens.setText(movie.genres());
 		rat_myrt.setRating(movie.getRating());

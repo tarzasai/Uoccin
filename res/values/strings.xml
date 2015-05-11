@@ -55,7 +55,7 @@
     <string name="lbl_epinf_gues">guest star(s)</string>
     <string name="lbl_epinf_dire">director</string>
     
-    <string name="lbl_movinf_dire">a film by</string>
+    <string name="lbl_movinf_dire">A film by</string>
     <string name="lbl_movinf_cast">cast</string>
     <string name="lbl_movinf_awrd">scores/awards</string>
     <string name="lbl_movinf_meta">metacritic</string>

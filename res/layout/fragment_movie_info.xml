@@ -105,10 +105,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:drawablePadding="3dp"
-                                android:drawableRight="@drawable/ics_active_subtitles"
+                                android:drawableRight="@drawable/ics_action_subtitles"
                                 android:gravity="right"
                                 android:text="@string/sample_subs"
-                                android:textAllCaps="true"
                                 tools:ignore="RtlHardcoded" />
 
                         </LinearLayout>
@@ -365,34 +364,6 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/box_movinf_awrd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" >
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="2dp"
-                    android:paddingLeft="15dp"
-                    android:paddingRight="15dp"
-                    android:text="@string/lbl_movinf_awrd"
-                    android:textSize="@dimen/mini_section_title"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/txt_movinf_awrd"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/contentBackground"
-                    android:paddingBottom="10dp"
-                    android:paddingLeft="15dp"
-                    android:paddingRight="15dp"
-                    android:paddingTop="5dp"
-                    android:text="@string/sample_awards" />
-            </LinearLayout>
-
-            <LinearLayout
                 android:id="@+id/box_movinf_lang"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -418,6 +389,34 @@
                     android:paddingRight="15dp"
                     android:paddingTop="5dp"
                     android:text="@string/sample_language" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/box_movinf_awrd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:text="@string/lbl_movinf_awrd"
+                    android:textSize="@dimen/mini_section_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_movinf_awrd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/contentBackground"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="5dp"
+                    android:text="@string/sample_awards" />
             </LinearLayout>
 
             <LinearLayout

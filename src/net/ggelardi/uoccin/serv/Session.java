@@ -24,6 +24,7 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -58,8 +59,13 @@ public class Session implements OnSharedPreferenceChangeListener {
 			registerAlarms();
 		else if (key.equals(PK.GDRVSYNC)) {
 			registerAlarms();
-			if (driveSyncEnabled() && !driveAccountSet())
-				acntx.sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
+			if (driveSyncEnabled()) {
+				if (!driveAccountSet())
+					acntx.sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
+				else
+					WakefulIntentService.sendWakefulWork(acntx,
+						new Intent(acntx, Service.class).setAction(Service.GDRIVE_SYNC));
+			}
 		}
 	}
 	
@@ -203,14 +209,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 		editor.putString(PK.GDRVAUTH, value);
 		editor.commit();
 	}
-	
-	/*
-	public void setDriveLastSyncUTC(long value) {
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putLong(PK.GDRVLASY, value);
-		editor.commit();
-	}
-	*/
 	
 	public void setDriveLastChangeID(long value) {
 		SharedPreferences.Editor editor = prefs.edit();
