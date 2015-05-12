@@ -112,12 +112,12 @@ public class MovieAdapter extends BaseAdapter {
 			vh.txt_spac.setVisibility(View.VISIBLE);
 			vh.txt_subs.setVisibility(View.GONE);
 			vh.rat_myrt.setVisibility(View.GONE);
-		} else if (type.equals("mov2see")) {
+		} else if (data.equals("mov2see")) {
 			vh.img_star.setVisibility(View.GONE);
 			vh.txt_spac.setVisibility(View.GONE);
 			vh.txt_subs.setVisibility(View.VISIBLE);
 			vh.rat_myrt.setVisibility(View.GONE);
-		} else if (type.equals("movrats")) {
+		} else if (data.equals("movrats")) {
 			vh.img_star.setVisibility(View.GONE);
 			vh.txt_spac.setVisibility(View.GONE);
 			vh.txt_subs.setVisibility(View.GONE);

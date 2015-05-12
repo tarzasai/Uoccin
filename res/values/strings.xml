@@ -8,9 +8,19 @@
     
     <string name="action_search">Search</string>
     <string name="action_settings">Settings</string>
+    <string name="action_sort_name">Sort by title</string>
+    <string name="action_sort_year">Sort by year</string>
+    <string name="action_sort_rats">Sort by stars</string>
+    <string name="action_backup">Backup database</string>
+    <string name="action_restore">Restore database</string>
+    <string name="action_syncnow">Synchronize now</string>
+    <string name="action_cleandb">Clean database</string>
+    <string name="action_chktvdb">Check TVDB rss</string>
     
     <string name="drwhdr_series">Series</string>
     <string name="drwhdr_movies">Movies</string>
+    <string name="drwhdr_services">Services</string>
+    <string name="drwhdr_develop">Development</string>
     
     <string name="search_dialog">Search titles</string>
     <string name="search_hint">Search text</string>

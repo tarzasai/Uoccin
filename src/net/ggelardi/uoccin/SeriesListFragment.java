@@ -18,6 +18,9 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -58,8 +61,15 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	private String data;
 	
 	private boolean forceReload = false;
+	private boolean sortDesc = false;
+	private int sortVal = 0;
 	
 	private AbsListView mListView;
+	private MenuItem mSortDir;
+	private MenuItem mSortName;
+	private MenuItem mSortYear;
+	private MenuItem mSortRats;
+	
 	private SeriesAdapter mAdapter;
 	private SeriesTask mTask;
 	
@@ -76,9 +86,13 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		setHasOptionsMenu(true);
+		
 		Bundle args = getArguments();
 		type = args.getString("type");
 		data = args.getString("data");
+		sortVal = args.getInt("sortVal", 0);
+		sortDesc = args.getBoolean("sortDesc", false);
 		
 		mAdapter = new SeriesAdapter(getActivity(), this, type, data);
 	}
@@ -121,7 +135,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	@Override
 	public void onPause() {
 		super.onPause();
-
+		
 		Title.removeOnTitleEventListener(this);
 		if (mTask != null)
 			mTask.cancel(true);
@@ -130,13 +144,65 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		
+
+		outState.putInt("sortVal", sortVal);
+		outState.putBoolean("sortDesc", sortDesc);
 	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
+		if (savedInstanceState != null) {
+			sortVal = savedInstanceState.getInt("sortVal", sortVal);
+			sortDesc = savedInstanceState.getBoolean("sortDesc", sortDesc);
+		}
+	}
+	
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.lists, menu);
+
+		mSortDir = menu.findItem(R.id.action_sort_toggle);
+		mSortName = menu.findItem(R.id.action_sort_name);
+		mSortYear = menu.findItem(R.id.action_sort_year);
+		mSortRats = menu.findItem(R.id.action_sort_rats);
+	}
+	
+	@Override
+	public void onPrepareOptionsMenu(Menu menu) {
+		checkMenu();
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item == mSortDir) {
+			sortDesc = !sortDesc;
+			reload();
+			return true;
+		}
+		if (item == mSortName) {
+			if (sortVal != 0) {
+				sortVal = 0;
+				reload();
+			}
+			return true;
+		}
+		if (item == mSortYear) {
+			if (sortVal != 1) {
+				sortVal = 1;
+				reload();
+			}
+			return true;
+		}
+		if (item == mSortRats) {
+			if (sortVal != 2) {
+				sortVal = 2;
+				reload();
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	@Override
@@ -185,45 +251,65 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 							((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
 						else
 							mAdapter.notifyDataSetChanged();
+						checkMenu();
 					} else if (state.equals(OnTitleListener.WORKING)) {
 						showHourGlass(true);
+						checkMenu();
 					} else if (state.equals(OnTitleListener.RELOAD)) {
 						forceReload = true;
 						reload();
 					} else if (state.equals(OnTitleListener.ERROR)) {
 						showHourGlass(false);
 						mAdapter.notifyDataSetChanged();
+						checkMenu();
 						Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
 					} else if (state.equals(OnTitleListener.READY)) {
 						showHourGlass(false);
 						mAdapter.notifyDataSetChanged();
+						checkMenu();
 					}
 				}
 			});
 	}
-	
+
 	@Override
 	public Context getContext() {
 		return getActivity();
 	}
-	
+
 	@Override
 	public void preExecuteTask() {
 		showHourGlass(true);
 	}
-	
+
 	@Override
 	public void postExecuteTask(List<Series> result) {
 		showHourGlass(false);
 		mTask = null;
 		mAdapter.setTitles(result, forceReload);
 		forceReload = false;
+		checkMenu();
 	}
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		int pos = mListView instanceof GridView ? position - 2 : position - 1;
 		mListener.openSeriesInfo(mAdapter.getItem(pos).tvdb_id);
+	}
+	
+	private void checkMenu() {
+		if (mAdapter == null || mSortDir == null || mSortName == null || mSortYear == null || mSortRats == null)
+			return;
+		mSortDir.setVisible(mAdapter.getCount() > 0);
+		mSortName.setVisible(mAdapter.getCount() > 0);
+		mSortYear.setVisible(mAdapter.getCount() > 0);
+		mSortDir.setIcon(sortDesc ? R.drawable.ic_action_sort_desc : R.drawable.ic_action_sort_asc);
+		if (sortVal == 0)
+			mSortName.setChecked(true);
+		else if (sortVal == 1)
+			mSortYear.setChecked(true);
+		else
+			mSortRats.setChecked(true);
 	}
 	
 	private int queryIdx() {
@@ -233,6 +319,17 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	private void reload() {
 		Log.v(getTag(), "reload()");
 		mTask = new SeriesTask(this, type);
-		mTask.execute(type.equals(TitleList.SEARCH) ? data : QUERIES[queryIdx()]);
+		if (type.equals(TitleList.SEARCH))
+			mTask.execute(data);
+		else {
+			String query = QUERIES[queryIdx()];
+			if (sortVal == 0)
+				query += " order by s.name collate nocase" + (sortDesc ? " desc" : " asc");
+			else if (sortVal == 1)
+				query += " order by s.year" + (sortDesc ? " desc" : " asc") + ", s.name collate nocase";
+			else
+				query += " order by s.rating" + (sortDesc ? " desc" : " asc") + ", s.name collate nocase";
+			mTask.execute(query);
+		}
 	}
 }

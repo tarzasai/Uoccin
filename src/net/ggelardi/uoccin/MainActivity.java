@@ -34,11 +34,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.ExpandableListView.OnGroupClickListener;
+import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.Toast;
@@ -57,7 +58,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
     private Toolbar toolbar;
     private DrawerLayout drawer;
 	private DrawerAdapter drawerData;
-	private ListView drawerList;
+	private ExpandableListView drawerList;
 	private ProgressBar progressBar;
 	private CharSequence lastTitle;
 	private int lastIcon;
@@ -69,7 +70,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		super.onCreate(savedInstanceState);
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_main);
-
+		
 		session = Session.getInstance(this);
 		
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -98,13 +99,56 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
         
         drawerData = new DrawerAdapter(this);
         
-		drawerList = (ListView) findViewById(R.id.drawer_list);
+		drawerList = (ExpandableListView) findViewById(R.id.drawer_list);
 		drawerList.setAdapter(drawerData);
-		drawerList.setOnItemClickListener(new OnItemClickListener() {
+		drawerList.setOnGroupExpandListener(new OnGroupExpandListener() {
+			int previousGroup = -1;
+			int previousChild = -1;
 			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			public void onGroupExpand(int groupPosition) {
+				if (groupPosition != previousGroup) {
+					previousChild = drawerList.getCheckedItemPosition();
+					drawerList.collapseGroup(previousGroup);
+					drawerList.setItemChecked(drawerList.getCheckedItemPosition(), false);
+				} else
+					drawerList.setItemChecked(previousChild, true);
+				previousGroup = groupPosition;
+			}
+		});
+		drawerList.setOnGroupClickListener(new OnGroupClickListener() {
+			@Override
+			public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+
+			    /*
+				parent.smoothScrollToPosition(groupPosition);
+				if (!parent.isGroupExpanded(groupPosition))
+					parent.expandGroup(groupPosition, true);
+				
+			    if (parent.isGroupExpanded(groupPosition)) {
+			        parent.collapseGroup(groupPosition);
+			    } else {
+			        parent.expandGroup(groupPosition);
+			    }
+			    
+			    return true;
+			    */
+				
+				return false;
+			}
+		});
+		drawerList.setOnChildClickListener(new OnChildClickListener() {
+			@Override
+			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 				drawer.closeDrawer(Gravity.START);
-				openDrawerItem(drawerData.getItem(position));
+				DrawerItem di = drawerData.getChild(groupPosition, childPosition);
+				if (di.type.equals(DrawerItem.ACTION)) {
+					
+				} else {
+					openDrawerItem(di);
+					int index = parent.getFlatListPosition(ExpandableListView.getPackedPositionForChild(groupPosition, childPosition));
+					parent.setItemChecked(index, true);
+				}
+				return false;
 			}
 		});
 		
@@ -123,12 +167,6 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		Log.d(TAG, "onNewIntent: " + intent.toString());
 		
 		setIntent(intent);
-		
-		/*
-		String action = intent.getAction();
-		if (!TextUtils.isEmpty(action) && action.equals(Commons.SN.CONNECT_FAIL))
-			checkDrive();
-		*/
 	}
 	
 	@Override
@@ -316,7 +354,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == RESULT_OK && data != null)
 			session.setDriveUserAccount(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
 	}
-	
+
 	public void openDrawerItem(DrawerItem selection) {
 		if (selection.id.equals("settings")) {
 			startActivity(new Intent(this, SettingsActivity.class));
@@ -324,7 +362,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		}
 		dropHourGlass();
 		lastView = selection.id;
-		drawerList.setItemChecked(selection.position, true);
+		//drawerList.setItemChecked(selection.position, true);
 		BaseFragment f = selection.type.equals(DrawerItem.SERIES) ?
 			SeriesListFragment.newFragment(TitleList.QUERY, selection.id) :
 			MovieListFragment.newFragment(TitleList.QUERY, selection.id);

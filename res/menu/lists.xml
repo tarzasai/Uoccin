@@ -1,0 +1,35 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" >
+
+    <item
+        android:id="@+id/action_sort_toggle"
+        android:icon="@drawable/ic_action_sort_asc"
+        android:title="@string/empty_text"
+        android:menuCategory="container"
+        android:orderInCategory="10"
+        android:showAsAction="always"
+        app:showAsAction="always"/>
+    
+    <group android:checkableBehavior="single">
+	    <item
+	        android:id="@+id/action_sort_name"
+	        android:title="@string/action_sort_name"
+	        android:menuCategory="container"
+	        android:orderInCategory="50"
+	        android:showAsAction="never"/>
+	    <item
+	        android:id="@+id/action_sort_year"
+	        android:title="@string/action_sort_year"
+	        android:menuCategory="container"
+	        android:orderInCategory="51"
+	        android:showAsAction="never"/>
+	    <item
+	        android:id="@+id/action_sort_rats"
+	        android:title="@string/action_sort_rats"
+	        android:menuCategory="container"
+	        android:orderInCategory="52"
+	        android:showAsAction="never"/>
+    </group>
+
+</menu>
