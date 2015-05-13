@@ -18,43 +18,5 @@
         android:menuCategory="system"
         android:orderInCategory="100"
         android:showAsAction="never"/>
-    
-    <!-- test/debug -->
-    
-    <item
-        android:id="@+id/action_test_clean"
-        android:orderInCategory="1"
-        android:showAsAction="never"
-        android:title="(test) Clean DB"/>
-    
-    <item
-        android:id="@+id/action_test_gdsyn"
-        android:orderInCategory="2"
-        android:showAsAction="never"
-        android:title="(test) Sync"/>
-    
-    <item
-        android:id="@+id/action_test_gdbak"
-        android:orderInCategory="3"
-        android:showAsAction="never"
-        android:title="(test) Backup"/>
-    
-    <item
-        android:id="@+id/action_test_gdres"
-        android:orderInCategory="4"
-        android:showAsAction="never"
-        android:title="(test) Restore"/>
-    
-    <item
-        android:id="@+id/action_test_check"
-        android:orderInCategory="5"
-        android:showAsAction="never"
-        android:title="(test) Check query"/>
-    
-    <item
-        android:id="@+id/action_test_tvdbn"
-        android:orderInCategory="6"
-        android:showAsAction="never"
-        android:title="(test) TVDB news"/>
 
 </menu>

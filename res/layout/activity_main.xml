@@ -40,6 +40,7 @@
             android:layout_gravity="start"
             android:background="@color/drawerBackground"
             android:choiceMode="singleChoice"
+            android:groupIndicator="@null"
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp" />
         

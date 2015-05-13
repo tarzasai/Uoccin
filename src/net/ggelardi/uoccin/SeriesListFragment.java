@@ -16,16 +16,25 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -64,11 +73,14 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	private boolean sortDesc = false;
 	private int sortVal = 0;
 	
-	private AbsListView mListView;
-	private MenuItem mSortDir;
-	private MenuItem mSortName;
-	private MenuItem mSortYear;
-	private MenuItem mSortRats;
+	private AbsListView listView;
+	private MenuItem miSortDir;
+	private MenuItem miSortName;
+	private MenuItem miSortYear;
+	private MenuItem miSortRats;
+	private LinearLayout boxFilter;
+	private EditText edtFltText;
+	private ImageView imgFltClear;
 	
 	private SeriesAdapter mAdapter;
 	private SeriesTask mTask;
@@ -100,21 +112,57 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	@SuppressLint("InflateParams")
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_items, container, false);
+		View view = inflater.inflate(R.layout.fragment_series_items, container, false);
 
-		mListView = (AbsListView) view.findViewById(android.R.id.list);
+		listView = (AbsListView) view.findViewById(android.R.id.list);
+		boxFilter = (LinearLayout) view.findViewById(R.id.box_sl_flt);
+		edtFltText = (EditText) view.findViewById(R.id.edt_sl_flt);
+		imgFltClear = (ImageView) view.findViewById(R.id.img_sl_flt);
 		
-		if (mListView instanceof ListView) {
-			((ListView) mListView).addHeaderView(inflater.inflate(R.layout.header_space, null));
-			((ListView) mListView).addFooterView(inflater.inflate(R.layout.header_space, null));
+		if (listView instanceof ListView) {
+			((ListView) listView).addHeaderView(inflater.inflate(R.layout.header_space, null));
+			((ListView) listView).addFooterView(inflater.inflate(R.layout.header_space, null));
 		} else {
-			((HeaderGridView) mListView).addHeaderView(inflater.inflate(R.layout.header_space, null));
+			((HeaderGridView) listView).addHeaderView(inflater.inflate(R.layout.header_space, null));
 			//((HeaderGridView) mListView).addFooterView(inflater.inflate(R.layout.header_space, null));
 		}
 		
-		mListView.setOnItemClickListener(this);
+		listView.setOnItemClickListener(this);
+		listView.setOnScrollListener(new OnScrollListener() {
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+				if (scrollState != OnScrollListener.SCROLL_STATE_IDLE)
+					hideKeyboard();
+				// TODO: animation to collapse boxFilter and expand listView when scrolling.
+			}
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+			}
+		});
 		
-		((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+		edtFltText.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				imgFltClear.setVisibility(TextUtils.isEmpty(edtFltText.getText()) ? View.GONE : View.VISIBLE);
+				mAdapter.getFilter().filter(edtFltText.getText());
+			}
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			}
+			@Override
+			public void afterTextChanged(Editable s) {
+			}
+		});
+		
+		imgFltClear.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				edtFltText.setText(null);
+				hideKeyboard();
+			}
+		});
+		
+		((AdapterView<ListAdapter>) listView).setAdapter(mAdapter);
 		
 		return view;
 	}
@@ -163,10 +211,10 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.lists, menu);
 
-		mSortDir = menu.findItem(R.id.action_sort_toggle);
-		mSortName = menu.findItem(R.id.action_sort_name);
-		mSortYear = menu.findItem(R.id.action_sort_year);
-		mSortRats = menu.findItem(R.id.action_sort_rats);
+		miSortDir = menu.findItem(R.id.action_sort_toggle);
+		miSortName = menu.findItem(R.id.action_sort_name);
+		miSortYear = menu.findItem(R.id.action_sort_year);
+		miSortRats = menu.findItem(R.id.action_sort_rats);
 	}
 	
 	@Override
@@ -176,26 +224,26 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item == mSortDir) {
+		if (item == miSortDir) {
 			sortDesc = !sortDesc;
 			reload();
 			return true;
 		}
-		if (item == mSortName) {
+		if (item == miSortName) {
 			if (sortVal != 0) {
 				sortVal = 0;
 				reload();
 			}
 			return true;
 		}
-		if (item == mSortYear) {
+		if (item == miSortYear) {
 			if (sortVal != 1) {
 				sortVal = 1;
 				reload();
 			}
 			return true;
 		}
-		if (item == mSortRats) {
+		if (item == miSortRats) {
 			if (sortVal != 2) {
 				sortVal = 2;
 				reload();
@@ -293,23 +341,23 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		int pos = mListView instanceof GridView ? position - 2 : position - 1;
+		int pos = listView instanceof GridView ? position - 2 : position - 1;
 		mListener.openSeriesInfo(mAdapter.getItem(pos).tvdb_id);
 	}
 	
 	private void checkMenu() {
-		if (mAdapter == null || mSortDir == null || mSortName == null || mSortYear == null || mSortRats == null)
+		if (mAdapter == null || miSortDir == null || miSortName == null || miSortYear == null || miSortRats == null)
 			return;
-		mSortDir.setVisible(mAdapter.getCount() > 0);
-		mSortName.setVisible(mAdapter.getCount() > 0);
-		mSortYear.setVisible(mAdapter.getCount() > 0);
-		mSortDir.setIcon(sortDesc ? R.drawable.ic_action_sort_desc : R.drawable.ic_action_sort_asc);
+		miSortDir.setVisible(mAdapter.getCount() > 0);
+		miSortName.setVisible(mAdapter.getCount() > 0);
+		miSortYear.setVisible(mAdapter.getCount() > 0);
+		miSortDir.setIcon(sortDesc ? R.drawable.ic_action_sort_desc : R.drawable.ic_action_sort_asc);
 		if (sortVal == 0)
-			mSortName.setChecked(true);
+			miSortName.setChecked(true);
 		else if (sortVal == 1)
-			mSortYear.setChecked(true);
+			miSortYear.setChecked(true);
 		else
-			mSortRats.setChecked(true);
+			miSortRats.setChecked(true);
 	}
 	
 	private int queryIdx() {
@@ -331,5 +379,11 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 				query += " order by s.rating" + (sortDesc ? " desc" : " asc") + ", s.name collate nocase";
 			mTask.execute(query);
 		}
+	}
+	
+	private void hideKeyboard() {
+		InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(imgFltClear.getWindowToken(), 0);
+		listView.requestFocus();
 	}
 }

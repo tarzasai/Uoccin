@@ -129,169 +129,139 @@ public class Movie extends Title {
 		cache.clear();
 	}
 	
+	private static boolean notNull(String text) {
+		return !(TextUtils.isEmpty(text) || text.equals("N/A"));
+	}
+	
 	protected void load(Element xml) {
-		dispatch(OnTitleListener.WORKING, null);
-		
-		boolean modified = false;
 		String chk;
 		chk = Commons.XML.attrText(xml, "title", "Title");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) || !name.equals(chk))) {
+		if (notNull(chk) && (TextUtils.isEmpty(name) || !name.equals(chk))) {
 			name = chk;
-			modified = true;
 		}
 		chk = Commons.XML.attrText(xml, "plot");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(plot) || !plot.equals(chk))) {
+		if (notNull(chk) && (TextUtils.isEmpty(plot) || !plot.equals(chk))) {
 			plot = chk;
-			modified = true;
 		}
 		chk = Commons.XML.attrText(xml, "year");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			try {
 				int r = Integer.parseInt(chk);
-				if (r > 0 && r != year) {
+				if (r > 0 && r != year)
 					year = r;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
 		}
 		chk = Commons.XML.attrText(xml, "poster");
-		if (!TextUtils.isEmpty(chk) && !chk.equals("N/A") && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
+		if (notNull(chk) && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
 			poster = chk;
-			modified = true;
 		}
 		chk = Commons.XML.attrText(xml, "genre");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s*")));
 			lst.removeAll(Arrays.asList("", null));
-			if (!Commons.sameStringLists(genres, lst)) {
+			if (!Commons.sameStringLists(genres, lst))
 				genres = new ArrayList<String>(lst);
-				modified = true;
-			}
 		}
 		chk = Commons.XML.attrText(xml, "language");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(language) || !language.equals(chk))) {
+		if (notNull(chk) && (TextUtils.isEmpty(language) || !language.equals(chk))) {
 			language = chk;
-			modified = true;
 		}
 		chk = Commons.XML.attrText(xml, "director");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(director) || !director.equals(chk))) {
+		if (notNull(chk) && (TextUtils.isEmpty(director) || !director.equals(chk))) {
 			director = chk;
-			modified = true;
 		}
 		chk = Commons.XML.attrText(xml, "writer");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s*")));
 			lst.removeAll(Arrays.asList("", null));
-			if (!Commons.sameStringLists(writers, lst)) {
+			if (!Commons.sameStringLists(writers, lst))
 				writers = new ArrayList<String>(lst);
-				modified = true;
-			}
 		}
 		chk = Commons.XML.attrText(xml, "actors");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split(",\\s*")));
 			lst.removeAll(Arrays.asList("", null));
-			if (!Commons.sameStringLists(actors, lst)) {
+			if (!Commons.sameStringLists(actors, lst))
 				actors = new ArrayList<String>(lst);
-				modified = true;
-			}
 		}
 		chk = Commons.XML.attrText(xml, "country");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(country) || !country.equals(chk))) {
+		if (notNull(chk) && (TextUtils.isEmpty(country) || !country.equals(chk))) {
 			country = chk;
-			modified = true;
 		}
 		chk = Commons.XML.attrText(xml, "released");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			try {
 				long t = Commons.SDF.eng("dd MMM yyyy").parse(chk).getTime();
-				if (t > 0) {
+				if (t > 0)
 					released = t;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
 		}
 		chk = Commons.XML.attrText(xml, "runtime");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			if (chk.contains(" min"))
 				chk = chk.split(" ")[0];
 			try {
 				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
-				if (r > 0 && r != runtime) {
+				if (r > 0 && r != runtime)
 					runtime = r;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
 		}
 		chk = Commons.XML.attrText(xml, "rated");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(rated) || !rated.equals(chk))) {
+		if (notNull(chk) && (TextUtils.isEmpty(rated) || !rated.equals(chk))) {
 			rated = chk;
-			modified = true;
 		}
 		chk = Commons.XML.attrText(xml, "awards");
-		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(awards) || !awards.equals(chk))) {
+		if (notNull(chk) && (TextUtils.isEmpty(awards) || !awards.equals(chk))) {
 			awards = chk;
-			modified = true;
 		}
 		chk = Commons.XML.attrText(xml, "metascore");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			try {
 				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
-				if (r > 0 && r != metascore) {
+				if (r > 0 && r != metascore)
 					metascore = r;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
 		}
 		chk = Commons.XML.attrText(xml, "tomatoMeter");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			try {
 				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
-				if (r > 0 && r != tomatoMeter) {
+				if (r > 0 && r != tomatoMeter)
 					tomatoMeter = r;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
 		}
 		chk = Commons.XML.attrText(xml, "imdbRating");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			try {
 				double r = Double.parseDouble(chk);
-				if (r > 0 && r != imdbRating) {
+				if (r > 0 && r != imdbRating)
 					imdbRating = r;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
 		}
 		chk = Commons.XML.attrText(xml, "imdbVotes");
-		if (!TextUtils.isEmpty(chk)) {
+		if (notNull(chk)) {
 			try {
 				int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
-				if (r > 0 && r != imdbVotes) {
+				if (r > 0 && r != imdbVotes)
 					imdbVotes = r;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
 		}
-		//
-		if (modified)
-			save(true);
-		
-		dispatch(OnTitleListener.READY, null);
+		// at least we want to update the timestamp
+		save(true);
 	}
 	
 	protected void load(Cursor cr) {

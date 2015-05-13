@@ -16,14 +16,12 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -91,11 +89,14 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			}
 			@Override
 			public void onDrawerOpened(View view) {
-				supportInvalidateOptionsMenu();
+				getSupportActionBar().setTitle(session.getString(R.string.app_name) + " " + session.versionName());
+				toolbar.setNavigationIcon(R.drawable.ic_navigation_menu);
 			}
 			@Override
 			public void onDrawerClosed(View view) {
-				supportInvalidateOptionsMenu();
+				getSupportActionBar().setTitle(lastTitle);
+				toolbar.setNavigationIcon(lastIcon);
+				restoreDrawerSelection();
 			}
 		});
         
@@ -106,33 +107,33 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		drawerList.setOnGroupExpandListener(new OnGroupExpandListener() {
 			int previousGroup = -1;
 			@Override
-			public void onGroupExpand(int groupPosition) {
-				if (groupPosition != previousGroup)
+			public void onGroupExpand(int groupPos) {
+				if (groupPos != previousGroup)
 					drawerList.collapseGroup(previousGroup);
-				if (groupPosition != lastDrawerGroup)
+				if (groupPos != lastDrawerGroup)
 					drawerList.setItemChecked(drawerList.getCheckedItemPosition(), false);
-				else {
-					int index = drawerList.getFlatListPosition(ExpandableListView.getPackedPositionForChild(groupPosition, lastDrawerChild));
-					drawerList.setItemChecked(index, true);
-				}
-				previousGroup = groupPosition;
+				else
+					drawerList.setItemChecked(drawerList.getFlatListPosition(
+						ExpandableListView.getPackedPositionForChild(lastDrawerGroup, lastDrawerChild)), true);
+				previousGroup = groupPos;
 			}
 		});
 		drawerList.setOnChildClickListener(new OnChildClickListener() {
 			@Override
-			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+			public boolean onChildClick(ExpandableListView parent, View v, int groupPos, int childPos, long id) {
 				drawer.closeDrawer(Gravity.START);
-				DrawerItem di = drawerData.getChild(groupPosition, childPosition);
-				if (di.type.equals(DrawerItem.ACTION)) {
-					
-				} else {
+				DrawerItem di = drawerData.getChild(groupPos, childPos);
+				if (di.type.equals(DrawerItem.ACTION))
+					runDrawerAction(di.id);
+				else {
 					openDrawerItem(di);
-					lastDrawerGroup = groupPosition;
-					lastDrawerChild = childPosition;
-					int index = parent.getFlatListPosition(ExpandableListView.getPackedPositionForChild(groupPosition, childPosition));
-					parent.setItemChecked(index, true);
+					lastDrawerGroup = groupPos;
+					lastDrawerChild = childPos;
+					// select it
+					parent.setItemChecked(parent.getFlatListPosition(
+						ExpandableListView.getPackedPositionForChild(groupPos, childPos)), true);
 				}
-				return false;
+				return true;
 			}
 		});
 		
@@ -140,7 +141,6 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
         
 		lastTitle = getTitle();
 		lastIcon = R.drawable.ic_navigation_menu;
-		
 		lastView = session.getPrefs().getString(PK.STARTUPV, "sernext");
 		if (savedInstanceState != null)
 			lastView = savedInstanceState.getString("lastView", lastView);
@@ -230,11 +230,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		
 		if (!hasRootFragment()) {
 			openDrawerItem(drawerData.findItem(lastView));
-			// select it on the listview
-			Pair<Integer, Integer> p = drawerData.getChildPos(lastView);
-			int index = drawerList.getFlatListPosition(ExpandableListView.getPackedPositionForChild(p.first, p.second));
-			drawerList.expandGroup(p.first);
-			drawerList.setItemChecked(index, true);
+			restoreDrawerSelection();
 		}
 	}
 	
@@ -261,18 +257,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		ActionBar actionBar = getSupportActionBar();
-		actionBar.setDisplayShowTitleEnabled(true);
-		//
-		if (drawer.isDrawerOpen(Gravity.START)) {
-			getMenuInflater().inflate(R.menu.global, menu);
-			actionBar.setTitle(R.string.app_name);
-			toolbar.setNavigationIcon(R.drawable.ic_navigation_menu);
-		} else {
-			getMenuInflater().inflate(R.menu.main, menu);
-			actionBar.setTitle(lastTitle);
-			toolbar.setNavigationIcon(lastIcon);
-		}
+		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 	
@@ -294,41 +279,6 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			case R.id.action_settings:
 				startActivity(new Intent(this, SettingsActivity.class));
 				return true;
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			// TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			case R.id.action_test_clean:
-				WakefulIntentService.sendWakefulWork(this,
-					new Intent(this, Service.class).setAction(Service.CLEAN_DB_CACHE));
-				return true;
-			case R.id.action_test_gdsyn:
-				WakefulIntentService.sendWakefulWork(this,
-					new Intent(this, Service.class).setAction(Service.GDRIVE_SYNC));
-				return true;
-			case R.id.action_test_gdbak:
-				WakefulIntentService.sendWakefulWork(this,
-					new Intent(this, Service.class).setAction(Service.GDRIVE_BACKUP));
-				return true;
-			case R.id.action_test_gdres:
-				WakefulIntentService.sendWakefulWork(this,
-					new Intent(this, Service.class).setAction(Service.GDRIVE_RESTORE));
-				return true;
-			case R.id.action_test_check:
-				Cursor cr = session.getDB().rawQuery("select episode, collected, watched, subtitles " +
-					"from episode where series = '82459' and season = 7 order by episode", null);
-				try {
-					while (cr.moveToNext())
-						Log.v("Title", Commons.logCursor("episode", cr));
-				} finally {
-					cr.close();
-				}
-				return true;
-			case R.id.action_test_tvdbn:
-				WakefulIntentService.sendWakefulWork(this,
-					new Intent(this, Service.class).setAction(Service.CHECK_TVDB_RSS));
-				return true;
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -343,19 +293,6 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
 		if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == RESULT_OK && data != null)
 			session.setDriveUserAccount(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
-	}
-
-	public void openDrawerItem(DrawerItem selection) {
-		if (selection.id.equals("settings")) {
-			startActivity(new Intent(this, SettingsActivity.class));
-			return;
-		}
-		dropHourGlass();
-		lastView = selection.id;
-		BaseFragment f = selection.type.equals(DrawerItem.SERIES) ?
-			SeriesListFragment.newFragment(TitleList.QUERY, selection.id) :
-			MovieListFragment.newFragment(TitleList.QUERY, selection.id);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f, BaseFragment.ROOT_FRAGMENT).commit();
 	}
 	
 	@Override
@@ -421,14 +358,78 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		ft.commit();
 	}
 	
+	private boolean hasRootFragment() {
+		return getSupportFragmentManager().findFragmentByTag(BaseFragment.ROOT_FRAGMENT) != null;
+	}
+	
 	private void dropHourGlass() {
 		pbCount = 0;
 		if (progressBar != null)
 			progressBar.setVisibility(View.GONE);
 	}
 	
-	private boolean hasRootFragment() {
-		return getSupportFragmentManager().findFragmentByTag(BaseFragment.ROOT_FRAGMENT) != null;
+	private void restoreDrawerSelection() {
+		if (TextUtils.isEmpty(lastView))
+			return;
+		if (lastDrawerGroup < 0 || lastDrawerChild < 0) {
+			Pair<Integer, Integer> p = drawerData.getChildPos(lastView);
+			lastDrawerGroup = p.first;
+			lastDrawerChild = p.second;
+		}
+		drawerList.expandGroup(lastDrawerGroup);
+		drawerList.setItemChecked(drawerList.getFlatListPosition(ExpandableListView.getPackedPositionForChild(
+			lastDrawerGroup, lastDrawerChild)), true);
+	}
+	
+	private void runDrawerAction(String action) {
+		if (action.equals("action_backup")) {
+			new AlertDialog.Builder(this).setTitle(R.string.action_backup).setMessage(R.string.ask_backup).
+				setIcon(android.R.drawable.ic_dialog_alert).setNegativeButton(R.string.dlg_btn_cancel, null).
+				setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						WakefulIntentService.sendWakefulWork(MainActivity.this,
+							new Intent(MainActivity.this, Service.class).setAction(Service.GDRIVE_BACKUP));
+						Toast.makeText(MainActivity.this, "Backup requested", Toast.LENGTH_SHORT).show();
+					}
+				}).show();
+		} else if (action.equals("action_restore")) {
+			new AlertDialog.Builder(this).setTitle(R.string.action_restore).setMessage(R.string.ask_restore).
+			setIcon(android.R.drawable.ic_dialog_alert).setNegativeButton(R.string.dlg_btn_cancel, null).
+			setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					WakefulIntentService.sendWakefulWork(MainActivity.this,
+						new Intent(MainActivity.this, Service.class).setAction(Service.GDRIVE_RESTORE));
+					Toast.makeText(MainActivity.this, "Restore requested", Toast.LENGTH_SHORT).show();
+				}
+			}).show();
+		} else if (action.equals("action_syncnow")) {
+			WakefulIntentService.sendWakefulWork(this,
+				new Intent(this, Service.class).setAction(Service.GDRIVE_SYNC));
+			Toast.makeText(this, "Synchronization requested", Toast.LENGTH_SHORT).show();
+		} else if (action.equals("action_cleandb")) {
+			WakefulIntentService.sendWakefulWork(this,
+				new Intent(this, Service.class).setAction(Service.CLEAN_DB_CACHE));
+			Toast.makeText(this, "Database clanup requested", Toast.LENGTH_SHORT).show();
+		} else if (action.equals("action_chktvdb")) {
+			WakefulIntentService.sendWakefulWork(this,
+				new Intent(this, Service.class).setAction(Service.CHECK_TVDB_RSS));
+			Toast.makeText(this, "TVDB feed check requested", Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	private void openDrawerItem(DrawerItem selection) {
+		if (selection.id.equals("settings")) {
+			startActivity(new Intent(this, SettingsActivity.class));
+			return;
+		}
+		dropHourGlass();
+		lastView = selection.id;
+		BaseFragment f = selection.type.equals(DrawerItem.SERIES) ?
+			SeriesListFragment.newFragment(TitleList.QUERY, selection.id) :
+			MovieListFragment.newFragment(TitleList.QUERY, selection.id);
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, f, BaseFragment.ROOT_FRAGMENT).commit();
 	}
 	
 	@SuppressLint("InflateParams")

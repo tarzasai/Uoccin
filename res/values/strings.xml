@@ -78,6 +78,9 @@
     <string name="dlg_btn_ok">OK</string>
     <string name="dlg_btn_cancel">Cancel</string>
     <string name="dlg_btn_retry">Try again</string>
+    <string name="hint_filter">filter text</string>
+    <string name="ask_backup">This will overwrite the current uoccin.json file (if exists) shared on Google Drive. Are you sure to continue?</string>
+    <string name="ask_restore">This will overwrite your current series and movies watchlist, collection and ratings on this device. Are you sure to continue?</string>
     <string name="ask_set_series_coll_true">Are you sure to mark all episodes as collected?</string>
     <string name="ask_set_series_coll_false">Are you sure to mark all episodes as NOT collected?</string>
     <string name="ask_set_series_seen_true">Are you sure to mark all episodes as watched?</string>

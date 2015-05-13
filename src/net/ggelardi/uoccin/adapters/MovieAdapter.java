@@ -2,12 +2,14 @@ package net.ggelardi.uoccin.adapters;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.serv.Commons.TitleList;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,19 +17,24 @@ import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-public class MovieAdapter extends BaseAdapter {
+public class MovieAdapter extends BaseAdapter implements Filterable {
 	
 	private final Session session;
 	private final OnClickListener listener;
 	private final LayoutInflater inflater;
 	private final String type;
 	private final String data;
-	private List<Movie> items;
+	private List<Movie> allItems;
+	private List<Movie> fltItems;
+	private ItemFilter filterObject = new ItemFilter();
+	private String filterText = null;
 	private int pstHeight = 1;
 	private int pstWidth = 1;
 	
@@ -39,17 +46,18 @@ public class MovieAdapter extends BaseAdapter {
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		this.type = type;
 		this.data = data;
-		items = new ArrayList<Movie>();
+		allItems = new ArrayList<Movie>();
+		fltItems = new ArrayList<Movie>();
 	}
 	
 	@Override
 	public int getCount() {
-		return items.size();
+		return fltItems.size();
 	}
 	
 	@Override
 	public Movie getItem(int position) {
-		return items.get(position);
+		return fltItems.get(position);
 	}
 	
 	@Override
@@ -158,12 +166,21 @@ public class MovieAdapter extends BaseAdapter {
 		return view;
 	}
 	
+	@Override
+	public Filter getFilter() {
+		return filterObject;
+	}
+	
 	public void setTitles(List<Movie> titles, boolean forceReload) {
-		items = titles;
+		allItems = titles;
 		if (forceReload)
-			for (Movie mov: items)
+			for (Movie mov: fltItems)
 				mov.reload();
-    	notifyDataSetChanged();
+		if (TextUtils.isEmpty(filterText)) {
+			fltItems = titles;
+			notifyDataSetChanged();
+		} else
+			filterObject.filter(filterText);
 	}
 	
 	static class ViewHolder {
@@ -178,5 +195,27 @@ public class MovieAdapter extends BaseAdapter {
 		TextView txt_meta;
 		TextView txt_rott;
 		TextView txt_imdb;
+	}
+	
+	private class ItemFilter extends Filter {
+		@Override
+		protected FilterResults performFiltering(CharSequence constraint) {
+			filterText = TextUtils.isEmpty(constraint) ? null : constraint.toString().toLowerCase(Locale.getDefault());
+			final List<Movie> list = allItems;
+			final ArrayList<Movie> nlist = new ArrayList<Movie>(list.size());
+			for (Movie mov: list)
+				if (TextUtils.isEmpty(filterText) || mov.name.toLowerCase(Locale.getDefault()).contains(filterText))
+					nlist.add(mov);
+			FilterResults results = new FilterResults();
+			results.values = nlist;
+			results.count = nlist.size();
+			return results;
+		}
+		@SuppressWarnings("unchecked")
+		@Override
+		protected void publishResults(CharSequence constraint, FilterResults results) {
+			fltItems = (ArrayList<Movie>) results.values;
+			notifyDataSetChanged();
+		}
 	}
 }

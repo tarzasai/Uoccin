@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
@@ -131,6 +132,14 @@ public class Session implements OnSharedPreferenceChangeListener {
 		if (driveSyncEnabled() && driveAccountSet())
 			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, driveSyncInterval(),
 				driveSyncInterval(), gd);
+	}
+	
+	public String versionName() {
+		try {
+			return acntx.getPackageManager().getPackageInfo(acntx.getPackageName(), 0).versionName;
+		} catch (NameNotFoundException e) {
+			return "Unknown";
+		}
 	}
 	
 	// user preferences

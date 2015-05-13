@@ -147,7 +147,8 @@ public class DrawerAdapter extends BaseExpandableListAdapter {
 	
 	@Override
 	public boolean isChildSelectable(int groupPosition, int childPosition) {
-		return groupPosition == 0 || groupPosition == 1;
+		//return groupPosition == 0 || groupPosition == 1;
+		return true;
 	}
 	
 	public DrawerItem findItem(String id) {
@@ -188,6 +189,7 @@ public class DrawerAdapter extends BaseExpandableListAdapter {
 		}
 		
 		public DrawerItem(String id, String label) {
+			this.type = ACTION;
 			this.id = id;
 			this.label = label;
 		}

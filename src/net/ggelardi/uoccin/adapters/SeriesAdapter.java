@@ -3,6 +3,7 @@ package net.ggelardi.uoccin.adapters;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.data.Episode;
@@ -17,27 +18,24 @@ import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-public class SeriesAdapter extends BaseAdapter {
-	/*
-	public static final String SERIES_STORY = "SERIES_STORY";
-	public static final String EPI_AIR_NEAR = "EPI_AIR_NEAR";
-	public static final String EPI_AIR_NEXT = "EPI_AIR_NEXT";
-	public static final String EPI_AIR_MISS = "EPI_AIR_MISS";
-	public static final String EPI_AVAILABL = "EPI_AVAILABL";
-	public static final String EPI_COUNTERS = "EPI_COUNTERS";
-	*/
+public class SeriesAdapter extends BaseAdapter implements Filterable {
 	
 	private final Session session;
 	private final OnClickListener listener;
 	private final LayoutInflater inflater;
 	private final String type;
 	private final String data;
-	private List<Series> items;
+	private List<Series> allItems;
+	private List<Series> fltItems;
+	private ItemFilter filterObject = new ItemFilter();
+	private String filterText = null;
 	private int pstHeight = 1;
 	private int pstWidth = 1;
 	
@@ -49,17 +47,18 @@ public class SeriesAdapter extends BaseAdapter {
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		this.type = type;
 		this.data = data;
-		items = new ArrayList<Series>();
+		allItems = new ArrayList<Series>();
+		fltItems = new ArrayList<Series>();
 	}
 	
 	@Override
 	public int getCount() {
-		return items.size();
+		return fltItems.size();
 	}
 	
 	@Override
 	public Series getItem(int position) {
-		return items.get(position);
+		return fltItems.get(position);
 	}
 	
 	@Override
@@ -232,12 +231,21 @@ public class SeriesAdapter extends BaseAdapter {
 		return view;
 	}
 	
+	@Override
+	public Filter getFilter() {
+		return filterObject;
+	}
+	
 	public void setTitles(List<Series> titles, boolean forceReload) {
-		items = titles;
+		allItems = titles;
 		if (forceReload)
-			for (Series ser: items)
+			for (Series ser: allItems)
 				ser.reload();
-    	notifyDataSetChanged();
+		if (TextUtils.isEmpty(filterText)) {
+			fltItems = titles;
+			notifyDataSetChanged();
+		} else
+			filterObject.filter(filterText);
 	}
 	
 	static class ViewHolder {
@@ -258,5 +266,27 @@ public class SeriesAdapter extends BaseAdapter {
 		LinearLayout box_2see;
 		TextView txt_2tit;
 		TextView txt_2plo;
+	}
+	
+	private class ItemFilter extends Filter {
+		@Override
+		protected FilterResults performFiltering(CharSequence constraint) {
+			filterText = TextUtils.isEmpty(constraint) ? null : constraint.toString().toLowerCase(Locale.getDefault());
+			final List<Series> list = allItems;
+			final ArrayList<Series> nlist = new ArrayList<Series>(list.size());
+			for (Series ser: list)
+				if (TextUtils.isEmpty(filterText) || ser.name.toLowerCase(Locale.getDefault()).contains(filterText))
+					nlist.add(ser);
+			FilterResults results = new FilterResults();
+			results.values = nlist;
+			results.count = nlist.size();
+			return results;
+		}
+		@SuppressWarnings("unchecked")
+		@Override
+		protected void publishResults(CharSequence constraint, FilterResults results) {
+			fltItems = (ArrayList<Series>) results.values;
+			notifyDataSetChanged();
+		}
 	}
 }
