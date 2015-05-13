@@ -20,6 +20,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v7.app.ActionBar;
@@ -38,7 +39,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
-import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
@@ -63,6 +63,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	private CharSequence lastTitle;
 	private int lastIcon;
 	private String lastView;
+	private int lastDrawerGroup = -1;
+	private int lastDrawerChild = -1;
 	private int pbCount = 0;
 	
 	@Override
@@ -103,37 +105,17 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		drawerList.setAdapter(drawerData);
 		drawerList.setOnGroupExpandListener(new OnGroupExpandListener() {
 			int previousGroup = -1;
-			int previousChild = -1;
 			@Override
 			public void onGroupExpand(int groupPosition) {
-				if (groupPosition != previousGroup) {
-					previousChild = drawerList.getCheckedItemPosition();
+				if (groupPosition != previousGroup)
 					drawerList.collapseGroup(previousGroup);
+				if (groupPosition != lastDrawerGroup)
 					drawerList.setItemChecked(drawerList.getCheckedItemPosition(), false);
-				} else
-					drawerList.setItemChecked(previousChild, true);
+				else {
+					int index = drawerList.getFlatListPosition(ExpandableListView.getPackedPositionForChild(groupPosition, lastDrawerChild));
+					drawerList.setItemChecked(index, true);
+				}
 				previousGroup = groupPosition;
-			}
-		});
-		drawerList.setOnGroupClickListener(new OnGroupClickListener() {
-			@Override
-			public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-
-			    /*
-				parent.smoothScrollToPosition(groupPosition);
-				if (!parent.isGroupExpanded(groupPosition))
-					parent.expandGroup(groupPosition, true);
-				
-			    if (parent.isGroupExpanded(groupPosition)) {
-			        parent.collapseGroup(groupPosition);
-			    } else {
-			        parent.expandGroup(groupPosition);
-			    }
-			    
-			    return true;
-			    */
-				
-				return false;
 			}
 		});
 		drawerList.setOnChildClickListener(new OnChildClickListener() {
@@ -145,6 +127,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 					
 				} else {
 					openDrawerItem(di);
+					lastDrawerGroup = groupPosition;
+					lastDrawerChild = childPosition;
 					int index = parent.getFlatListPosition(ExpandableListView.getPackedPositionForChild(groupPosition, childPosition));
 					parent.setItemChecked(index, true);
 				}
@@ -244,8 +228,14 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			Toast.makeText(this, err, Toast.LENGTH_LONG).show();
 		}
 		
-		if (!hasRootFragment())
+		if (!hasRootFragment()) {
 			openDrawerItem(drawerData.findItem(lastView));
+			// select it on the listview
+			Pair<Integer, Integer> p = drawerData.getChildPos(lastView);
+			int index = drawerList.getFlatListPosition(ExpandableListView.getPackedPositionForChild(p.first, p.second));
+			drawerList.expandGroup(p.first);
+			drawerList.setItemChecked(index, true);
+		}
 	}
 	
 	@Override
@@ -362,7 +352,6 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		}
 		dropHourGlass();
 		lastView = selection.id;
-		//drawerList.setItemChecked(selection.position, true);
 		BaseFragment f = selection.type.equals(DrawerItem.SERIES) ?
 			SeriesListFragment.newFragment(TitleList.QUERY, selection.id) :
 			MovieListFragment.newFragment(TitleList.QUERY, selection.id);

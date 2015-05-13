@@ -8,6 +8,7 @@ import java.util.Map;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
+import android.support.v4.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -154,6 +155,17 @@ public class DrawerAdapter extends BaseExpandableListAdapter {
 			for (DrawerItem di: items.get(dh))
 				if (di.id.equals(id))
 					return di;
+		return null;
+	}
+	
+	public Pair<Integer, Integer> getChildPos(String id) {
+		List<DrawerItem> group;
+		for (int g = 0; g < heads.size(); g++) {
+			group = items.get(heads.get(g));
+			for (int c = 0; c < group.size(); c++)
+				if (group.get(c).id.equals(id))
+					return new Pair<Integer, Integer>(g, c);
+		}
 		return null;
 	}
 	
