@@ -137,70 +137,55 @@ public class Series extends Title {
 	}
 	
 	protected void load(Element serxml, NodeList epsxml) {
-		boolean modified = false;
 		String chk;
 		String lang = Commons.XML.nodeText(serxml, "language", "Language");
 		if (!TextUtils.isEmpty(lang)) {
 			chk = Commons.XML.nodeText(serxml, "SeriesName");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) ||
-				(!name.equals(chk) && lang.equals(session.language())))) {
+				(!name.equals(chk) && lang.equals(session.language()))))
 				name = chk;
-				modified = true;
-			}
 			chk = Commons.XML.nodeText(serxml, "Overview");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(plot) ||
-				(!plot.equals(chk) && lang.equals(session.language())))) {
+				(!plot.equals(chk) && lang.equals(session.language()))))
 				plot = chk;
-				modified = true;
-			}
 		}
 		chk = Commons.XML.nodeText(serxml, "poster");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
 			poster = "http://thetvdb.com/banners/" + chk;
-			modified = true;
 		}
 		chk = Commons.XML.nodeText(serxml, "banner");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(banner) || !banner.equals(chk))) {
 			banner = "http://thetvdb.com/banners/" + chk;
-			modified = true;
 		}
 		chk = Commons.XML.nodeText(serxml, "fanart");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(fanart) || !fanart.equals(chk))) {
 			fanart = "http://thetvdb.com/banners/" + chk;
-			modified = true;
 		}
 		chk = Commons.XML.nodeText(serxml, "Genre");
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split("[\\x7C]")));
 			lst.removeAll(Arrays.asList("", null));
-			if (!Commons.sameStringLists(genres, lst)) {
+			if (!Commons.sameStringLists(genres, lst))
 				genres = new ArrayList<String>(lst);
-				modified = true;
-			}
 		}
 		chk = Commons.XML.nodeText(serxml, "Actors");
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split("[\\x7C]")));
 			lst.removeAll(Arrays.asList("", null));
-			if (!Commons.sameStringLists(actors, lst)) {
+			if (!Commons.sameStringLists(actors, lst))
 				actors = new ArrayList<String>(lst);
-				modified = true;
-			}
 		}
 		chk = Commons.XML.nodeText(serxml, "IMDB_ID");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(imdb_id) || !imdb_id.equals(chk))) {
 			imdb_id = chk;
-			modified = true;
 		}
 		chk = Commons.XML.nodeText(serxml, "Status");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(status) || !status.equals(chk))) {
 			status = chk;
-			modified = true;
 		}
 		chk = Commons.XML.nodeText(serxml, "Network");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(network) || !network.equals(chk))) {
 			network = chk;
-			modified = true;
 		}
 		chk = Commons.XML.nodeText(serxml, "FirstAired");
 		if (!TextUtils.isEmpty(chk)) {
@@ -209,7 +194,6 @@ public class Series extends Title {
 				if (t > 0) {
 					firstAired = t;
 					year = Commons.getDatePart(firstAired, Calendar.YEAR);
-					modified = true;
 				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
@@ -218,10 +202,8 @@ public class Series extends Title {
 		chk = Commons.XML.nodeText(serxml, "Airs_DayOfWeek");
 		if (!TextUtils.isEmpty(chk)) {
 			int d = Commons.SDF.day(chk);
-			if (d > 0) {
+			if (d > 0)
 				airsDay = d;
-				modified = true;
-			}
 		}
 		chk = Commons.XML.nodeText(serxml, "Airs_Time");
 		if (!TextUtils.isEmpty(chk)) {
@@ -229,10 +211,8 @@ public class Series extends Title {
 			String fmt = chk.contains("M") ? "hh:mma" : "HH:mm";
 			try {
 				long t = Commons.SDF.eng(fmt).parse(chk).getTime();
-				if (t > 0) {
+				if (t > 0)
 					airsTime = t;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
@@ -241,10 +221,8 @@ public class Series extends Title {
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				int r = Integer.parseInt(chk);
-				if (r > 0 && r != runtime) {
+				if (r > 0 && r != runtime)
 					runtime = r;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
@@ -252,14 +230,13 @@ public class Series extends Title {
 		chk = Commons.XML.nodeText(serxml, "ContentRating");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(rated) || !rated.equals(chk))) {
 			rated = chk;
-			modified = true;
 		}
 		int purged = 0;
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			if (modified)
-				save(true);
+			// we want to update the timestamp in any case
+			save(true);
 			EID last = new EID(0, 0);
 			if (epsxml != null && epsxml.getLength() > 0) {
 				List<Episode> lst = new ArrayList<Episode>();
@@ -507,6 +484,7 @@ public class Series extends Title {
 			Intent si = new Intent(session.getContext(), Service.class);
 			si.setAction(Service.REFRESH_SERIES);
 			si.putExtra("tvdb_id", tvdb_id);
+			si.putExtra("forced", force);
 			WakefulIntentService.sendWakefulWork(session.getContext(), si);
 		}
 	}

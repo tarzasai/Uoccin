@@ -18,6 +18,12 @@
         android:key="pk_locale"
         android:summary="@string/pk_locale_summ"
         android:title="@string/pk_locale_title" />
+    
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="pk_mdwifi"
+        android:summary="@string/pk_mdwifi_summ"
+        android:title="@string/pk_mdwifi_title" />
 
     <PreferenceCategory
         android:key="pc_tvdbcat"

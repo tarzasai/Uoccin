@@ -168,46 +168,36 @@ public class Episode extends Title implements Comparable<Episode> {
 	}
 	
 	public void update(Element xml) {
-		boolean modified = false;
 		String chk;
 		chk = Commons.XML.nodeText(xml, "id");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(tvdb_id) || !tvdb_id.equals(chk))) {
 			tvdb_id = chk;
-			modified = true;
 		}
 		chk = Commons.XML.nodeText(xml, "IMDB_ID");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(imdb_id) || !imdb_id.equals(chk))) {
 			imdb_id = chk;
-			modified = true;
 		}
 		String lang = Commons.XML.nodeText(xml, "language", "Language");
 		if (!TextUtils.isEmpty(lang)) {
 			chk = Commons.XML.nodeText(xml, "EpisodeName");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(name) ||
-				(!name.equals(chk) && lang.equals(session.language())))) {
+				(!name.equals(chk) && lang.equals(session.language()))))
 				name = chk;
-				modified = true;
-			}
 			chk = Commons.XML.nodeText(xml, "Overview");
 			if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(plot) ||
-				(!plot.equals(chk) && lang.equals(session.language())))) {
+				(!plot.equals(chk) && lang.equals(session.language()))))
 				plot = chk;
-				modified = true;
-			}
 		}
 		chk = Commons.XML.nodeText(xml, "filename");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(poster) || !poster.equals(chk))) {
 			poster = "http://thetvdb.com/banners/" + chk;
-			modified = true;
 		}
 		chk = Commons.XML.nodeText(xml, "FirstAired");
 		if (!TextUtils.isEmpty(chk)) {
 			try {
 				long t = Commons.SDF.eng("yyyy-MM-dd").parse(chk).getTime();
-				if (t > 0) {
+				if (t > 0)
 					firstAired = t;
-					modified = true;
-				}
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
 			}
@@ -216,32 +206,26 @@ public class Episode extends Title implements Comparable<Episode> {
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split("[\\x7C]")));
 			lst.removeAll(Arrays.asList("", null));
-			if (!Commons.sameStringLists(guestStars, lst)) {
+			if (!Commons.sameStringLists(guestStars, lst))
 				guestStars = new ArrayList<String>(lst);
-				modified = true;
-			}
 		}
 		chk = Commons.XML.nodeText(xml, "Writer");
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split("[\\x7C]")));
 			lst.removeAll(Arrays.asList("", null));
-			if (!Commons.sameStringLists(writers, lst)) {
+			if (!Commons.sameStringLists(writers, lst))
 				writers = new ArrayList<String>(lst);
-				modified = true;
-			}
 		}
 		chk = Commons.XML.nodeText(xml, "Director");
 		if (!TextUtils.isEmpty(chk)) {
 			List<String> lst = new ArrayList<String>(Arrays.asList(chk.split("[\\x7C]")));
 			lst.removeAll(Arrays.asList("", null));
 			chk = TextUtils.join(", ", lst);
-			if (TextUtils.isEmpty(director) || !director.equals(chk)) {
+			if (TextUtils.isEmpty(director) || !director.equals(chk))
 				director = chk;
-				modified = true;
-			}
 		}
-		if (modified)
-			save(true);
+		// we want to update the timestamp in any case
+		save(true);
 	}
 	
 	public void refresh(boolean force) {
@@ -251,6 +235,7 @@ public class Episode extends Title implements Comparable<Episode> {
 			si.putExtra("series", series);
 			si.putExtra("season", season);
 			si.putExtra("episode", episode);
+			si.putExtra("forced", force);
 			WakefulIntentService.sendWakefulWork(session.getContext(), si);
 		}
 	}
@@ -290,8 +275,6 @@ public class Episode extends Title implements Comparable<Episode> {
 			collected = value;
 			if (isValid())
 				save(false);
-			else
-				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
 				Integer.toString(episode), "collected", Boolean.toString(collected));
 		}
@@ -302,8 +285,6 @@ public class Episode extends Title implements Comparable<Episode> {
 			watched = value;
 			if (isValid())
 				save(false);
-			else
-				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, series + "." + Integer.toString(season) + "." +
 				Integer.toString(episode), "watched", Boolean.toString(watched));
 		}

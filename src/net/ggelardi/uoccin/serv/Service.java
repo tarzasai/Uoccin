@@ -87,22 +87,29 @@ public class Service extends WakefulIntentService {
 			} else if (act.equals(CLEAN_DB_CACHE)) {
 				cleanDBCache();
 			} else if (act.equals(REFRESH_MOVIE)) {
-				refreshMovie(intent.getExtras().getString("imdb_id"), true, false);
+				Bundle extra = intent.getExtras();
+				String imdb_id = extra.getString("imdb_id");
+				boolean forced = extra.getBoolean("forced", false);
+				refreshMovie(imdb_id, forced);
 			} else if (act.equals(REFRESH_SERIES)) {
-				refreshSeries(intent.getExtras().getString("tvdb_id"), true, false);
+				Bundle extra = intent.getExtras();
+				String tvdb_id = extra.getString("tvdb_id");
+				boolean forced = extra.getBoolean("forced", false);
+				refreshSeries(tvdb_id, forced);
 			} else if (act.equals(REFRESH_EPISODE)) {
 				Bundle extra = intent.getExtras();
 				String series = extra.getString("series");
 				int season = extra.getInt("season");
 				int episode = extra.getInt("episode");
-				refreshEpisode(series, season, episode);
+				boolean forced = extra.getBoolean("forced", false);
+				refreshEpisode(series, season, episode, forced);
 			} else if (act.equals(CHECK_TVDB_RSS)) {
 				checkTVdbNews();
-			} else if (act.equals(GDRIVE_SYNC) && session.driveSyncEnabled()) {
+			} else if (act.equals(GDRIVE_SYNC)) {
 				driveSync();
-			} else if (act.equals(GDRIVE_BACKUP) && session.driveAccountSet()) {
+			} else if (act.equals(GDRIVE_BACKUP)) {
 				driveBackup();
-			} else if (act.equals(GDRIVE_RESTORE) && session.driveAccountSet()) {
+			} else if (act.equals(GDRIVE_RESTORE)) {
 				driveRestore();
 			}
 		} catch (UserRecoverableAuthIOException err) {
@@ -129,7 +136,7 @@ public class Service extends WakefulIntentService {
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			String age = "timestamp < " + Long.toString(System.currentTimeMillis() - Commons.weekLong);
+			String age = "createtime < " + Long.toString(System.currentTimeMillis() - Commons.weekLong);
 			// old stuff
 			db.execSQL("delete from movie where " + age + " and watchlist = 0 and collected = 0 and watched = 0");
 			db.execSQL("delete from series where " + age + " and watchlist = 0 and not tvdb_id in " +
@@ -144,13 +151,15 @@ public class Service extends WakefulIntentService {
 		}
 	}
 	
-	private void refreshMovie(String imdb_id, boolean forceRefresh, boolean forceCommit) {
-		if (isQueued(imdb_id))
+	private void refreshMovie(String imdb_id, boolean forceRefresh) {
+		if (isQueued(imdb_id) || !session.isConnected())
+			return;
+		if (!(forceRefresh || !session.autorefrWifiOnly() || session.isOnWIFI()))
 			return;
 		queue.add(imdb_id);
 		try {
 			Movie mov = Movie.get(this, imdb_id);
-			if (!(forceRefresh || mov.isNew() || mov.isOld())) // TODO wifi check?
+			if (!(forceRefresh || mov.isNew() || mov.isOld()))
 				return;
 			Log.d(TAG, "refreshing movie " + imdb_id);
 			Document doc;
@@ -183,13 +192,15 @@ public class Service extends WakefulIntentService {
 		}
 	}
 	
-	private void refreshSeries(String tvdb_id, boolean forceRefresh, boolean forceCommit) {
-		if (isQueued(tvdb_id))
+	private void refreshSeries(String tvdb_id, boolean forceRefresh) {
+		if (isQueued(tvdb_id) || !session.isConnected())
+			return;
+		if (!(forceRefresh || !session.autorefrWifiOnly() || session.isOnWIFI()))
 			return;
 		queue.add(tvdb_id);
 		try {
 			Series ser = Series.get(this, tvdb_id);
-			if (!(forceRefresh || ser.isNew() || ser.isOld())) // TODO wifi check?
+			if (!(forceRefresh || ser.isNew() || ser.isOld()))
 				return;
 			Log.d(TAG, "refreshing series " + tvdb_id);
 			Document doc;
@@ -208,14 +219,16 @@ public class Service extends WakefulIntentService {
 		}
 	}
 	
-	private void refreshEpisode(String series, int season, int episode) {
+	private void refreshEpisode(String series, int season, int episode, boolean forceRefresh) {
 		String eid = new EID(series, season, episode).toString();
-		if (isQueued(eid))
+		if (isQueued(eid) || !session.isConnected())
+			return;
+		if (!(forceRefresh || !session.autorefrWifiOnly() || session.isOnWIFI()))
 			return;
 		queue.add(eid);
 		try {
 			Episode ep = Series.get(this, series).checkEpisode(season, episode);
-			if (!(ep.isNew() || ep.isOld())) // TODO wifi check?
+			if (!(ep.isNew() || ep.isOld()))
 				return;
 			Log.d(TAG, "refreshing episode " + ep.eid());
 			Document doc;
@@ -234,6 +247,8 @@ public class Service extends WakefulIntentService {
 	}
 	
 	private void checkTVdbNews() throws Exception {
+		if (!session.isOnWIFI())
+			return;
 		String content = null;
 	    URL url = new URL("http://thetvdb.com/rss/newtoday.php");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -477,6 +492,8 @@ public class Service extends WakefulIntentService {
 	}
 	
 	private void driveSync() throws Exception {
+		if (!session.driveSyncEnabled() || !session.isConnected() || (session.driveSyncWifiOnly() && !session.isOnWIFI()))
+			return;
 		SQLiteDatabase db = session.getDB();
 		try {
 			checkDrive();
@@ -532,6 +549,8 @@ public class Service extends WakefulIntentService {
 	}
 	
 	private void driveBackup() throws Exception {
+		if (!(session.driveAccountSet() && session.isConnected()))
+			return;
 		SQLiteDatabase db = session.getDB();
 		try {
 			checkDrive();
@@ -634,6 +653,8 @@ public class Service extends WakefulIntentService {
 	}
 	
 	private void driveRestore() throws Exception {
+		if (!(session.driveAccountSet() && session.isConnected()))
+			return;
 		sendNotification(session.getString(R.string.msg_restore_1));
 		SQLiteDatabase db = session.getDB();
 		try {

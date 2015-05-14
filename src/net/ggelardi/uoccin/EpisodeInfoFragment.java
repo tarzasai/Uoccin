@@ -210,7 +210,7 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 		Title.addOnTitleEventListener(this);
 		
 		if (episode.isNew() || episode.isOld())
-			episode.refresh(true);
+			episode.refresh(false);
 		else
 			showInfo();
 	}

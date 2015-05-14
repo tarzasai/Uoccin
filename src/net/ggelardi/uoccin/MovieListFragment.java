@@ -170,6 +170,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 		Title.removeOnTitleEventListener(this);
 		if (mTask != null)
 			mTask.cancel(true);
+		hideKeyboard();
 	}
 	
 	@Override
@@ -245,6 +246,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	
 	@Override
 	public void onClick(View v) {
+		hideKeyboard();
 		if (v.getId() == R.id.img_im_star) {
 			int pos;
 			try {

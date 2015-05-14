@@ -121,6 +121,8 @@
     <string name="pk_startup_summ">The first view you want to see on startup.</string>
     <string name="pk_locale_title">Localization</string>
     <string name="pk_locale_summ">The language for titles and synopsis (where available).</string>
+    <string name="pk_mdwifi_title">Limit autorefresh</string>
+    <string name="pk_mdwifi_summ">The service will update movies/series info only on WiFi.</string>
     <string name="pc_tvdbcat_title">TVDB pptions</string>
     <string name="pk_tvdbrss_title">Check premieres</string>
     <string name="pk_tvdbrss_summ">Periodically check TVDB\'s \"airing today\" feed for new TV shows.</string>

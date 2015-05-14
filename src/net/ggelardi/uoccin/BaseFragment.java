@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
@@ -59,6 +61,15 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 		super.onActivityCreated(savedInstanceState);
 		
 		Log.v(tag(), "onActivityCreated");
+	}
+	
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		
+		//menu.clear();
+		
+		Log.v(tag(), "onCreateOptionsMenu");
 	}
 	
 	@Override

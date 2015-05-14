@@ -9,7 +9,7 @@ public class Storage extends SQLiteOpenHelper {
 	private static final String TAG = "Storage";
 	
 	public static final String NAME = "Uoccin.db";
-	public static final int VERSION = 1;
+	public static final int VERSION = 2;
 	
 	public Storage(Context context) {
 		super(context, NAME, null, VERSION);
@@ -23,9 +23,9 @@ public class Storage extends SQLiteOpenHelper {
 	
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL(CREATE_TABLE_MOVIES);
+		db.execSQL(CREATE_TABLE_MOVIE);
 		db.execSQL(CREATE_TABLE_SERIES);
-		db.execSQL(CREATE_TABLE_EPISODES);
+		db.execSQL(CREATE_TABLE_EPISODE);
 		db.execSQL(CREATE_TABLE_QUEUEIN);
 		db.execSQL(CREATE_TABLE_QUEUEOUT);
 	}
@@ -39,6 +39,14 @@ public class Storage extends SQLiteOpenHelper {
             switch (upgradeTo)
             {
                 case 2:
+            		db.execSQL("drop table episode");
+            		db.execSQL("drop table series");
+            		db.execSQL("drop table movie");
+            		db.execSQL(CREATE_TABLE_MOVIE);
+            		db.execSQL(CREATE_TABLE_SERIES);
+            		db.execSQL(CREATE_TABLE_EPISODE);
+            		db.delete("queue_in", null, null);
+            		db.delete("queue_out", null, null);
                     break;
             }
             upgradeTo++;
@@ -53,7 +61,7 @@ public class Storage extends SQLiteOpenHelper {
 	private static final String DT_FLG = " INTEGER NOT NULL DEFAULT 0";
 	private static final String CC_NNU = " NOT NULL";
 	
-	private static final String CREATE_TABLE_MOVIES = "CREATE TABLE movie (" +
+	private static final String CREATE_TABLE_MOVIE = "CREATE TABLE movie (" +
 		"imdb_id" + DT_STR + PK + CC_NNU + CS +
 		"name" + DT_STR + CC_NNU + CS +
 		"year" + DT_INT + CS +
@@ -79,7 +87,8 @@ public class Storage extends SQLiteOpenHelper {
 		"watchlist" + DT_FLG + CS +
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG + CS +
-		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" + CS +
+		"createtime" + DT_INT + CC_NNU + " DEFAULT (strftime('%s','now'))" +
 		")";
 	
 	private static final String CREATE_TABLE_SERIES = "CREATE TABLE series (" +
@@ -103,10 +112,11 @@ public class Storage extends SQLiteOpenHelper {
 		"rating" + DT_INT + CS +
 		"tags" + DT_STR + CS +
 		"watchlist" + DT_FLG + CS +
-		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" + CS +
+		"createtime" + DT_INT + CC_NNU + " DEFAULT (strftime('%s','now'))" +
 		")";
 	
-	private static final String CREATE_TABLE_EPISODES = "CREATE TABLE episode (" +
+	private static final String CREATE_TABLE_EPISODE = "CREATE TABLE episode (" +
 		"series" + DT_STR + CC_NNU + " REFERENCES series(tvdb_id) ON DELETE CASCADE" + CS +
 		"season" + DT_INT + CC_NNU + CS +
 		"episode" + DT_INT + CC_NNU + CS +

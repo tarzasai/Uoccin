@@ -45,6 +45,7 @@ public class Commons {
 	public static class PK {
 		public static final String STARTUPV = "pk_startup";
 		public static final String LANGUAGE = "pk_locale";
+		public static final String METAWIFI = "pk_mdwifi";
 		public static final String SPECIALS = "pk_specials";
 		public static final String TVDBFEED = "pk_tvdbrss";
 		public static final String TVDBGFLT = "pk_tvdbgflt";

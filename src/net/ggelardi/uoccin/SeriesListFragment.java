@@ -187,6 +187,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 		Title.removeOnTitleEventListener(this);
 		if (mTask != null)
 			mTask.cancel(true);
+		hideKeyboard();
 	}
 	
 	@Override
@@ -262,6 +263,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	
 	@Override
 	public void onClick(View v) {
+		hideKeyboard();
 		if (v.getId() == R.id.img_is_star) {
 			int pos;
 			try {

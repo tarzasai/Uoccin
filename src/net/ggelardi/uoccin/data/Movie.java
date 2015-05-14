@@ -493,6 +493,7 @@ public class Movie extends Title {
 			Intent si = new Intent(session.getContext(), Service.class);
 			si.setAction(Service.REFRESH_MOVIE);
 			si.putExtra("imdb_id", imdb_id);
+			si.putExtra("forced", force);
 			WakefulIntentService.sendWakefulWork(session.getContext(), si);
 		}
 	}

@@ -18,6 +18,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
@@ -418,18 +419,19 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			Toast.makeText(this, "TVDB feed check requested", Toast.LENGTH_SHORT).show();
 		}
 	}
-
+	
 	private void openDrawerItem(DrawerItem selection) {
-		if (selection.id.equals("settings")) {
-			startActivity(new Intent(this, SettingsActivity.class));
-			return;
-		}
+		FragmentManager fm = getSupportFragmentManager();
+		// clean the backstack first
+		if (fm.getBackStackEntryCount() > 0)
+			fm.popBackStack(fm.getBackStackEntryAt(0).getId(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
 		dropHourGlass();
 		lastView = selection.id;
+		// now open the new root fragment
 		BaseFragment f = selection.type.equals(DrawerItem.SERIES) ?
 			SeriesListFragment.newFragment(TitleList.QUERY, selection.id) :
 			MovieListFragment.newFragment(TitleList.QUERY, selection.id);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, f, BaseFragment.ROOT_FRAGMENT).commit();
+		fm.beginTransaction().replace(R.id.container, f, BaseFragment.ROOT_FRAGMENT).commit();
 	}
 	
 	@SuppressLint("InflateParams")

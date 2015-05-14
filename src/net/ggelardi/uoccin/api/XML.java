@@ -94,14 +94,15 @@ public class XML {
 	}
 	
 	static class XmlDomConverter implements Converter {
+		private static final String newLine = System.getProperty("line.separator");
 		
 		@Override
-		public Object fromBody(TypedInput typedInput, Type arg1) throws ConversionException {
+		public Object fromBody(TypedInput body, Type type) throws ConversionException {
 			try {
-				DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-				DocumentBuilder bld = fac.newDocumentBuilder();
-				InputSource is = new InputSource(new StringReader(fromStream(typedInput.in())));
-				Document doc = bld.parse(is);
+				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+				DocumentBuilder db = dbf.newDocumentBuilder();
+				InputSource is = new InputSource(new StringReader(fromStream(body.in())));
+				Document doc = db.parse(is);
 				doc.getDocumentElement().normalize();
 				return doc;
 			} catch (Exception err) {
@@ -110,57 +111,17 @@ public class XML {
 		}
 		
 		@Override
-		public TypedOutput toBody(Object arg0) {
-			// TODO Auto-generated method stub
+		public TypedOutput toBody(Object source) {
 			return null;
 		}
 		
-		// Custom method to convert stream from request to string
-		public static String fromStream(InputStream in) throws IOException {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-			StringBuilder out = new StringBuilder();
-			String newLine = System.getProperty("line.separator");
+		public static String fromStream(InputStream stream) throws IOException {
+			BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+			StringBuilder sb = new StringBuilder();
 			String line;
-			while ((line = reader.readLine()) != null) {
-				out.append(line);
-				out.append(newLine);
-			}
-			return out.toString();
+			while ((line = br.readLine()) != null)
+				sb.append(line).append(newLine);
+			return sb.toString();
 		}
 	}
-
-	// @formatter:off
-	/*
-	static class StringConverter implements Converter {
-		@Override
-		public Object fromBody(TypedInput typedInput, Type arg1) throws ConversionException {
-			String text = null;
-			try {
-				text = fromStream(typedInput.in());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return text;
-		}
-		
-		@Override
-		public TypedOutput toBody(Object arg0) {
-			return null;
-		}
-		
-		// Custom method to convert stream from request to string
-		public static String fromStream(InputStream in) throws IOException {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-			StringBuilder out = new StringBuilder();
-			String newLine = System.getProperty("line.separator");
-			String line;
-			while ((line = reader.readLine()) != null) {
-				out.append(line);
-				out.append(newLine);
-			}
-			return out.toString();
-		}
-	}
-	*/
-	// @formatter:on
 }

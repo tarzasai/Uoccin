@@ -152,6 +152,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return prefs.getBoolean(PK.SPECIALS, false);
 	}
 	
+	public boolean autorefrWifiOnly() {
+		return prefs.getBoolean(PK.METAWIFI, true);
+	}
+	
 	public boolean checkPremieres() {
 		return prefs.getBoolean(PK.TVDBFEED, false);
 	}
@@ -166,6 +170,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	public boolean driveSyncEnabled() {
 		return prefs.getBoolean(PK.GDRVSYNC, false);
+	}
+	
+	public boolean driveSyncWifiOnly() {
+		return prefs.getBoolean(PK.GDRVWIFI, true);
 	}
 	
 	public long driveSyncInterval() {
@@ -194,12 +202,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 	public String driveAccountName() {
 		return prefs.getString(PK.GDRVAUTH, "");
 	}
-	
-	/*
-	public long driveLastSyncUTC() {
-		return prefs.getLong(PK.GDRVLASY, 0);
-	}
-	*/
 	
 	public long driveLastChangeID() {
 		return prefs.getLong(PK.GDRVLCID, 0);
