@@ -3,9 +3,6 @@
 
     <string name="app_name">Uoccin</string>
     
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="drawer_close">Close navigation drawer</string>
-    
     <string name="action_search">Search</string>
     <string name="action_settings">Settings</string>
     <string name="action_sort_name">Sort by title</string>

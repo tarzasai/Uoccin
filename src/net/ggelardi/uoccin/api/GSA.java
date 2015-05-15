@@ -44,7 +44,6 @@ public class GSA {
 	private String rootId;
 	private String deviceId;
 	
-	
 	public GSA(Context context) throws Exception {
 		session = Session.getInstance(context);
 		GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(context,

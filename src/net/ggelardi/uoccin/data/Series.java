@@ -274,7 +274,6 @@ public class Series extends Title {
 	
 	protected void load(Cursor cr) {
 		dispatch(OnTitleListener.WORKING, null);
-		
 		Log.v(TAG, "Loading series " + tvdb_id);
 		int ci;
 		tvdb_id = cr.getString(cr.getColumnIndex("tvdb_id")); // it's already set btw...
@@ -327,13 +326,19 @@ public class Series extends Title {
 		ci = cr.getColumnIndex("rating");
 		if (!cr.isNull(ci))
 			rating = cr.getInt(ci);
-		ci = cr.getColumnIndex("tags");
-		if (!cr.isNull(ci))
-			tags = Arrays.asList(cr.getString(ci).split(","));
 		watchlist = cr.getInt(cr.getColumnIndex("watchlist")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
 		Log.v(TAG, "Loaded series " + tvdb_id);
-		
+		// tags
+		tags.clear();
+		Cursor ct = session.getDB().query("sertag", new String[] { "tag" }, "series = ?", new String[] { tvdb_id },
+			null, null, "tag");
+		try {
+			while (ct.moveToNext())
+				tags.add(ct.getString(0));
+		} finally {
+			ct.close();
+		}
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -427,12 +432,9 @@ public class Series extends Title {
 		else
 			cv.putNull("rating");
 		
-		if (!tags.isEmpty())
-			cv.put("tags", TextUtils.join(",", tags));
-		else
-			cv.putNull("tags");
-		
 		cv.put("watchlist", watchlist);
+		
+		SQLiteDatabase db = session.getDB();
 		
 		boolean isnew = timestamp <= 0;
 		if (isnew || metadata) {
@@ -440,9 +442,18 @@ public class Series extends Title {
 			cv.put("timestamp", timestamp);
 		}
 		if (isnew)
-			session.getDB().insertOrThrow(TABLE, null, cv);
+			db.insertOrThrow(TABLE, null, cv);
 		else
-			session.getDB().update(TABLE, cv, "tvdb_id=?", new String[] { tvdb_id });
+			db.update(TABLE, cv, "tvdb_id = ?", new String[] { tvdb_id });
+		
+		// tags
+		db.delete("sertag", "series = ?", new String[] { tvdb_id });
+		for (String tag: tags) {
+			cv = new ContentValues();
+			cv.put("series", tvdb_id);
+			cv.put("tag", tag.trim());
+			db.insert("sertag", null, cv);
+		}
 		
 		Log.i(TAG, "Saved series " + tvdb_id);
 		
@@ -457,7 +468,7 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public synchronized void reload() {
+	public void reload() {
 		Cursor cur = session.getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
 			null, null, null);
 		try {

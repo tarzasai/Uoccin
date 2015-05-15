@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    
+    <string-array name="pk_gdrvint_names">
+        <item>15 minuti</item>
+        <item>30 minuti</item>
+        <item>45 minuti</item>
+        <item>60 minuti</item>
+    </string-array>
+    
+    <string-array name="view_defser_titles">
+        <item>Serie preferite</item>
+        <item>Prossimi episodi</item>
+        <item>Episodi persi</item>
+        <item>Episodi disponibili</item>
+        <item>Nuove serie TV</item>
+        <item>Statistiche</item>
+    </string-array>
+    
+    <string-array name="view_defmov_titles">
+        <item>Film da vedere</item>
+        <item>Film disponibili</item>
+        <item>Film già visti</item>
+    </string-array>
+    
+</resources>

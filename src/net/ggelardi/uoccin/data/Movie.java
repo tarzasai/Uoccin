@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -266,9 +267,7 @@ public class Movie extends Title {
 	
 	protected void load(Cursor cr) {
 		dispatch(OnTitleListener.WORKING, null);
-		
 		Log.v(TAG, "Loading movie " + imdb_id);
-		
 		int ci;
 		imdb_id = cr.getString(cr.getColumnIndex("imdb_id")); // it's already set btw...
 		name = cr.getString(cr.getColumnIndex("name"));
@@ -322,9 +321,6 @@ public class Movie extends Title {
 		ci = cr.getColumnIndex("rating");
 		if (!cr.isNull(ci))
 			rating = cr.getInt(ci);
-		ci = cr.getColumnIndex("tags");
-		if (!cr.isNull(ci))
-			tags = Arrays.asList(cr.getString(ci).split(","));
 		ci = cr.getColumnIndex("subtitles");
 		if (!cr.isNull(ci))
 			subtitles = Arrays.asList(cr.getString(ci).split(","));
@@ -332,7 +328,16 @@ public class Movie extends Title {
 		collected = cr.getInt(cr.getColumnIndex("collected")) == 1;
 		watched = cr.getInt(cr.getColumnIndex("watched")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
-		
+		// tags
+		tags.clear();
+		Cursor ct = session.getDB().query("movtag", new String[] { "tag" }, "movie = ?", new String[] { imdb_id },
+			null, null, "tag");
+		try {
+			while (ct.moveToNext())
+				tags.add(ct.getString(0));
+		} finally {
+			ct.close();
+		}
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -440,11 +445,6 @@ public class Movie extends Title {
 		else
 			cv.putNull("rating");
 		
-		if (!tags.isEmpty())
-			cv.put("tags", TextUtils.join(",", tags));
-		else
-			cv.putNull("tags");
-		
 		if (!subtitles.isEmpty())
 			cv.put("subtitles", TextUtils.join(",", subtitles));
 		else
@@ -454,15 +454,26 @@ public class Movie extends Title {
 		cv.put("collected", collected);
 		cv.put("watched", watched);
 		
+		SQLiteDatabase db = session.getDB();
+		
 		boolean isnew = timestamp <= 0;
 		if (isnew || metadata) {
 			timestamp = System.currentTimeMillis();
 			cv.put("timestamp", timestamp);
 		}
 		if (isnew)
-			session.getDB().insertOrThrow(TABLE, null, cv);
+			db.insertOrThrow(TABLE, null, cv);
 		else
-			session.getDB().update(TABLE, cv, "imdb_id=?", new String[] { imdb_id });
+			db.update(TABLE, cv, "imdb_id=?", new String[] { imdb_id });
+		
+		// tags
+		db.delete("movtag", "movie = ?", new String[] { imdb_id });
+		for (String tag: tags) {
+			cv = new ContentValues();
+			cv.put("movie", imdb_id);
+			cv.put("tag", tag.trim());
+			db.insert("movtag", null, cv);
+		}
 		
 		Log.i(TAG, "Saved movie " + imdb_id);
 		

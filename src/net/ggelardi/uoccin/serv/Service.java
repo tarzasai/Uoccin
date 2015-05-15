@@ -5,10 +5,13 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -356,7 +359,10 @@ public class Service extends WakefulIntentService {
 		return res;
 	}
 	
-	private void saveMovie(ContentValues data) {
+	private void saveMovie(ContentValues data, String tags) {
+		Set<String> tagSet = new HashSet<String>(Arrays.asList((tags != null ? tags : "").split(",")));
+		if (tagSet.isEmpty() && data.size() <= 1)
+			return; // wtf?
 		SQLiteDatabase db = session.getDB();
 		String cond = "imdb_id = ?";
 		String[] args = new String[] { data.getAsString("imdb_id") };
@@ -368,16 +374,30 @@ public class Service extends WakefulIntentService {
 			cur.close();
 		}
 		if (chk) {
-			db.update("movie", data, cond, args);
+			if (data.size() > 1) // tags check
+				db.update("movie", data, cond, args);
 			Movie.setUpdated(args[0]);
 		} else {
 			data.put("name", "N/A");
 			data.put("timestamp", 1);
 			db.insertOrThrow("movie", null, data);
 		}
+		if (!tagSet.isEmpty()) {
+			db.delete("movtag", "movie = ?", args);
+			ContentValues cv;
+			for (String tag: tagSet) {
+				cv = new ContentValues();
+				cv.put("movie", args[0]);
+				cv.put("tag", tag.trim());
+				db.insertOrThrow("movtag", null, cv);
+			}
+		}
 	}
 	
-	private void saveSeries(ContentValues data) {
+	private void saveSeries(ContentValues data, String tags) {
+		Set<String> tagSet = new HashSet<String>(Arrays.asList((tags != null ? tags : "").split(",")));
+		if (tagSet.isEmpty() && data.size() <= 1)
+			return; // wtf?
 		SQLiteDatabase db = session.getDB();
 		String cond = "tvdb_id = ?";
 		String[] args = new String[] { data.getAsString("tvdb_id") };
@@ -389,13 +409,23 @@ public class Service extends WakefulIntentService {
 			cur.close();
 		}
 		if (chk) {
-			if (data.size() > 1) // saveEpisode() check
+			if (data.size() > 1) // tags and saveEpisode() check
 				db.update("series", data, cond, args);
 			Series.setUpdated(args[0]);
 		} else {
 			data.put("name", "N/A");
 			data.put("timestamp", 1);
 			db.insertOrThrow("series", null, data);
+		}
+		if (!tagSet.isEmpty()) {
+			db.delete("sertag", "series = ?", args);
+			ContentValues cv;
+			for (String tag: tagSet) {
+				cv = new ContentValues();
+				cv.put("series", args[0]);
+				cv.put("tag", tag.trim());
+				db.insertOrThrow("sertag", null, cv);
+			}
 		}
 	}
 	
@@ -413,7 +443,7 @@ public class Service extends WakefulIntentService {
 		}
 		ContentValues series = new ContentValues();
 		series.put("tvdb_id", tvdb_id);
-		saveSeries(series);
+		saveSeries(series, null);
 		if (chk)
 			db.update("episode", data, cond, args);
 		else {
@@ -425,6 +455,7 @@ public class Service extends WakefulIntentService {
 	private void applyChange(long id, String target, String title, String field, String value) {
 		try {
 			ContentValues cv = new ContentValues();
+			String tags = null;
 			if (target.equals(Session.QUEUE_MOVIE)) {
 				cv.put("imdb_id", title);
 				if (field.equals("watchlist"))
@@ -441,13 +472,13 @@ public class Service extends WakefulIntentService {
 					cv.put("rating", rating);
 					if (rating > 0)
 						cv.put("watched", true);
-				} else if (field.equals("tags"))
-					cv.put("tags", value);
-				else if (field.equals("subtitles"))
+				} else if (field.equals("subtitles"))
 					cv.put("subtitles", value);
+				else if (field.equals("tags"))
+					tags = value;
 				else
 					throw new Exception("Invalid field '" + field + "'");
-				saveMovie(cv);
+				saveMovie(cv, tags);
 			} else if (target.equals(Session.QUEUE_SERIES)) {
 				String[] parts = title.split("\\.");
 				if (parts.length != 1 && parts.length != 3)
@@ -460,7 +491,7 @@ public class Service extends WakefulIntentService {
 					cv.put("rating", Integer.parseInt(value));
 				} else if (field.equals("tags")) {
 					cv.put("tvdb_id", title);
-					cv.put("tags", value);
+					tags = value;
 				} else if (field.equals("collected")) {
 					cv.put("series", parts[0]);
 					cv.put("season", Integer.parseInt(parts[1]));
@@ -481,8 +512,8 @@ public class Service extends WakefulIntentService {
 					cv.put("subtitles", value);
 				} else
 					throw new Exception("Invalid field '" + field + "'");
-				if (cv.size() == 2)
-					saveSeries(cv);
+				if (cv.size() <= 2)
+					saveSeries(cv, tags);
 				else
 					saveEpisode(cv);
 			}
@@ -557,84 +588,33 @@ public class Service extends WakefulIntentService {
 			UFile file = new UFile();
 			file.movies = new HashMap<String, Service.UFile.UMovie>();
 			file.series = new HashMap<String, Service.UFile.USeries>();
+			Cursor cur;
 			// movies
-			Cursor cur = db.query("movie", new String[] { "imdb_id", "name", "watchlist", "collected",
-				"watched", "rating", "tags", "subtitles" }, "watchlist = 1 or collected = 1 or watched = 1",
-				null, null, null, "name collate nocase", null);
+			cur = db.query("movie", new String[] { "imdb_id", "name", "watchlist", "collected", "watched", "rating",
+				"subtitles" }, "watchlist = 1 or collected = 1 or watched = 1", null, null, null,
+				"name collate nocase", null);
 			try {
 				UMovie mov;
 				String mid;
 				while (cur.moveToNext()) {
 					mid = cur.getString(0);
 					mov = new UMovie();
-					mov.name = cur.getString(1);
-					mov.watchlist = cur.getInt(2) == 1;
-					mov.collected = cur.getInt(3) == 1;
-					mov.watched = cur.getInt(4) == 1;
-					if (!cur.isNull(5))
-						mov.rating = cur.getInt(5);
-					if (!cur.isNull(6))
-						mov.tags = cur.getString(6).split(",\\s*");
-					if (!cur.isNull(7))
-						mov.subtitles = cur.getString(7).split(",\\s*");
+					mov.read(db, mid, cur);
 					file.movies.put(mid, mov);
 				}
 			} finally {
 				cur.close();
 			}
 			// series
-			cur = db.query("series", new String[] { "tvdb_id", "name", "watchlist", "rating", "tags" },
-				null, null, null, null, "name collate nocase", null);
+			cur = db.query("series", new String[] { "tvdb_id", "name", "watchlist", "rating" }, null, null, null, null,
+				"name collate nocase", null);
 			try {
 				USeries ser;
 				String sid;
-				Cursor eps;
-				int season;
-				int episode;
-				boolean coll;
-				boolean seen;
-				String tmp;
-				String[] strlst;
-				List<Integer> intlst;
 				while (cur.moveToNext()) {
 					sid = cur.getString(0);
 					ser = new USeries();
-					ser.name = cur.getString(1);
-					ser.watchlist = cur.getInt(2) == 1;
-					if (!cur.isNull(3))
-						ser.rating = cur.getInt(3);
-					if (!cur.isNull(4))
-						ser.tags = cur.getString(4).split(",\\s*");
-					// episodes
-					ser.collected = new HashMap<String, Map<String,String[]>>();
-					ser.watched = new HashMap<String, List<Integer>>();
-					eps = db.query("episode", new String[] { "season", "episode", "collected", "watched",
-						"subtitles" }, "series = ? and (collected = 1 or watched = 1)", new String[] { sid },
-						null, null, "season, episode");
-					try {
-						while (eps.moveToNext()) {
-							season = eps.getInt(0);
-							episode = eps.getInt(1);
-							tmp = Integer.toString(season);
-							coll = eps.getInt(2) == 1;
-							seen = eps.getInt(3) == 1;
-							if (coll) {
-								if (!ser.collected.containsKey(tmp))
-									ser.collected.put(tmp, new HashMap<String, String[]>());
-								strlst = eps.isNull(4) ? new String[] {} : eps.getString(4).split(",\\s*");
-								ser.collected.get(tmp).put(Integer.toString(episode), strlst);
-							}
-							if (seen) {
-								if (!ser.watched.containsKey(tmp))
-									ser.watched.put(tmp, new ArrayList<Integer>());
-								intlst = ser.watched.get(tmp);
-								if (!intlst.contains(episode))
-									intlst.add(episode);
-							}
-						}
-					} finally {
-						eps.close();
-					}
+					ser.read(db, sid, cur);
 					if (ser.watchlist || !ser.collected.isEmpty() || !ser.watched.isEmpty())
 						file.series.put(sid, ser);
 				}
@@ -675,77 +655,12 @@ public class Service extends WakefulIntentService {
 				file.movies.keySet().size(), file.series.keySet().size()));
 			db.beginTransaction();
 			try {
-				ContentValues cv;
-				// movies
 				db.delete("movie", null, null);
-				UMovie umo;
-				for (String imdb_id: file.movies.keySet()) {
-					umo = file.movies.get(imdb_id);
-					cv = new ContentValues();
-					cv.put("imdb_id", imdb_id);
-					cv.put("name", umo.name);
-					cv.put("watchlist", umo.watchlist);
-					cv.put("collected", umo.collected);
-					cv.put("watched", umo.watched);
-					cv.put("timestamp", 1);
-					if (umo.rating > 0)
-						cv.put("rating", umo.rating);
-					if (umo.tags != null && umo.tags.length > 0)
-						cv.put("tags", TextUtils.join(",", umo.tags));
-					if (umo.subtitles != null && umo.subtitles.length > 0)
-						cv.put("subtitles", TextUtils.join(",", umo.subtitles));
-					db.insertOrThrow("movie", null, cv);
-				}
-				// series
+				for (String imdb_id: file.movies.keySet())
+					file.movies.get(imdb_id).write(db, imdb_id);
 				db.delete("series", null, null);
-				USeries use;
-				List<String> chk;
-				for (String tvdb_id: file.series.keySet()) {
-					use = file.series.get(tvdb_id);
-					cv = new ContentValues();
-					cv.put("tvdb_id", tvdb_id);
-					cv.put("name", use.name);
-					cv.put("watchlist", use.watchlist);
-					if (use.rating > 0)
-						cv.put("rating", use.rating);
-					if (use.tags != null && use.tags.length > 0)
-						cv.put("tags", TextUtils.join(",", use.tags));
-					cv.put("timestamp", 1);
-					db.insertOrThrow("series", null, cv);
-					// episodes
-					chk = new ArrayList<String>();
-					Map<String, String[]> smap;
-					for (String season: use.collected.keySet()) {
-						smap = use.collected.get(season);
-						for (String episode: smap.keySet()) {
-							cv = new ContentValues();
-							cv.put("series", tvdb_id);
-							cv.put("season", Integer.parseInt(season));
-							cv.put("episode", Integer.parseInt(episode));
-							cv.put("collected", true);
-							Object[] tmp = smap.get(episode);
-							if (tmp != null && tmp.length > 0)
-								cv.put("subtitles", TextUtils.join(",", smap.get(episode)));
-							cv.put("timestamp", 1);
-							db.insertOrThrow("episode", null, cv);
-							chk.add(season + "|" + episode);
-						}
-					}
-					for (String season: use.watched.keySet())
-						for (Integer episode: use.watched.get(season)) {
-							cv = new ContentValues();
-							cv.put("series", tvdb_id);
-							cv.put("season", Integer.parseInt(season));
-							cv.put("episode", episode);
-							cv.put("watched", true);
-							if (!chk.contains(season + "|" + episode.toString())) {
-								cv.put("timestamp", 1);
-								db.insertOrThrow("episode", null, cv);
-							} else
-								db.update("episode", cv, "series = ? and season = ? and episode = ?",
-									new String[] { tvdb_id, season, episode.toString() });
-						}
-				}
+				for (String tvdb_id: file.series.keySet())
+					file.series.get(tvdb_id).write(db, tvdb_id);
 				db.delete("queue_out", null, null);
 				db.setTransactionSuccessful();
 			} finally {
@@ -773,6 +688,51 @@ public class Service extends WakefulIntentService {
 			public int rating;
 			public String[] tags;
 			public String[] subtitles;
+			
+			public void read(SQLiteDatabase db, String imdb_id, Cursor cur) {
+				name = cur.getString(1);
+				watchlist = cur.getInt(2) == 1;
+				collected = cur.getInt(3) == 1;
+				watched = cur.getInt(4) == 1;
+				if (!cur.isNull(5))
+					rating = cur.getInt(5);
+				if (!cur.isNull(6))
+					subtitles = cur.getString(6).split(",\\s*");
+				// tags
+				List<String> list = new ArrayList<String>();
+				Cursor cr = db.query(true, "movtag", new String[] { "tag" }, "movie = ?", new String[] { imdb_id },
+					null, null, "tag", null);
+				try {
+					while (cr.moveToNext())
+						list.add(cr.getString(0));
+				} finally {
+					cr.close();
+				}
+				tags = list.isEmpty() ? null : list.toArray(new String[list.size()]);
+			}
+			
+			public void write(SQLiteDatabase db, String imdb_id) {
+				ContentValues cv = new ContentValues();
+				cv.put("imdb_id", imdb_id);
+				cv.put("name", name);
+				cv.put("watchlist", watchlist);
+				cv.put("collected", collected);
+				cv.put("watched", watched);
+				cv.put("timestamp", 1);
+				if (rating > 0)
+					cv.put("rating", rating);
+				if (subtitles != null && subtitles.length > 0)
+					cv.put("subtitles", TextUtils.join(",", subtitles));
+				db.insertOrThrow("movie", null, cv);
+				db.delete("movtag", "movie = ?", new String[] { imdb_id });
+				if (tags != null)
+					for (String tag: tags) {
+						cv = new ContentValues();
+						cv.put("movie", imdb_id);
+						cv.put("tag", tag.trim());
+						db.insertOrThrow("movtag", null, cv);
+					}
+			}
 		}
 		
 		public static class USeries {
@@ -782,6 +742,114 @@ public class Service extends WakefulIntentService {
 			public String[] tags;
 			public Map<String, Map<String, String[]>> collected;
 			public Map<String, List<Integer>> watched;
+			
+			public void read(SQLiteDatabase db, String tvdb_id, Cursor cur) {
+				name = cur.getString(1);
+				watchlist = cur.getInt(2) == 1;
+				if (!cur.isNull(3))
+					rating = cur.getInt(3);
+				// episodes
+				collected = new HashMap<String, Map<String,String[]>>();
+				watched = new HashMap<String, List<Integer>>();
+				Cursor eps = db.query("episode", new String[] { "season", "episode", "collected", "watched",
+					"subtitles" }, "series = ? and (collected = 1 or watched = 1)", new String[] { tvdb_id },
+					null, null, "season, episode");
+				try {
+					int season;
+					int episode;
+					boolean coll;
+					boolean seen;
+					String tmp;
+					List<Integer> intlst;
+					while (eps.moveToNext()) {
+						season = eps.getInt(0);
+						episode = eps.getInt(1);
+						tmp = Integer.toString(season);
+						coll = eps.getInt(2) == 1;
+						seen = eps.getInt(3) == 1;
+						if (coll) {
+							if (!collected.containsKey(tmp))
+								collected.put(tmp, new HashMap<String, String[]>());
+							collected.get(tmp).put(Integer.toString(episode),
+								(eps.isNull(4) ? new String[] {} : eps.getString(4).split(",\\s*")));
+						}
+						if (seen) {
+							if (!watched.containsKey(tmp))
+								watched.put(tmp, new ArrayList<Integer>());
+							intlst = watched.get(tmp);
+							if (!intlst.contains(episode))
+								intlst.add(episode);
+						}
+					}
+				} finally {
+					eps.close();
+				}
+				// tags
+				if (watchlist || !collected.isEmpty() || !watched.isEmpty()) {
+					List<String> list = new ArrayList<String>();
+					Cursor cr = db.query(true, "sertag", new String[] { "tag" }, "series = ?",
+						new String[] { tvdb_id }, null, null, "tag", null);
+					try {
+						while (cr.moveToNext())
+							list.add(cr.getString(0));
+					} finally {
+						cr.close();
+					}
+					tags = list.isEmpty() ? null : list.toArray(new String[list.size()]);
+				}
+			}
+			
+			public void write(SQLiteDatabase db, String tvdb_id) {
+				ContentValues cv = new ContentValues();
+				cv.put("tvdb_id", tvdb_id);
+				cv.put("name", name);
+				cv.put("watchlist", watchlist);
+				if (rating > 0)
+					cv.put("rating", rating);
+				cv.put("timestamp", 1);
+				db.insertOrThrow("series", null, cv);
+				// tags
+				if (tags != null)
+					for (String tag: tags) {
+						cv = new ContentValues();
+						cv.put("series", tvdb_id);
+						cv.put("tag", tag.trim());
+						db.insertOrThrow("sertag", null, cv);
+					}
+				// episodes
+				List<String> chk = new ArrayList<String>();
+				Map<String, String[]> smap;
+				for (String season: collected.keySet()) {
+					smap = collected.get(season);
+					for (String episode: smap.keySet()) {
+						cv = new ContentValues();
+						cv.put("series", tvdb_id);
+						cv.put("season", Integer.parseInt(season));
+						cv.put("episode", Integer.parseInt(episode));
+						cv.put("collected", true);
+						Object[] tmp = smap.get(episode);
+						if (tmp != null && tmp.length > 0)
+							cv.put("subtitles", TextUtils.join(",", smap.get(episode)));
+						cv.put("timestamp", 1);
+						db.insertOrThrow("episode", null, cv);
+						chk.add(season + "|" + episode);
+					}
+				}
+				for (String season: watched.keySet())
+					for (Integer episode: watched.get(season)) {
+						cv = new ContentValues();
+						cv.put("series", tvdb_id);
+						cv.put("season", Integer.parseInt(season));
+						cv.put("episode", episode);
+						cv.put("watched", true);
+						if (!chk.contains(season + "|" + episode.toString())) {
+							cv.put("timestamp", 1);
+							db.insertOrThrow("episode", null, cv);
+						} else
+							db.update("episode", cv, "series = ? and season = ? and episode = ?",
+								new String[] { tvdb_id, season, episode.toString() });
+					}
+			}
 		}
 	}
 }
