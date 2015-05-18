@@ -180,7 +180,8 @@ public class Storage extends SQLiteOpenHelper {
 		"subtitles" + DT_STR + CS +
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG + CS +
-		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" +
+		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" + CS +
+		"PRIMARY KEY (series, season, episode)" +
 		")";
 	
 	public static final String CREATE_TABLE_QUEUEIN = "CREATE TABLE queue_in (" +
