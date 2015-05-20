@@ -635,7 +635,12 @@ public class Series extends Title {
 	}
 	
 	public boolean isRecent() {
-		return Math.abs(firstAired - System.currentTimeMillis()) < Commons.weekLong;
+		long fa = firstAired;
+		if (fa <= 0) try {
+			fa = episodes(1).get(0).firstAired;
+		} catch (Exception err) {
+		}
+		return fa > System.currentTimeMillis() || Math.abs(fa - System.currentTimeMillis()) < Commons.weekLong;
 	}
 	
 	public boolean isEnded() {

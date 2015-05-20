@@ -80,6 +80,7 @@ public class MovieAdapter extends BaseAdapter implements Filterable {
 			vh.txt_acts = (TextView) view.findViewById(R.id.txt_im_acts);
 			vh.txt_subs = (TextView) view.findViewById(R.id.txt_im_subs);
 			vh.rat_myrt = (RatingBar) view.findViewById(R.id.rat_im_myrt);
+			vh.txt_date = (TextView) view.findViewById(R.id.txt_im_date);
 			vh.txt_meta = (TextView) view.findViewById(R.id.txt_im_meta);
 			vh.txt_rott = (TextView) view.findViewById(R.id.txt_im_rott);
 			vh.txt_imdb = (TextView) view.findViewById(R.id.txt_im_imdb);
@@ -163,6 +164,11 @@ public class MovieAdapter extends BaseAdapter implements Filterable {
 			vh.txt_imdb.setVisibility(View.VISIBLE);
 			vh.txt_imdb.setText(String.format("%.1f", mov.imdbRating));
 		}
+		vh.txt_date.setVisibility(View.GONE);
+		if (mov.metascore <= 0 && mov.tomatoMeter <= 0 && mov.imdbRating <= 0) {
+			vh.txt_date.setVisibility(View.VISIBLE);
+			vh.txt_date.setText(mov.released());
+		}
 		return view;
 	}
 	
@@ -192,6 +198,7 @@ public class MovieAdapter extends BaseAdapter implements Filterable {
 		TextView txt_acts;
 		TextView txt_subs;
 		RatingBar rat_myrt;
+		TextView txt_date;
 		TextView txt_meta;
 		TextView txt_rott;
 		TextView txt_imdb;
