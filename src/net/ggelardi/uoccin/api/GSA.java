@@ -9,8 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import net.ggelardi.uoccin.R;
-import net.ggelardi.uoccin.serv.Commons;
-import net.ggelardi.uoccin.serv.Commons.MIME;
+import net.ggelardi.uoccin.serv.Commons.MT;
 import net.ggelardi.uoccin.serv.Commons.SDF;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
@@ -39,6 +38,9 @@ import com.google.api.services.drive.model.ParentReference;
 public class GSA {
 	private static final String TAG = "GSA";
 	
+	public static final String FOLDER = "uoccin";
+	public static final String BACKUP = "uoccin.json";
+	
 	private final Session session;
 	private final Drive service;
 	private String rootId;
@@ -53,19 +55,19 @@ public class GSA {
 			credential).setApplicationName(session.getString(R.string.app_name)).build();
 	}
 	
-	public String getRootFolder(boolean create) throws Exception {
+	public String getRootFolderId(boolean create) throws Exception {
 		if (!TextUtils.isEmpty(rootId))
 			return rootId;
 		Log.d(TAG, "Looking for Uoccin folder...");
 		FileList files = service.files().list().setQ("mimeType = '" + DriveFolder.MIME_TYPE +
-			"' and title = '" + Commons.GD.FOLDER + "' and trashed = false").execute();
+			"' and title = '" + FOLDER + "' and trashed = false").execute();
 		if (files != null && !files.isEmpty() && files.getItems().size() > 0) {
 			Log.d(TAG, "Uoccin folder found");
 			rootId = files.getItems().get(0).getId();
 		} else if (create) {
 			Log.i(TAG, "Creating Uoccin folder...");
 			File body = new File();
-			body.setTitle(Commons.GD.FOLDER);
+			body.setTitle(FOLDER);
 			body.setMimeType(DriveFolder.MIME_TYPE);
 			rootId = service.files().insert(body).execute().getId();
 		} else
@@ -73,10 +75,10 @@ public class GSA {
 		return rootId;
 	}
 	
-	public String getDeviceFolder(boolean create) throws Exception {
+	public String getDeviceFolderId(boolean create) throws Exception {
 		if (!TextUtils.isEmpty(deviceId))
 			return deviceId;
-		if (!TextUtils.isEmpty(getRootFolder(create))) {
+		if (!TextUtils.isEmpty(getRootFolderId(create))) {
 			Log.d(TAG, "Looking for device folder...");
 			String dfName = "device." + session.driveDeviceID();
 			ChildList children = service.children().list(rootId).setQ("mimeType = '" +
@@ -98,7 +100,7 @@ public class GSA {
 	}
 	
 	public List<String> getOtherFoldersIds() throws Exception {
-		getDeviceFolder(true); // required
+		getDeviceFolderId(true); // required
 		Log.d(TAG, "Looking for other devices folders...");
 		List<String> res = new ArrayList<String>();
 		ChildList children;
@@ -120,7 +122,7 @@ public class GSA {
 	}
 	
 	public List<String> getNewDiffs() throws Exception {
-		getDeviceFolder(true); // required
+		getDeviceFolderId(true); // required
 		Log.d(TAG, "Looking for updates in the device folder...");
 		List<String> result = new ArrayList<String>();
 		long lcid = session.driveLastChangeID();
@@ -201,7 +203,7 @@ public class GSA {
 		body.setTitle(title);
 		body.setMimeType(mime);
 		body.setParents(Arrays.asList(new ParentReference().setId(folderId)));
-		ByteArrayContent bac = ByteArrayContent.fromString(MIME.TEXT, content);
+		ByteArrayContent bac = ByteArrayContent.fromString(MT.TEXT, content);
 		if (TextUtils.isEmpty(fileId)) {
 			File file = service.files().insert(body, bac).execute();
 			Log.i(TAG, title + " created, id " + file.getId());

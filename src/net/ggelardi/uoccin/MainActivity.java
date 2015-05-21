@@ -10,7 +10,8 @@ import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.PK;
-import net.ggelardi.uoccin.serv.Commons.TitleList;
+import net.ggelardi.uoccin.serv.Commons.SR;
+import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import android.accounts.AccountManager;
@@ -185,7 +186,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 				@Override
 				public void run() {
 					try {
-						new GSA(MainActivity.this).getRootFolder(true);
+						new GSA(MainActivity.this).getRootFolderId(true);
 					} catch (UserRecoverableAuthIOException e) {
 						startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
 					} catch (Exception err) {
@@ -401,7 +402,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						WakefulIntentService.sendWakefulWork(MainActivity.this,
-							new Intent(MainActivity.this, Service.class).setAction(Service.GDRIVE_BACKUP));
+							new Intent(MainActivity.this, Service.class).setAction(SR.GDRIVE_BACKUP));
 						Toast.makeText(MainActivity.this, "Backup requested", Toast.LENGTH_SHORT).show();
 					}
 				}).show();
@@ -412,21 +413,21 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					WakefulIntentService.sendWakefulWork(MainActivity.this,
-						new Intent(MainActivity.this, Service.class).setAction(Service.GDRIVE_RESTORE));
+						new Intent(MainActivity.this, Service.class).setAction(SR.GDRIVE_RESTORE));
 					Toast.makeText(MainActivity.this, "Restore requested", Toast.LENGTH_SHORT).show();
 				}
 			}).show();
 		} else if (action.equals("action_syncnow")) {
 			WakefulIntentService.sendWakefulWork(this,
-				new Intent(this, Service.class).setAction(Service.GDRIVE_SYNC));
+				new Intent(this, Service.class).setAction(SR.GDRIVE_SYNCNOW));
 			Toast.makeText(this, "Synchronization requested", Toast.LENGTH_SHORT).show();
 		} else if (action.equals("action_cleandb")) {
 			WakefulIntentService.sendWakefulWork(this,
-				new Intent(this, Service.class).setAction(Service.CLEAN_DB_CACHE));
+				new Intent(this, Service.class).setAction(SR.CLEAN_DB_CACHE));
 			Toast.makeText(this, "Database clanup requested", Toast.LENGTH_SHORT).show();
 		} else if (action.equals("action_chktvdb")) {
 			WakefulIntentService.sendWakefulWork(this,
-				new Intent(this, Service.class).setAction(Service.CHECK_TVDB_RSS));
+				new Intent(this, Service.class).setAction(SR.CHECK_TVDB_RSS));
 			Toast.makeText(this, "TVDB feed check requested", Toast.LENGTH_SHORT).show();
 		}
 	}
@@ -440,8 +441,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 		lastView = selection.id;
 		// now open the new root fragment
 		BaseFragment f = selection.type.equals(DrawerItem.SERIES) ?
-			SeriesListFragment.newFragment(TitleList.QUERY, selection.id) :
-			MovieListFragment.newFragment(TitleList.QUERY, selection.id);
+			SeriesListFragment.newFragment(TL.QUERY, selection.id) :
+			MovieListFragment.newFragment(TL.QUERY, selection.id);
 		fm.beginTransaction().replace(R.id.container, f, BaseFragment.ROOT_FRAGMENT).commit();
 	}
 	
@@ -481,13 +482,13 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	}
 	
 	private void searchSeries(String text) {
-		BaseFragment f = SeriesListFragment.newFragment(TitleList.SEARCH, text);
+		BaseFragment f = SeriesListFragment.newFragment(TL.SEARCH, text);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
 			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
 	}
 	
 	private void searchMovies(String text) {
-		BaseFragment f = MovieListFragment.newFragment(TitleList.SEARCH, text);
+		BaseFragment f = MovieListFragment.newFragment(TL.SEARCH, text);
 		getSupportFragmentManager().beginTransaction().replace(R.id.container, f,
 			BaseFragment.LEAF_FRAGMENT).addToBackStack(null).commit();
 	}

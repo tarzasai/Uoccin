@@ -6,7 +6,7 @@ import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.data.Movie;
-import net.ggelardi.uoccin.serv.Commons.TitleList;
+import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
 import android.text.TextUtils;
@@ -111,7 +111,7 @@ public class MovieAdapter extends BaseAdapter implements Filterable {
 		}
 		vh.txt_name.setText(String.format("%s (%d)", mov.name, mov.year));
 		vh.img_star.setImageResource(mov.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
-		if (type.equals(TitleList.SEARCH)) {
+		if (type.equals(TL.SEARCH)) {
 			vh.img_star.setVisibility(View.VISIBLE);
 			vh.txt_spac.setVisibility(View.VISIBLE);
 			vh.txt_subs.setVisibility(View.GONE);

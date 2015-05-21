@@ -28,8 +28,10 @@ import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
-import net.ggelardi.uoccin.serv.Commons.MIME;
+import net.ggelardi.uoccin.serv.Commons.MT;
 import net.ggelardi.uoccin.serv.Commons.SDF;
+import net.ggelardi.uoccin.serv.Commons.SN;
+import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Service.UFile.UMovie;
 import net.ggelardi.uoccin.serv.Service.UFile.USeries;
 
@@ -55,17 +57,7 @@ import com.owlike.genson.GensonBuilder;
 
 public class Service extends WakefulIntentService {
 	private static final String TAG = "Service";
-	
 	private static final List<String> queue = new ArrayList<String>();
-	
-	public static final String CLEAN_DB_CACHE = "net.ggelardi.uoccin.CLEAN_DB_CACHE";
-	public static final String REFRESH_MOVIE = "net.ggelardi.uoccin.REFRESH_MOVIE";
-	public static final String REFRESH_SERIES = "net.ggelardi.uoccin.REFRESH_SERIES";
-	public static final String REFRESH_EPISODE = "net.ggelardi.uoccin.REFRESH_EPISODE";
-	public static final String CHECK_TVDB_RSS = "net.ggelardi.uoccin.CHECK_TVDB_RSS";
-	public static final String GDRIVE_SYNC = "net.ggelardi.uoccin.GDRIVE_SYNC";
-	public static final String GDRIVE_BACKUP = "net.ggelardi.uoccin.GDRIVE_BACKUP";
-	public static final String GDRIVE_RESTORE = "net.ggelardi.uoccin.GDRIVE_RESTORE";
 	
 	public static boolean isQueued(String titleId) {
 		return queue.contains(titleId);
@@ -87,49 +79,49 @@ public class Service extends WakefulIntentService {
 		try {
 			if (TextUtils.isEmpty(act)) {
 				session.registerAlarms();
-			} else if (act.equals(CLEAN_DB_CACHE)) {
+			} else if (act.equals(SR.CLEAN_DB_CACHE)) {
 				cleanDBCache();
-			} else if (act.equals(REFRESH_MOVIE)) {
+			} else if (act.equals(SR.REFRESH_MOVIE)) {
 				Bundle extra = intent.getExtras();
 				String imdb_id = extra.getString("imdb_id");
 				boolean forced = extra.getBoolean("forced", false);
 				refreshMovie(imdb_id, forced);
-			} else if (act.equals(REFRESH_SERIES)) {
+			} else if (act.equals(SR.REFRESH_SERIES)) {
 				Bundle extra = intent.getExtras();
 				String tvdb_id = extra.getString("tvdb_id");
 				boolean forced = extra.getBoolean("forced", false);
 				refreshSeries(tvdb_id, forced);
-			} else if (act.equals(REFRESH_EPISODE)) {
+			} else if (act.equals(SR.REFRESH_EPISODE)) {
 				Bundle extra = intent.getExtras();
 				String series = extra.getString("series");
 				int season = extra.getInt("season");
 				int episode = extra.getInt("episode");
 				boolean forced = extra.getBoolean("forced", false);
 				refreshEpisode(series, season, episode, forced);
-			} else if (act.equals(CHECK_TVDB_RSS)) {
+			} else if (act.equals(SR.CHECK_TVDB_RSS)) {
 				checkTVdbNews();
-			} else if (act.equals(GDRIVE_SYNC)) {
+			} else if (act.equals(SR.GDRIVE_SYNCNOW)) {
 				driveSync();
-			} else if (act.equals(GDRIVE_BACKUP)) {
+			} else if (act.equals(SR.GDRIVE_BACKUP)) {
 				driveBackup();
-			} else if (act.equals(GDRIVE_RESTORE)) {
+			} else if (act.equals(SR.GDRIVE_RESTORE)) {
 				driveRestore();
 			}
 		} catch (UserRecoverableAuthIOException err) {
-			sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
+			sendBroadcast(new Intent(SN.CONNECT_FAIL));
 		} catch (Exception err) {
 			sendNotification(err);
 		}
 	}
 	
 	private void sendNotification(String what) {
-		Intent si = new Intent(Commons.SN.GENERAL_INFO);
+		Intent si = new Intent(SN.GENERAL_INFO);
 		si.putExtra("what", what);
 		sendBroadcast(si);
 	}
 	
 	private void sendNotification(Throwable what) {
-		Intent si = new Intent(Commons.SN.GENERAL_FAIL);
+		Intent si = new Intent(SN.GENERAL_FAIL);
 		si.putExtra("what", what.getLocalizedMessage());
 		sendBroadcast(si);
 	}
@@ -547,7 +539,7 @@ public class Service extends WakefulIntentService {
 				if (sb.length() > 0) {
 					String fn = SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
 					for (String fid: others)
-						drive.writeFile(null, fid, fn, MIME.TEXT, sb.toString());
+						drive.writeFile(null, fid, fn, MT.TEXT, sb.toString());
 				}
 			}
 			db.delete("queue_out", null, null);
@@ -623,9 +615,9 @@ public class Service extends WakefulIntentService {
 			}
 			checkGenson();
 			String content = genson.serialize(file);
-			File bak = drive.getFile(Commons.GD.BACKUP, drive.getRootFolder(true), null);
-			drive.writeFile(bak != null ? bak.getId() : null, drive.getRootFolder(true), Commons.GD.BACKUP,
-				MIME.JSON, content);
+			File bak = drive.getFile(GSA.BACKUP, drive.getRootFolderId(true), null);
+			drive.writeFile(bak != null ? bak.getId() : null, drive.getRootFolderId(true), GSA.BACKUP,
+				MT.JSON, content);
 		} catch (Exception err) {
 			Log.e(TAG, "driveBackup", err);
 			throw err;
@@ -639,7 +631,7 @@ public class Service extends WakefulIntentService {
 		SQLiteDatabase db = session.getDB();
 		try {
 			checkDrive();
-			File bak = drive.getFile(Commons.GD.BACKUP, drive.getRootFolder(true), null);
+			File bak = drive.getFile(GSA.BACKUP, drive.getRootFolderId(true), null);
 			if (bak == null) {
 				sendNotification(session.getString(R.string.msg_restore_2a));
 				return;

@@ -8,7 +8,7 @@ import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
-import net.ggelardi.uoccin.serv.Commons.TitleList;
+import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.SeriesTask;
 import net.ggelardi.uoccin.serv.SeriesTask.SeriesTaskContainer;
 import android.annotation.SuppressLint;
@@ -168,7 +168,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	public void onResume() {
 		super.onResume();
 		
-		getActivity().setTitle(type.equals(TitleList.SEARCH) ?
+		getActivity().setTitle(type.equals(TL.SEARCH) ?
 			String.format(getString(R.string.title_search), data) :
 			session.getRes().getStringArray(R.array.view_defser_titles)[queryIdx()]);
 		
@@ -294,7 +294,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 					if (state.equals(OnTitleListener.NOTFOUND)) {
 						showHourGlass(false);
 						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-						if (type.equals(TitleList.SEARCH))
+						if (type.equals(TL.SEARCH))
 							((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
 						else
 							mAdapter.notifyDataSetChanged();
@@ -366,7 +366,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	private void reload() {
 		Log.v(getTag(), "reload()");
 		mTask = new SeriesTask(this, type);
-		if (type.equals(TitleList.SEARCH))
+		if (type.equals(TL.SEARCH))
 			mTask.execute(data);
 		else {
 			String query = QUERIES[queryIdx()];

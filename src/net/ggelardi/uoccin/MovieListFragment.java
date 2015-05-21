@@ -7,7 +7,7 @@ import net.ggelardi.uoccin.adapters.MovieAdapter;
 import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
-import net.ggelardi.uoccin.serv.Commons.TitleList;
+import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.MovieTask;
 import net.ggelardi.uoccin.serv.MovieTask.MovieTaskContainer;
 import android.annotation.SuppressLint;
@@ -151,7 +151,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	public void onResume() {
 		super.onResume();
 		
-		getActivity().setTitle(type.equals(TitleList.SEARCH) ?
+		getActivity().setTitle(type.equals(TL.SEARCH) ?
 			String.format(getString(R.string.title_search), data) :
 			session.getRes().getStringArray(R.array.view_defmov_titles)[queryIdx()]);
 		
@@ -267,7 +267,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 					if (state.equals(OnTitleListener.NOTFOUND)) {
 						showHourGlass(false);
 						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
-						if (type.equals(TitleList.SEARCH))
+						if (type.equals(TL.SEARCH))
 							((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
 						else
 							mAdapter.notifyDataSetChanged();
@@ -339,7 +339,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	private void reload() {
 		Log.v(getTag(), "reload()");
 		mTask = new MovieTask(this, type);
-		if (type.equals(TitleList.SEARCH))
+		if (type.equals(TL.SEARCH))
 			mTask.execute(data);
 		else {
 			String query = QUERIES[queryIdx()];

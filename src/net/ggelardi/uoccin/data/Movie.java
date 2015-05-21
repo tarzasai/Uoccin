@@ -8,6 +8,7 @@ import java.util.Locale;
 
 import net.ggelardi.uoccin.api.XML.OMDB;
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import net.ggelardi.uoccin.serv.SimpleCache;
@@ -502,7 +503,7 @@ public class Movie extends Title {
 	public void refresh(boolean force) {
 		if ((isOld() || force) && !Service.isQueued(imdb_id)) {
 			Intent si = new Intent(session.getContext(), Service.class);
-			si.setAction(Service.REFRESH_MOVIE);
+			si.setAction(SR.REFRESH_MOVIE);
 			si.putExtra("imdb_id", imdb_id);
 			si.putExtra("forced", force);
 			WakefulIntentService.sendWakefulWork(session.getContext(), si);

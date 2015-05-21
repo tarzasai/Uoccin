@@ -62,6 +62,11 @@
                 <action android:name="net.ggelardi.uoccin.CONNECT_FAIL" />
                 <action android:name="net.ggelardi.uoccin.GENERAL_FAIL" />
                 <action android:name="net.ggelardi.uoccin.GENERAL_INFO" />
+                <action android:name="net.ggelardi.uoccin.MOV_WLST" />
+                <action android:name="net.ggelardi.uoccin.MOV_COLL" />
+                <action android:name="net.ggelardi.uoccin.SER_WLST" />
+                <action android:name="net.ggelardi.uoccin.SER_COLL" />
+                <action android:name="net.ggelardi.uoccin.SER_PREM" />
             </intent-filter>
         </receiver>
 

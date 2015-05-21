@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.ggelardi.uoccin.data.Movie;
-import net.ggelardi.uoccin.serv.Commons.TitleList;
+import net.ggelardi.uoccin.serv.Commons.TL;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -29,7 +29,7 @@ public class MovieTask extends AsyncTask<String, Void, List<Movie>> {
 	@Override
 	protected List<Movie> doInBackground(String... params) {
     	List<Movie> res;
-    	if (type.equals(TitleList.SEARCH)) {
+    	if (type.equals(TL.SEARCH)) {
     		res = Movie.find(container.getContext(), params[0]);
     	} else {
     		String query = params[0];

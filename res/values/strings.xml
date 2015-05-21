@@ -110,6 +110,8 @@
     <string name="msg_restore_3">Backup contains %1$d movies and %2$d series</string>
     <string name="msg_restore_4">Restore terminated</string>
     
+    <string name="notif_mov_wlst">New movie in watchlist</string>
+    <string name="notif_ser_wlst">New series in watchlist</string>
     <string name="notif_srv_gac_conn_fail">Authorization required</string>
 
     <!-- settings -->

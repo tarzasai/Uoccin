@@ -56,28 +56,45 @@ public class Commons {
 		public static final String GDRVAUTH = "pk_gdrv_account";
 		public static final String GDRVLCID = "pk_gdrv_lastcid";
 		public static final String SPLRPROT = "pk_splrpro";
-		
+		// ?
 		public static final String NOTIFSND = "pk_notif_sound";
 	}
 	
-	public static class GD {
-		public static final String FOLDER = "uoccin";
-		public static final String BACKUP = "uoccin.json";
-		//public static final String BACKUP = "uoccin_test.json";
+	public static class SR {
+		public static final String CLEAN_DB_CACHE = "net.ggelardi.uoccin.CLEAN_DB_CACHE";
+		public static final String REFRESH_MOVIE = "net.ggelardi.uoccin.REFRESH_MOVIE";
+		public static final String REFRESH_SERIES = "net.ggelardi.uoccin.REFRESH_SERIES";
+		public static final String REFRESH_EPISODE = "net.ggelardi.uoccin.REFRESH_EPISODE";
+		public static final String CHECK_TVDB_RSS = "net.ggelardi.uoccin.CHECK_TVDB_RSS";
+		public static final String GDRIVE_SYNCNOW = "net.ggelardi.uoccin.GDRIVE_SYNC";
+		public static final String GDRIVE_BACKUP = "net.ggelardi.uoccin.GDRIVE_BACKUP";
+		public static final String GDRIVE_RESTORE = "net.ggelardi.uoccin.GDRIVE_RESTORE";
 	}
 	
 	public static class SN {
 		public static final String CONNECT_FAIL = "net.ggelardi.uoccin.CONNECT_FAIL";
 		public static final String GENERAL_FAIL = "net.ggelardi.uoccin.GENERAL_FAIL";
 		public static final String GENERAL_INFO = "net.ggelardi.uoccin.GENERAL_INFO";
+		//
+		public static final String MOV_WLST = "net.ggelardi.uoccin.MOV_WLST";
+		public static final String MOV_COLL = "net.ggelardi.uoccin.MOV_COLL";
+		public static final String SER_WLST = "net.ggelardi.uoccin.SER_WLST";
+		public static final String SER_COLL = "net.ggelardi.uoccin.SER_COLL";
+		public static final String SER_PREM = "net.ggelardi.uoccin.SER_PREM";
 	}
 
-	public static class MIME {
+	public static class MI {
+		public static final String MOVIE_INFO = "net.ggelardi.uoccin.MOVIE_INFO";
+		public static final String SERIES_INFO = "net.ggelardi.uoccin.SERIES_INFO";
+		public static final String EPISODE_INFO = "net.ggelardi.uoccin.EPISODE_INFO";
+	}
+
+	public static class MT {
 		public static final String TEXT = "text/plain";
 		public static final String JSON = "application/json";
 	}
 	
-	public static class TitleList {
+	public static class TL {
 		public static final String QUERY = "QUERY";
 		public static final String SEARCH = "SEARCH";
 	}

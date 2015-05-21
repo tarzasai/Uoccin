@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.ggelardi.uoccin.data.Series;
-import net.ggelardi.uoccin.serv.Commons.TitleList;
+import net.ggelardi.uoccin.serv.Commons.TL;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -29,7 +29,7 @@ public class SeriesTask extends AsyncTask<String, Void, List<Series>> {
     @Override
 	protected List<Series> doInBackground(String... params) {
     	List<Series> res;
-    	if (type.equals(TitleList.SEARCH)) {
+    	if (type.equals(TL.SEARCH)) {
     		res = Series.find(container.getContext(), params[0]);
     	} else {
     		String query = params[0];

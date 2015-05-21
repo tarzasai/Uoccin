@@ -11,6 +11,7 @@ import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.TVDB;
 import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 import net.ggelardi.uoccin.serv.SimpleCache;
@@ -493,7 +494,7 @@ public class Series extends Title {
 	public void refresh(boolean force) {
 		if ((isOld() || force) && !Service.isQueued(tvdb_id)) {
 			Intent si = new Intent(session.getContext(), Service.class);
-			si.setAction(Service.REFRESH_SERIES);
+			si.setAction(SR.REFRESH_SERIES);
 			si.putExtra("tvdb_id", tvdb_id);
 			si.putExtra("forced", force);
 			WakefulIntentService.sendWakefulWork(session.getContext(), si);

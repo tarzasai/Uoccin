@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Commons.XML;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
@@ -231,7 +232,7 @@ public class Episode extends Title implements Comparable<Episode> {
 	public void refresh(boolean force) {
 		if (isValid() && (isOld() || force) && !Service.isQueued(eid().toString())) {
 			Intent si = new Intent(session.getContext(), Service.class);
-			si.setAction(Service.REFRESH_EPISODE);
+			si.setAction(SR.REFRESH_EPISODE);
 			si.putExtra("series", series);
 			si.putExtra("season", season);
 			si.putExtra("episode", episode);

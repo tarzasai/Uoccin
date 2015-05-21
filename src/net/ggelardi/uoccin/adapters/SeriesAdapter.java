@@ -8,7 +8,7 @@ import java.util.Locale;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Series;
-import net.ggelardi.uoccin.serv.Commons.TitleList;
+import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
 import android.text.TextUtils;
@@ -118,7 +118,7 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 		vh.txt_name.setText(ser.name);
 		vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(ser.isRecent() ? R.drawable.ics_active_news : 0, 0, 0, 0);
 		vh.img_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
-		if (ser.isNew() || type.equals(TitleList.SEARCH)) {
+		if (ser.isNew() || type.equals(TL.SEARCH)) {
 			vh.txt_plot.setVisibility(View.VISIBLE);
 			vh.box_epis.setVisibility(View.GONE);
 			vh.box_2see.setVisibility(View.GONE);

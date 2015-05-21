@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons.PK;
+import net.ggelardi.uoccin.serv.Commons.SN;
+import net.ggelardi.uoccin.serv.Commons.SR;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
@@ -69,10 +71,10 @@ public class Session implements OnSharedPreferenceChangeListener {
 			registerAlarms();
 			if (driveSyncEnabled()) {
 				if (!driveAccountSet())
-					acntx.sendBroadcast(new Intent(Commons.SN.CONNECT_FAIL));
+					acntx.sendBroadcast(new Intent(SN.CONNECT_FAIL));
 				else
 					WakefulIntentService.sendWakefulWork(acntx,
-						new Intent(acntx, Service.class).setAction(Service.GDRIVE_SYNC));
+						new Intent(acntx, Service.class).setAction(SR.GDRIVE_SYNCNOW));
 			}
 		}
 	}
@@ -123,18 +125,18 @@ public class Session implements OnSharedPreferenceChangeListener {
 	public void registerAlarms() {
 		AlarmManager am = (AlarmManager) acntx.getSystemService(Context.ALARM_SERVICE);
 		// clean database cache every hour
-		PendingIntent cc = mkPI(Service.CLEAN_DB_CACHE);
+		PendingIntent cc = mkPI(SR.CLEAN_DB_CACHE);
 		am.cancel(cc);
 		am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HOUR,
 			AlarmManager.INTERVAL_HOUR, cc);
 		// check TVDB rss feed for premiers a couple of times a day
-		PendingIntent tv = mkPI(Service.CHECK_TVDB_RSS);
+		PendingIntent tv = mkPI(SR.CHECK_TVDB_RSS);
 		am.cancel(tv);
 		if (checkPremieres())
 			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
 				AlarmManager.INTERVAL_HALF_DAY, tv);
 		// check Uoccin files changes in Drive every 15 mins
-		PendingIntent gd = mkPI(Service.GDRIVE_SYNC);
+		PendingIntent gd = mkPI(SR.GDRIVE_SYNCNOW);
 		am.cancel(gd);
 		if (driveSyncEnabled() && driveAccountSet())
 			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, driveSyncInterval(),
