@@ -120,7 +120,7 @@ public class Episode extends Title implements Comparable<Episode> {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public void reload() {
+	public synchronized void reload() {
 		dispatch(OnTitleListener.WORKING, null);
 		Cursor cur = session.getDB().query("episode", null, "series=? and season=? and episode=?",
 			new String[] { series, Integer.toString(season), Integer.toString(episode) }, null, null, null);

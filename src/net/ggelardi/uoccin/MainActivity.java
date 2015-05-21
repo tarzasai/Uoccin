@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 import net.ggelardi.uoccin.adapters.DrawerAdapter;
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
 import net.ggelardi.uoccin.api.GSA;
+import net.ggelardi.uoccin.data.Episode;
+import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.PK;
 import net.ggelardi.uoccin.serv.Commons.TitleList;
@@ -279,6 +281,15 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 				return true;
 			case R.id.action_settings:
 				startActivity(new Intent(this, SettingsActivity.class));
+				return true;
+			case R.id.action_test:
+				
+				//SQLiteDatabase db = session.getDB();
+				
+				Series ser = Series.get(this, "266398");
+				for (Episode ep: ser.episodes)
+					Log.d(TAG, ep.eid().toString() + " - " + Integer.toString(ep.hashCode()));
+				
 				return true;
 		}
 		return super.onOptionsItemSelected(item);

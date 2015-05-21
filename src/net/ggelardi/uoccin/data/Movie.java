@@ -487,7 +487,7 @@ public class Movie extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public void reload() {
+	public synchronized void reload() {
 		Cursor cur = session.getDB().query(TABLE, null, "imdb_id=?", new String[] { imdb_id },
 			null, null, null);
 		try {

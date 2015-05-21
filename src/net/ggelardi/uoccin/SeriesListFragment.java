@@ -34,7 +34,6 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -61,7 +60,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 		//
 		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) where " +
 			"datetime(e.firstAired/1000, 'unixepoch') between datetime('now', '-7 days') " +
-			"and datetime('now', '+7 days') and e.season = 1 and e.episode = 1",
+			"and datetime('now', '+90 days') and e.season = 1 and e.episode = 1",
 		//
 		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id)"
 	};
@@ -78,7 +77,6 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	private MenuItem miSortName;
 	private MenuItem miSortYear;
 	private MenuItem miSortRats;
-	private LinearLayout boxFilter;
 	private EditText edtFltText;
 	private ImageView imgFltClear;
 	
@@ -115,7 +113,6 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 		View view = inflater.inflate(R.layout.fragment_series_items, container, false);
 
 		listView = (AbsListView) view.findViewById(android.R.id.list);
-		boxFilter = (LinearLayout) view.findViewById(R.id.box_sl_flt);
 		edtFltText = (EditText) view.findViewById(R.id.edt_sl_flt);
 		imgFltClear = (ImageView) view.findViewById(R.id.img_sl_flt);
 		

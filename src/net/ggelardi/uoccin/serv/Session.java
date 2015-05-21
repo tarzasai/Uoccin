@@ -1,11 +1,13 @@
 package net.ggelardi.uoccin.serv;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Commons.PK;
@@ -26,6 +28,10 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.squareup.okhttp.Interceptor;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Response;
+import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -45,6 +51,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 	private final Storage dbhlp;
 	private SQLiteDatabase dbconn;
 	private String gdruid;
+	private Picasso picasso;
 	
 	public Session(Context context) {
 		acntx = context.getApplicationContext();
@@ -239,37 +246,31 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	// utilities
 	
-	public Picasso picasso() {
-		// @formatter:off
-		/* DEBUG ONLY!!!
-	    Picasso.Builder builder = new Picasso.Builder(appContext);
-	    builder.downloader(new UrlConnectionDownloader(appContext) {
-	        @Override
-	        protected HttpURLConnection openConnection(Uri uri) throws IOException {
-	            HttpURLConnection connection = super.openConnection(uri);
-	            connection.setRequestProperty("User-Agent", USER_AGENT);
-	            return connection;
-	        }
-	    });
-	    builder.listener(new Picasso.Listener() {
-			@Override
-			public void onImageLoadFailed(Picasso picasso, Uri uri, Exception error) {
-				Log.v("picasso", error.getLocalizedMessage() + " -- " + uri.toString());
-			}});
-	    return builder.build();
-	    */
-		// @formatter:on
-		return Picasso.with(acntx);
+	private Picasso picasso() {
+		if (picasso == null) {
+			OkHttpClient client = new OkHttpClient();
+			client.setConnectTimeout(15, TimeUnit.SECONDS);
+			client.setReadTimeout(15, TimeUnit.SECONDS);
+			client.setWriteTimeout(15, TimeUnit.SECONDS);
+			client.interceptors().add(new Interceptor() {
+				@Override
+				public Response intercept(Chain chain) throws IOException {
+					return chain.proceed(chain.request().newBuilder().addHeader("User-Agent", Commons.USER_AGENT).build());
+				}
+			});
+			picasso = new Picasso.Builder(acntx).downloader(new OkHttpDownloader(client)).build();
+		}
+		return picasso;
 	}
 	
 	public RequestCreator picasso(String path) {
-		return Picasso.with(acntx).load(path).noPlaceholder();
+		return picasso().load(path).noPlaceholder();
 	}
 	
 	public RequestCreator picasso(String path, boolean placeholder) {
 		if (!placeholder)
 			return picasso(path);
-		return Picasso.with(acntx).load(path).placeholder(R.drawable.ic_action_image);
+		return picasso().load(path).placeholder(R.drawable.ic_action_image);
 	}
 	
 	public String defaultText(String value, int resId) {

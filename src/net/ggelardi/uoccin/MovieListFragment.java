@@ -33,7 +33,6 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -61,7 +60,6 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	private MenuItem miSortName;
 	private MenuItem miSortYear;
 	private MenuItem miSortRats;
-	private LinearLayout boxFilter;
 	private EditText edtFltText;
 	private ImageView imgFltClear;
 	
@@ -98,7 +96,6 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 		View view = inflater.inflate(R.layout.fragment_movie_items, container, false);
 
 		listView = (AbsListView) view.findViewById(android.R.id.list);
-		boxFilter = (LinearLayout) view.findViewById(R.id.box_ml_flt);
 		edtFltText = (EditText) view.findViewById(R.id.edt_ml_flt);
 		imgFltClear = (ImageView) view.findViewById(R.id.img_ml_flt);
 		

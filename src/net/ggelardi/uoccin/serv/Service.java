@@ -842,12 +842,13 @@ public class Service extends WakefulIntentService {
 						cv.put("season", Integer.parseInt(season));
 						cv.put("episode", episode);
 						cv.put("watched", true);
-						if (!chk.contains(season + "|" + episode.toString())) {
-							cv.put("timestamp", 1);
-							db.insertOrThrow("episode", null, cv);
-						} else
+						if (chk.contains(season + "|" + episode.toString()))
 							db.update("episode", cv, "series = ? and season = ? and episode = ?",
 								new String[] { tvdb_id, season, episode.toString() });
+						else {
+							cv.put("timestamp", 1);
+							db.insertOrThrow("episode", null, cv);
+						}
 					}
 			}
 		}

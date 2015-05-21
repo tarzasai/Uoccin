@@ -18,16 +18,16 @@ import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccoun
 public class SettingsFragment extends PreferenceFragment {
 	private static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
 	
-	private static final int STATE_INITIAL = 0;
+	/*private static final int STATE_INITIAL = 0;
 	private static final int STATE_CHOOSING_ACCOUNT = 1;
-	private static final int STATE_DONE = 3;
+	private static final int STATE_DONE = 3;*/
 	
 	private static final int CHOOSE_ACCOUNT = 0;
 	
 	private Session session;
 	private GoogleAccountManager gaccman;
 	private Preference accpref;
-	private int frstate;
+	//private int frstate;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -47,7 +47,7 @@ public class SettingsFragment extends PreferenceFragment {
 				return true;
 			}
 		});
-		frstate = STATE_INITIAL;
+		//frstate = STATE_INITIAL;
 	}
 	
 	@Override
@@ -57,7 +57,7 @@ public class SettingsFragment extends PreferenceFragment {
 		Account preferenceAccount = getPreferenceAccount();
 		if (preferenceAccount != null) {
 			accpref.setSummary(preferenceAccount.name);
-			frstate = STATE_DONE;
+			//frstate = STATE_DONE;
 			/*
 		} else if (frstate == STATE_INITIAL) {
 			chooseAccount();
@@ -74,8 +74,8 @@ public class SettingsFragment extends PreferenceFragment {
 					Account account = gaccman.getAccountByName(accountName);
 					setAccount(account);
 				}
-			} else
-				frstate = STATE_INITIAL;
+			} //else
+				//frstate = STATE_INITIAL;
 		}
 	}
 	
@@ -85,7 +85,7 @@ public class SettingsFragment extends PreferenceFragment {
 	}
 	
 	private void chooseAccount() {
-		frstate = STATE_CHOOSING_ACCOUNT;
+		//frstate = STATE_CHOOSING_ACCOUNT;
 		Intent intent = AccountPicker.newChooseAccountIntent(getPreferenceAccount(), null, ACCOUNT_TYPE, false, null,
 			null, null, null);
 		startActivityForResult(intent, CHOOSE_ACCOUNT);
@@ -95,7 +95,7 @@ public class SettingsFragment extends PreferenceFragment {
 		if (account != null) {
 			session.setDriveUserAccount(account.name);
 			accpref.setSummary(account.name);
-			frstate = STATE_DONE;
+			//frstate = STATE_DONE;
 		}
 	}
 }

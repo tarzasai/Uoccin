@@ -1,11 +1,6 @@
 package net.ggelardi.uoccin.serv;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -14,16 +9,10 @@ public class Storage extends SQLiteOpenHelper {
 	private static final String TAG = "Storage";
 	
 	public static final String NAME = "Uoccin.db";
-	public static final int VERSION = 3;
+	public static final int VERSION = 4;
 	
 	public Storage(Context context) {
 		super(context, NAME, null, VERSION);
-		
-		/*
-		Log.v(TAG, CREATE_TABLE_MOVIES);
-		Log.v(TAG, CREATE_TABLE_SERIES);
-		Log.v(TAG, CREATE_TABLE_EPISODES);
-		*/
 	}
 	
 	@Override
@@ -39,54 +28,28 @@ public class Storage extends SQLiteOpenHelper {
 	
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		if (oldVersion <= 4) {
+			db.execSQL("DROP TABLE IF EXISTS queue_out");
+			db.execSQL("DROP TABLE IF EXISTS queue_in");
+			db.execSQL("DROP TABLE IF EXISTS episode");
+			db.execSQL("DROP TABLE IF EXISTS sertag");
+			db.execSQL("DROP TABLE IF EXISTS series");
+			db.execSQL("DROP TABLE IF EXISTS movtag");
+			db.execSQL("DROP TABLE IF EXISTS movie");
+			db.execSQL(CREATE_TABLE_MOVIE);
+			db.execSQL(CREATE_TABLE_MOVTAG);
+			db.execSQL(CREATE_TABLE_SERIES);
+			db.execSQL(CREATE_TABLE_SERTAG);
+			db.execSQL(CREATE_TABLE_EPISODE);
+			db.execSQL(CREATE_TABLE_QUEUEIN);
+			db.execSQL(CREATE_TABLE_QUEUEOUT);
+			return;
+		}
 		int upgradeTo = oldVersion + 1;
 		while (upgradeTo <= newVersion) {
 			Log.d(TAG, "Upgrading database to version " + Integer.toString(upgradeTo));
 			switch (upgradeTo) {
-				case 2:
-					db.execSQL("drop table episode");
-					db.execSQL("drop table series");
-					db.execSQL("drop table movie");
-					db.execSQL(CREATE_TABLE_MOVIE);
-					db.execSQL(CREATE_TABLE_SERIES);
-					db.execSQL(CREATE_TABLE_EPISODE);
-					db.delete("queue_in", null, null);
-					db.delete("queue_out", null, null);
-					break;
-				case 3:
-					ContentValues cv;
-					// movies
-					db.execSQL(CREATE_TABLE_MOVTAG);
-					Cursor cr = db.query("movie", new String[] { "imdb_id", "tags" }, "ifnull(tags, '') <> ''", null,
-						null, null, null);
-					try {
-						while (cr.moveToNext())
-							for (String tag: new HashSet<String>(Arrays.asList(cr.getString(1).split(",")))) {
-								cv = new ContentValues();
-								cv.put("movie", cr.getString(0));
-								cv.put("tag", tag.trim());
-								db.insert("movtag", null, cv);
-							}
-					} finally {
-						cr.close();
-					}
-					db.execSQL("update movie set tags = null");
-					// series
-					db.execSQL(CREATE_TABLE_SERTAG);
-					cr = db.query("series", new String[] { "tvdb_id", "tags" }, "ifnull(tags, '') <> ''", null, null,
-						null, null);
-					try {
-						while (cr.moveToNext())
-							for (String tag: new HashSet<String>(Arrays.asList(cr.getString(1).split(",")))) {
-								cv = new ContentValues();
-								cv.put("series", cr.getString(0));
-								cv.put("tag", tag.trim());
-								db.insert("sertag", null, cv);
-							}
-					} finally {
-						cr.close();
-					}
-					db.execSQL("update series set tags = null");
+				case 5:
 					break;
 			}
 			upgradeTo++;
@@ -132,7 +95,8 @@ public class Storage extends SQLiteOpenHelper {
 	
 	private static final String CREATE_TABLE_MOVTAG = "CREATE TABLE movtag (" +
 		"movie" + DT_STR + CC_NNU + " REFERENCES movie(imdb_id) ON DELETE CASCADE" + CS +
-		"tag" + DT_STR + CC_NNU +
+		"tag" + DT_STR + CC_NNU + CS +
+		"PRIMARY KEY (movie, tag)" +
 		")";
 	
 	private static final String CREATE_TABLE_SERIES = "CREATE TABLE series (" +
@@ -161,7 +125,8 @@ public class Storage extends SQLiteOpenHelper {
 	
 	private static final String CREATE_TABLE_SERTAG = "CREATE TABLE sertag (" +
 		"series" + DT_STR + CC_NNU + " REFERENCES series(tvdb_id) ON DELETE CASCADE" + CS +
-		"tag" + DT_STR + CC_NNU +
+		"tag" + DT_STR + CC_NNU + CS +
+		"PRIMARY KEY (series, tag)" +
 		")";
 	
 	private static final String CREATE_TABLE_EPISODE = "CREATE TABLE episode (" +

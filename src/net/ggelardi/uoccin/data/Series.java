@@ -468,7 +468,7 @@ public class Series extends Title {
 		dispatch(OnTitleListener.READY, null);
 	}
 	
-	public void reload() {
+	public synchronized void reload() {
 		Cursor cur = session.getDB().query(TABLE, null, "tvdb_id=?", new String[] { tvdb_id },
 			null, null, null);
 		try {
