@@ -76,6 +76,11 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="pk_notifsnd"
+            android:title="@string/pk_notsnds_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="pk_splrpro"
             android:summary="@string/pk_splrpro_summ"
             android:title="@string/pk_splrpro_title" />

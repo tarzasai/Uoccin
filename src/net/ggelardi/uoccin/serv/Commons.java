@@ -57,7 +57,7 @@ public class Commons {
 		public static final String GDRVLCID = "pk_gdrv_lastcid";
 		public static final String SPLRPROT = "pk_splrpro";
 		// ?
-		public static final String NOTIFSND = "pk_notif_sound";
+		public static final String NOTIFSND = "pk_notifsnd";
 	}
 	
 	public static class SR {
@@ -83,7 +83,7 @@ public class Commons {
 		public static final String SER_PREM = "net.ggelardi.uoccin.SER_PREM";
 	}
 
-	public static class MI {
+	public static class MA {
 		public static final String MOVIE_INFO = "net.ggelardi.uoccin.MOVIE_INFO";
 		public static final String SERIES_INFO = "net.ggelardi.uoccin.SERIES_INFO";
 		public static final String EPISODE_INFO = "net.ggelardi.uoccin.EPISODE_INFO";

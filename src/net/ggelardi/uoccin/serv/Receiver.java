@@ -1,8 +1,10 @@
 package net.ggelardi.uoccin.serv;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import net.ggelardi.uoccin.MainActivity;
 import net.ggelardi.uoccin.R;
-import net.ggelardi.uoccin.serv.Commons.MI;
+import net.ggelardi.uoccin.serv.Commons.MA;
 import net.ggelardi.uoccin.serv.Commons.PK;
 import net.ggelardi.uoccin.serv.Commons.SN;
 import net.ggelardi.uoccin.serv.Commons.SR;
@@ -13,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -27,22 +30,17 @@ public class Receiver extends BroadcastReceiver {
 	private static final int NOTIF_GENERAL_FAIL = 2;
 	private static final int NOTIF_GENERAL_INFO = 3;
 
-	private static final int NOTIF_MOV_WLST = 4;
-	private static final int NOTIF_MOV_COLL = 5;
-	private static final int NOTIF_SER_WLST = 6;
-	private static final int NOTIF_SER_COLL = 7;
-	private static final int NOTIF_SER_PREM = 8;
+	private static AtomicInteger NOTIF_ID = new AtomicInteger(99);
 	
 	private Session session;
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		String action = intent.getAction();
-		Log.v(TAG, action);
-		
 		session = Session.getInstance(context);
+		String action = intent.getAction();
+		Bundle data = intent.getExtras();
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder nb = new NotificationCompat.Builder(session.getContext());
+		NotificationCompat.Builder ncb;
 		
 		if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
 			
@@ -69,15 +67,36 @@ public class Receiver extends BroadcastReceiver {
 			
 		} else if (action.equals(SN.MOV_WLST)) {
 			
-			nm.notify(NOTIF_MOV_WLST, nb.setSmallIcon(R.drawable.ic_notification_watchlist).setAutoCancel(
-				true).setContentTitle(session.getString(R.string.notif_mov_wlst)).setContentIntent(getPI(
-				getAI(MI.MOVIE_INFO).putExtra("imdb_id", intent.getExtras().getString("imdb_id")))).build());
+			Log.v("Title", "recv(wlst): " + data.getString("imdb_id"));
+			
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_movie).setContentTitle(session.getString(
+				R.string.notif_mov_wlst)).setContentText(data.getString("name", session.getString(
+				R.string.notif_no_data))).setContentIntent(getPI(MA.MOVIE_INFO, data));
+			if (session.getPrefs().getBoolean(PK.NOTIFSND, true))
+				ncb.setSound(NOTIF_SOUND);
+			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.MOV_COLL)) {
 			
+			Log.v("Title", "recv(coll): " + data.getString("imdb_id"));
+			
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_movie).setContentTitle(session.getString(
+				R.string.notif_mov_coll)).setContentText(data.getString("name", session.getString(
+				R.string.notif_no_data))).setContentIntent(getPI(MA.MOVIE_INFO, data));
+			if (session.getPrefs().getBoolean(PK.NOTIFSND, true))
+				ncb.setSound(NOTIF_SOUND);
+			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.SER_WLST)) {
-			
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_series).setContentTitle(session.getString(
+				R.string.notif_ser_wlst)).setContentText(data.getString("name", session.getString(
+				R.string.notif_no_data))).setContentIntent(getPI(MA.SERIES_INFO, data));
+			if (session.getPrefs().getBoolean(PK.NOTIFSND, true))
+				ncb.setSound(NOTIF_SOUND);
+			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.SER_COLL)) {
 			
@@ -101,11 +120,9 @@ public class Receiver extends BroadcastReceiver {
 		return nb;
 	}
 	
-	private Intent getAI(String action) {
-		return new Intent(session.getContext(), MainActivity.class).setAction(action);
-	}
-	
-	private PendingIntent getPI(Intent actionIntent) {
-		return PendingIntent.getActivity(session.getContext(), 0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+	private PendingIntent getPI(String action, Bundle data) {
+		return PendingIntent.getActivity(session.getContext(), 0, new Intent(session.getContext(),
+			MainActivity.class).setAction(action), PendingIntent.FLAG_UPDATE_CURRENT, data);
+			//MainActivity.class).setAction(action), Intent.FLAG_ACTIVITY_SINGLE_TOP, data);
 	}
 }

@@ -111,8 +111,10 @@
     <string name="msg_restore_4">Restore terminated</string>
     
     <string name="notif_mov_wlst">New movie in watchlist</string>
+    <string name="notif_mov_coll">New movie in library</string>
     <string name="notif_ser_wlst">New series in watchlist</string>
     <string name="notif_srv_gac_conn_fail">Authorization required</string>
+    <string name="notif_no_data">Tap here to retrieve all the title info</string>
 
     <!-- settings -->
     <string name="settings_title">Uoccin settings</string>
@@ -134,6 +136,7 @@
     <string name="pk_gdrvwif_title">Only on WiFi</string>
     <string name="pk_gdrvint_title">Sync interval</string>
     <string name="pc_misccat_title">Miscellaneous</string>
+    <string name="pk_notsnds_title">Notifications sound</string>
     <string name="pk_splrpro_title">Spoiler protection</string>
     <string name="pk_splrpro_summ">Long texts might contain spoilers, cut them short.</string>
     

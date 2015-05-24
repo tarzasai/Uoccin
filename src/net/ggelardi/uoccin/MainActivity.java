@@ -6,10 +6,10 @@ import java.util.regex.Pattern;
 import net.ggelardi.uoccin.adapters.DrawerAdapter;
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
 import net.ggelardi.uoccin.api.GSA;
-import net.ggelardi.uoccin.data.Episode;
-import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Commons.MA;
 import net.ggelardi.uoccin.serv.Commons.PK;
+import net.ggelardi.uoccin.serv.Commons.SN;
 import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.Service;
@@ -154,6 +154,10 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	protected void onNewIntent(Intent intent) {
 		Log.d(TAG, "onNewIntent: " + intent.toString());
 		
+		//Log.v(TAG, intent.getExtras().toString());
+		if (intent.hasExtra("imdb_id"))
+			Log.v(TAG, "imdb_id: " + intent.getStringExtra("imdb_id"));
+		
 		setIntent(intent);
 	}
 	
@@ -230,6 +234,16 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			}
 			Log.d(TAG, err);
 			Toast.makeText(this, err, Toast.LENGTH_LONG).show();
+		} else if (action.equals(MA.MOVIE_INFO)) {
+			openMovieInfo(intent.getStringExtra("imdb_id"));
+			return;
+		} else if (action.equals(MA.SERIES_INFO)) {
+			openSeriesInfo(intent.getStringExtra("tvdb_id"));
+			return;
+		} else if (action.equals(MA.EPISODE_INFO)) {
+			openSeriesEpisode(intent.getStringExtra("tvdb_id"), intent.getIntExtra("season", -1),
+				intent.getIntExtra("episode", -1));
+			return;
 		}
 		
 		if (!hasRootFragment()) {
@@ -285,11 +299,26 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 				return true;
 			case R.id.action_test:
 				
-				//SQLiteDatabase db = session.getDB();
+				Intent s1 = new Intent(SN.MOV_WLST);
+				s1.putExtra("imdb_id", "tt1964418");
+				s1.putExtra("name", "Tomorrowland");
+				Log.v("Title", "sent(s1): " + s1.getExtras().getString("imdb_id"));
+				sendBroadcast(s1);
 				
-				Series ser = Series.get(this, "266398");
-				for (Episode ep: ser.episodes)
-					Log.d(TAG, ep.eid().toString() + " - " + Integer.toString(ep.hashCode()));
+				Intent s2 = new Intent(SN.MOV_COLL);
+				s2.putExtra("imdb_id", "tt1392190");
+				s2.putExtra("name", "Mad Max: Fury Road");
+				Log.v("Title", "sent(s2): " + s2.getExtras().getString("imdb_id"));
+				sendBroadcast(s2);
+				
+				/*
+				
+				si = new Intent(SN.SER_WLST);
+				si.putExtra("tvdb_id", "259063");
+				//si.putExtra("name", "Hannibal");
+				sendBroadcast(si);
+				
+				*/
 				
 				return true;
 		}

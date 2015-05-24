@@ -42,6 +42,13 @@
 		        <category android:name="android.intent.category.DEFAULT" />
 		        <data android:mimeType="text/plain" />
 		    </intent-filter>
+		    <!--
+            <intent-filter>
+                <action android:name="net.ggelardi.uoccin.MOVIE_INFO" />
+                <action android:name="net.ggelardi.uoccin.SERIES_INFO" />
+                <action android:name="net.ggelardi.uoccin.EPISODE_INFO" />
+		    </intent-filter>
+		    -->
         </activity>
         
         <activity
