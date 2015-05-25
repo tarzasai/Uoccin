@@ -68,6 +68,26 @@
             android:entryValues="@array/pk_gdrvint_values"
             android:key="pk_gdrvint"
             android:title="@string/pk_gdrvint_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pk_notmovw"
+            android:title="@string/pk_notmovw_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pk_notmovc"
+            android:title="@string/pk_notmovc_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pk_notserw"
+            android:title="@string/pk_notserw_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pk_notserc"
+            android:title="@string/pk_notserc_title" />
     </PreferenceCategory>
     
     <PreferenceCategory

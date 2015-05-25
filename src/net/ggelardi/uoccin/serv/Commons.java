@@ -56,7 +56,10 @@ public class Commons {
 		public static final String GDRVAUTH = "pk_gdrv_account";
 		public static final String GDRVLCID = "pk_gdrv_lastcid";
 		public static final String SPLRPROT = "pk_splrpro";
-		// ?
+		public static final String NOTMOVWL = "pk_notmovw";
+		public static final String NOTMOVCO = "pk_notmovc";
+		public static final String NOTSERWL = "pk_notserw";
+		public static final String NOTSERCO = "pk_notserc";
 		public static final String NOTIFSND = "pk_notifsnd";
 	}
 	
@@ -75,12 +78,10 @@ public class Commons {
 		public static final String CONNECT_FAIL = "net.ggelardi.uoccin.CONNECT_FAIL";
 		public static final String GENERAL_FAIL = "net.ggelardi.uoccin.GENERAL_FAIL";
 		public static final String GENERAL_INFO = "net.ggelardi.uoccin.GENERAL_INFO";
-		//
 		public static final String MOV_WLST = "net.ggelardi.uoccin.MOV_WLST";
 		public static final String MOV_COLL = "net.ggelardi.uoccin.MOV_COLL";
 		public static final String SER_WLST = "net.ggelardi.uoccin.SER_WLST";
 		public static final String SER_COLL = "net.ggelardi.uoccin.SER_COLL";
-		public static final String SER_PREM = "net.ggelardi.uoccin.SER_PREM";
 	}
 
 	public static class MA {

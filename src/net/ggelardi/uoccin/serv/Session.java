@@ -169,6 +169,26 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return prefs.getBoolean(PK.TVDBFEED, false);
 	}
 	
+	public boolean notificationSound() {
+		return prefs.getBoolean(PK.NOTIFSND, false);
+	}
+	
+	public boolean notifyWatchlistedMovies() {
+		return prefs.getBoolean(PK.NOTMOVWL, true);
+	}
+	
+	public boolean notifyCollectedMovies() {
+		return prefs.getBoolean(PK.NOTMOVCO, true);
+	}
+	
+	public boolean notifyWatchlistedSeries() {
+		return prefs.getBoolean(PK.NOTSERWL, true);
+	}
+	
+	public boolean notifyCollectedEpisodes() {
+		return prefs.getBoolean(PK.NOTSERCO, true);
+	}
+	
 	public boolean blockSpoilers() {
 		return prefs.getBoolean(PK.SPLRPROT, true);
 	}

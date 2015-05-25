@@ -110,11 +110,15 @@
     <string name="msg_restore_3">Backup contains %1$d movies and %2$d series</string>
     <string name="msg_restore_4">Restore terminated</string>
     
-    <string name="notif_mov_wlst">New movie in watchlist</string>
-    <string name="notif_mov_coll">New movie in library</string>
-    <string name="notif_ser_wlst">New series in watchlist</string>
-    <string name="notif_srv_gac_conn_fail">Authorization required</string>
-    <string name="notif_no_data">Tap here to retrieve all the title info</string>
+    <string name="notif_srv_info">Uoccin: service notification</string>
+    <string name="notif_srv_fail">Uoccin: background service error</string>
+    <string name="notif_gac_fail">Uoccin: Google Drive access error</string>
+    <string name="notif_mov_wlst">Uoccin: new movie in watchlist</string>
+    <string name="notif_mov_coll">Uoccin: new movie in library</string>
+    <string name="notif_ser_prem">Uoccin: new series discovered</string>
+    <string name="notif_ser_wlst">Uoccin: new series in watchlist</string>
+    <string name="notif_ser_coll">Uoccin: new episode in library</string>
+    <string name="notif_gen_miss">Tap here to retrieve all the title info</string>
 
     <!-- settings -->
     <string name="settings_title">Uoccin settings</string>
@@ -124,17 +128,21 @@
     <string name="pk_locale_summ">The language for titles and synopsis (where available).</string>
     <string name="pk_mdwifi_title">Limit autorefresh</string>
     <string name="pk_mdwifi_summ">The service will update movies/series info only on WiFi.</string>
-    <string name="pc_tvdbcat_title">TVDB pptions</string>
+    <string name="pc_tvdbcat_title">TVDB options</string>
     <string name="pk_tvdbrss_title">Check premieres</string>
     <string name="pk_tvdbrss_summ">Periodically check TVDB\'s \"airing today\" feed for new TV shows.</string>
     <string name="pk_tvdbgnf_title">Filter by genre</string>
     <string name="pk_tvdbgnf_summ">Ignore new TV shows labeled by these categories.</string>
     <string name="pc_gdrvcat_title">Google Drive</string>
     <string name="pk_gdrvacc_title">Select a Google account</string>
-    <string name="pk_gdrvbak_title">Synchronize</string>
+    <string name="pk_gdrvbak_title">Synchronization</string>
     <string name="pk_gdrvbak_summ">Manage your data on multiple devices (phones or desktop apps).</string>
     <string name="pk_gdrvwif_title">Only on WiFi</string>
     <string name="pk_gdrvint_title">Sync interval</string>
+    <string name="pk_notmovw_title">Notify new movies in watchlist</string>
+    <string name="pk_notmovc_title">Notify new movies in library</string>
+    <string name="pk_notserw_title">Notify new series in watchlist</string>
+    <string name="pk_notserc_title">Notify new episodes in library</string>
     <string name="pc_misccat_title">Miscellaneous</string>
     <string name="pk_notsnds_title">Notifications sound</string>
     <string name="pk_splrpro_title">Spoiler protection</string>

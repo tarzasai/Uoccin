@@ -154,10 +154,6 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	protected void onNewIntent(Intent intent) {
 		Log.d(TAG, "onNewIntent: " + intent.toString());
 		
-		//Log.v(TAG, intent.getExtras().toString());
-		if (intent.hasExtra("imdb_id"))
-			Log.v(TAG, "imdb_id: " + intent.getStringExtra("imdb_id"));
-		
 		setIntent(intent);
 	}
 	
@@ -241,7 +237,7 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			openSeriesInfo(intent.getStringExtra("tvdb_id"));
 			return;
 		} else if (action.equals(MA.EPISODE_INFO)) {
-			openSeriesEpisode(intent.getStringExtra("tvdb_id"), intent.getIntExtra("season", -1),
+			openSeriesEpisode(intent.getStringExtra("series"), intent.getIntExtra("season", -1),
 				intent.getIntExtra("episode", -1));
 			return;
 		}
@@ -299,26 +295,33 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 				return true;
 			case R.id.action_test:
 				
-				Intent s1 = new Intent(SN.MOV_WLST);
-				s1.putExtra("imdb_id", "tt1964418");
-				s1.putExtra("name", "Tomorrowland");
-				Log.v("Title", "sent(s1): " + s1.getExtras().getString("imdb_id"));
-				sendBroadcast(s1);
-				
-				Intent s2 = new Intent(SN.MOV_COLL);
-				s2.putExtra("imdb_id", "tt1392190");
-				s2.putExtra("name", "Mad Max: Fury Road");
-				Log.v("Title", "sent(s2): " + s2.getExtras().getString("imdb_id"));
-				sendBroadcast(s2);
+				Intent si;
 				
 				/*
 				
-				si = new Intent(SN.SER_WLST);
-				si.putExtra("tvdb_id", "259063");
-				//si.putExtra("name", "Hannibal");
+				si = new Intent(SN.MOV_WLST);
+				si.putExtra("imdb_id", "tt1964418");
+				si.putExtra("name", "Tomorrowland");
+				sendBroadcast(si);
+				
+				si = new Intent(SN.MOV_WLST);
+				si.putExtra("imdb_id", "tt1392190");
+				si.putExtra("name", "Mad Max: Fury Road");
+				sendBroadcast(si);
+				
+				si = new Intent(SN.MOV_COLL);
+				si.putExtra("imdb_id", "tt1392190");
+				si.putExtra("name", "Mad Max: Fury Road");
 				sendBroadcast(si);
 				
 				*/
+				
+				si = new Intent(SN.SER_COLL);
+				si.putExtra("series", "259063");
+				si.putExtra("season", 1);
+				si.putExtra("episode", 6);
+				si.putExtra("name", "De fddsf sdff");
+				sendBroadcast(si);
 				
 				return true;
 		}

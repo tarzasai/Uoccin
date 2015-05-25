@@ -4,8 +4,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.ggelardi.uoccin.MainActivity;
 import net.ggelardi.uoccin.R;
+import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.serv.Commons.MA;
-import net.ggelardi.uoccin.serv.Commons.PK;
 import net.ggelardi.uoccin.serv.Commons.SN;
 import net.ggelardi.uoccin.serv.Commons.SR;
 import android.app.NotificationManager;
@@ -17,6 +17,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
@@ -31,16 +32,22 @@ public class Receiver extends BroadcastReceiver {
 	private static final int NOTIF_GENERAL_INFO = 3;
 
 	private static AtomicInteger NOTIF_ID = new AtomicInteger(99);
+	private static AtomicInteger INTENT_ID = new AtomicInteger(0);
 	
 	private Session session;
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		Log.v(TAG, intent.toString());
+		
 		session = Session.getInstance(context);
 		String action = intent.getAction();
 		Bundle data = intent.getExtras();
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		NotificationCompat.Builder ncb;
+		String title;
+		String text;
+		PendingIntent pi;
 		
 		if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
 			
@@ -52,77 +59,104 @@ public class Receiver extends BroadcastReceiver {
 			
 		} else if (action.equals(SN.CONNECT_FAIL)) {
 			
-			nm.notify(NOTIF_CONNECT_FAIL, makeNotification(SN.CONNECT_FAIL, true).setContentText(
-				session.getString(R.string.notif_srv_gac_conn_fail)).build());
+			title = session.getString(R.string.notif_gac_fail);
+			text = data.getString("what");
+			pi = newPI(newAI(SN.CONNECT_FAIL), false);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_error).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			if (session.notificationSound())
+				ncb.setSound(NOTIF_SOUND);
+			nm.notify(NOTIF_CONNECT_FAIL, ncb.build());
 			
 		} else if (action.equals(Commons.SN.GENERAL_FAIL)) {
 			
-			nm.notify(NOTIF_GENERAL_FAIL, makeNotification(null, true).setContentText(
-				intent.getExtras().getString("what")).build());
+			title = session.getString(R.string.notif_srv_fail);
+			text = data.getString("what");
+			pi = newPI(newAI(SN.GENERAL_FAIL), false);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_error).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			if (session.notificationSound())
+				ncb.setSound(NOTIF_SOUND);
+			nm.notify(NOTIF_GENERAL_FAIL, ncb.build());
 			
 		} else if (action.equals(Commons.SN.GENERAL_INFO)) {
 			
-			nm.notify(NOTIF_GENERAL_INFO, makeNotification(null, false).setContentText(
-				intent.getExtras().getString("what")).build());
+			title = session.getString(R.string.notif_srv_info);
+			text = data.getString("what");
+			pi = newPI(newAI(SN.GENERAL_INFO), false);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_info).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			if (session.notificationSound())
+				ncb.setSound(NOTIF_SOUND);
+			nm.notify(NOTIF_GENERAL_INFO, ncb.build());
 			
 		} else if (action.equals(SN.MOV_WLST)) {
 			
-			Log.v("Title", "recv(wlst): " + data.getString("imdb_id"));
-			
+			title = session.getString(R.string.notif_mov_wlst);
+			text = data.getString("name", session.getString(R.string.notif_gen_miss));
+			pi = newPI(newAI(MA.MOVIE_INFO).putExtra("imdb_id", data.getString("imdb_id")), true);
 			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_movie).setContentTitle(session.getString(
-				R.string.notif_mov_wlst)).setContentText(data.getString("name", session.getString(
-				R.string.notif_no_data))).setContentIntent(getPI(MA.MOVIE_INFO, data));
-			if (session.getPrefs().getBoolean(PK.NOTIFSND, true))
+				true).setSmallIcon(R.drawable.ic_notification_movie).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.MOV_COLL)) {
 			
-			Log.v("Title", "recv(coll): " + data.getString("imdb_id"));
-			
+			title = session.getString(R.string.notif_mov_coll);
+			text = data.getString("name", session.getString(R.string.notif_gen_miss));
+			pi = newPI(newAI(MA.MOVIE_INFO).putExtra("imdb_id", data.getString("imdb_id")), true);
 			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_movie).setContentTitle(session.getString(
-				R.string.notif_mov_coll)).setContentText(data.getString("name", session.getString(
-				R.string.notif_no_data))).setContentIntent(getPI(MA.MOVIE_INFO, data));
-			if (session.getPrefs().getBoolean(PK.NOTIFSND, true))
+				true).setSmallIcon(R.drawable.ic_notification_movie).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.SER_WLST)) {
+			
+			title = session.getString(R.string.notif_ser_wlst);
+			text = data.getString("name", session.getString(R.string.notif_gen_miss));
+			pi = newPI(newAI(MA.SERIES_INFO).putExtra("tvdb_id", data.getString("tvdb_id")), true);
 			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_series).setContentTitle(session.getString(
-				R.string.notif_ser_wlst)).setContentText(data.getString("name", session.getString(
-				R.string.notif_no_data))).setContentIntent(getPI(MA.SERIES_INFO, data));
-			if (session.getPrefs().getBoolean(PK.NOTIFSND, true))
+				true).setSmallIcon(R.drawable.ic_notification_series).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.SER_COLL)) {
-			
-			
-		} else if (action.equals(SN.SER_PREM)) {
-			
+
+			int season = data.getInt("season");
+			int episode = data.getInt("episode");
+			title = session.getString(R.string.notif_ser_coll);
+			text = data.getString("name");
+			if (TextUtils.isEmpty(text))
+				text = session.getString(R.string.notif_gen_miss);
+			else
+				text = new Episode.EID(season, episode).readable() + " " + text;
+			pi = newPI(newAI(MA.EPISODE_INFO).putExtra("series", data.getString("series")).putExtra("season",
+				season).putExtra("episode", episode), true);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_series).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			if (session.notificationSound())
+				ncb.setSound(NOTIF_SOUND);
+			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		}
 	}
 	
-	private NotificationCompat.Builder makeNotification(String action, boolean sound) {
-		Intent ai = new Intent(session.getContext(), MainActivity.class);
-		if (action != null)
-			ai.setAction(action);
-		PendingIntent pi = PendingIntent.getActivity(session.getContext(), 0, ai, PendingIntent.FLAG_UPDATE_CURRENT);
-		NotificationCompat.Builder nb = new NotificationCompat.Builder(session.getContext());
-		nb.setSmallIcon(R.drawable.ic_notification).setAutoCancel(true).setContentTitle(session.getString(
-			R.string.app_name)).setContentIntent(pi);
-		if (sound && session.getPrefs().getBoolean(PK.NOTIFSND, true))
-			nb.setSound(NOTIF_SOUND);
-		return nb;
+	private Intent newAI(String action) {
+		return new Intent(session.getContext(), MainActivity.class).setAction(action);
 	}
 	
-	private PendingIntent getPI(String action, Bundle data) {
-		return PendingIntent.getActivity(session.getContext(), 0, new Intent(session.getContext(),
-			MainActivity.class).setAction(action), PendingIntent.FLAG_UPDATE_CURRENT, data);
-			//MainActivity.class).setAction(action), Intent.FLAG_ACTIVITY_SINGLE_TOP, data);
+	private PendingIntent newPI(Intent action, boolean unique) {
+		return PendingIntent.getActivity(session.getContext(), unique ? INTENT_ID.incrementAndGet() : 0, action,
+			PendingIntent.FLAG_UPDATE_CURRENT);
 	}
 }

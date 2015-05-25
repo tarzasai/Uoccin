@@ -357,14 +357,24 @@ public class Service extends WakefulIntentService {
 			return; // wtf?
 		SQLiteDatabase db = session.getDB();
 		String cond = "imdb_id = ?";
+		String[] flds = new String[] { "name", "watchlist", "collected" };
 		String[] args = new String[] { data.getAsString("imdb_id") };
 		boolean chk;
-		Cursor cur = db.query("movie", null, cond, args, null, null, null);
+		String name = null;
+		boolean wlst = false;
+		boolean coll = false;
+		Cursor cur = db.query("movie", flds, cond, args, null, null, null);
 		try {
 			chk = cur.moveToFirst();
+			if (chk) {
+				name = cur.getString(0);
+				wlst = cur.getInt(1) == 1;
+				coll = cur.getInt(2) == 1;
+			}
 		} finally {
 			cur.close();
 		}
+		// insert or update the title
 		if (chk) {
 			if (data.size() > 1) // tags check
 				db.update("movie", data, cond, args);
@@ -384,6 +394,18 @@ public class Service extends WakefulIntentService {
 				db.insertOrThrow("movtag", null, cv);
 			}
 		}
+		// notify the user
+		Intent notif = null;
+		if (data.containsKey("watchlist") && data.getAsBoolean("watchlist") && !wlst && session.notifyWatchlistedMovies())
+			notif = new Intent(SN.MOV_WLST);
+		else if (data.containsKey("collected") && data.getAsBoolean("collected") && !coll && session.notifyCollectedMovies())
+			notif = new Intent(SN.MOV_COLL);
+		if (notif != null) {
+			notif.putExtra("imdb_id", args[0]);
+			if (!TextUtils.isEmpty(name))
+				notif.putExtra("name", name);
+			sendBroadcast(notif);
+		}
 	}
 	
 	private void saveSeries(ContentValues data, String tags) {
@@ -392,14 +414,22 @@ public class Service extends WakefulIntentService {
 			return; // wtf?
 		SQLiteDatabase db = session.getDB();
 		String cond = "tvdb_id = ?";
+		String[] flds = new String[] { "name", "watchlist" };
 		String[] args = new String[] { data.getAsString("tvdb_id") };
 		boolean chk;
-		Cursor cur = db.query("series", null, cond, args, null, null, null);
+		String name = null;
+		boolean wlst = false;
+		Cursor cur = db.query("series", flds, cond, args, null, null, null);
 		try {
 			chk = cur.moveToFirst();
+			if (chk) {
+				name = cur.getString(0);
+				wlst = cur.getInt(1) == 1;
+			}
 		} finally {
 			cur.close();
 		}
+		// insert or update the title
 		if (chk) {
 			if (data.size() > 1) // tags and saveEpisode() check
 				db.update("series", data, cond, args);
@@ -419,28 +449,59 @@ public class Service extends WakefulIntentService {
 				db.insertOrThrow("sertag", null, cv);
 			}
 		}
+		// notify the user
+		Intent notif = null;
+		if (data.containsKey("watchlist") && data.getAsBoolean("watchlist") && !wlst && session.notifyWatchlistedSeries())
+			notif = new Intent(SN.SER_WLST);
+		if (notif != null) {
+			notif.putExtra("tvdb_id", args[0]);
+			if (!TextUtils.isEmpty(name))
+				notif.putExtra("name", name);
+			sendBroadcast(notif);
+		}
 	}
 	
 	private void saveEpisode(ContentValues data) {
 		SQLiteDatabase db = session.getDB();
 		String cond = "series = ? and season = ? and episode = ?";
 		String tvdb_id = data.getAsString("series");
+		String[] flds = new String[] { "name", "collected" };
 		String[] args = new String[] { tvdb_id, data.getAsString("season"), data.getAsString("episode") };
 		boolean chk;
-		Cursor cur = db.query("episode", null, cond, args, null, null, null);
+		String name = null;
+		boolean coll = false;
+		Cursor cur = db.query("episode", flds, cond, args, null, null, null);
 		try {
 			chk = cur.moveToFirst();
+			if (chk) {
+				name = cur.getString(0);
+				coll = cur.getInt(1) == 1;
+			}
 		} finally {
 			cur.close();
 		}
+		// check to insert the master record (series)
 		ContentValues series = new ContentValues();
 		series.put("tvdb_id", tvdb_id);
 		saveSeries(series, null);
+		// insert or update the title
 		if (chk)
 			db.update("episode", data, cond, args);
 		else {
 			data.put("timestamp", 1);
 			db.insertOrThrow("episode", null, data);
+		}
+		// notify the user
+		Intent notif = null;
+		if (data.containsKey("collected") && data.getAsBoolean("collected") && !coll && session.notifyCollectedEpisodes())
+			notif = new Intent(SN.SER_COLL);
+		if (notif != null) {
+			notif.putExtra("series", args[0]);
+			notif.putExtra("season", data.getAsInteger("season"));
+			notif.putExtra("episode", data.getAsInteger("episode"));
+			if (!(TextUtils.isEmpty(name) || name.equals("N/A")))
+				notif.putExtra("name", name);
+			sendBroadcast(notif);
 		}
 	}
 	
@@ -546,8 +607,12 @@ public class Service extends WakefulIntentService {
 			// load other devices' diffs
 			int lines = 0;
 			for (String fid: drive.getNewDiffs()) {
-				lines += loadDiff(fid);
-				drive.deleteFile(fid); // yes, we might have found errors, so what?
+				lines += loadDiff(fid); // ignore errors
+				try {
+					drive.deleteFile(fid);
+				} catch (Exception err) {
+					Log.e(TAG, "drive.deleteFile() failed", err); // ignore errors
+				}
 			}
 			if (lines <= 0) {
 				Log.d(TAG, "Nothing to process, drive sync terminated.");
