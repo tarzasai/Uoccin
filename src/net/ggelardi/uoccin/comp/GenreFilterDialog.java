@@ -51,6 +51,9 @@ public class GenreFilterDialog extends DialogPreference {
 		if (isPersistent())
 			return superState;
 		
+		if (mEdtGflt == null)
+			return null;
+		
 		// Create instance of custom BaseSavedState
 		final SavedState ss = new SavedState(superState);
 		ss.value = mEdtGflt.getText().toString();

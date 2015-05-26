@@ -148,6 +148,18 @@ public class Receiver extends BroadcastReceiver {
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
+		} else if (action.equals(SN.SER_PREM)) {
+			
+			title = session.getString(R.string.notif_ser_prem);
+			text = data.getString("name", session.getString(R.string.notif_gen_miss));
+			pi = newPI(newAI(MA.SERIES_INFO).putExtra("tvdb_id", data.getString("tvdb_id")), true);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_series).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			if (session.notificationSound())
+				ncb.setSound(NOTIF_SOUND);
+			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
+			
 		}
 	}
 	

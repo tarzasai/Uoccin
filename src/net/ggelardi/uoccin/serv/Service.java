@@ -295,10 +295,14 @@ public class Service extends WakefulIntentService {
 										break;
 									}
 								if (good) {
-									String msg = ser.name + " (" + ser.genres() + ")";
-									Log.d(TAG, "Tagging series: " + msg);
+									String text = ser.name + " (" + ser.genres() + ")";
+									Log.d(TAG, "Tagging series: " + text);
 									ser.addTag(Series.TAG_DISCOVER);
-									sendNotification(String.format(session.getString(R.string.msg_imdb_news), msg));
+									// notification
+									Intent notif = new Intent(SN.SER_PREM);
+									notif.putExtra("tvdb_id", ser.tvdb_id);
+									notif.putExtra("name", text);
+									sendBroadcast(notif);
 								}
 							}
 						}

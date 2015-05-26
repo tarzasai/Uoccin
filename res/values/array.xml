@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     
-    <string-array name="pk_locale_values">
+    <string-array name="pk_language_values">
         <item>de</item>
         <item>en</item>
         <item>es</item>
@@ -14,7 +14,7 @@
         <item>zh-cn</item>
     </string-array>
     
-    <string-array name="pk_locale_names">
+    <string-array name="pk_language_names">
         <item>Deutsch</item>
         <item>English</item>
         <item>Español</item>
@@ -27,14 +27,14 @@
         <item>中文(简体)</item>
     </string-array>
     
-    <string-array name="pk_gdrvint_names">
+    <string-array name="pk_gdrvintv_names">
         <item>15 minutes</item>
         <item>30 minutes</item>
         <item>45 minutes</item>
         <item>60 minutes</item>
     </string-array>
     
-    <string-array name="pk_gdrvint_values">
+    <string-array name="pk_gdrvintv_values">
         <item>15</item>
         <item>30</item>
         <item>45</item>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     
-    <string-array name="pk_gdrvint_names">
+    <string-array name="pk_gdrvintv_names">
         <item>15 minuti</item>
         <item>30 minuti</item>
         <item>45 minuti</item>

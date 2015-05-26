@@ -1,12 +1,15 @@
 package net.ggelardi.uoccin;
 
+import net.ggelardi.uoccin.comp.IntListPreference;
 import net.ggelardi.uoccin.serv.Commons.PK;
 import net.ggelardi.uoccin.serv.Session;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.text.TextUtils;
@@ -18,84 +21,121 @@ import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccoun
 public class SettingsFragment extends PreferenceFragment {
 	private static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
 	
-	/*private static final int STATE_INITIAL = 0;
-	private static final int STATE_CHOOSING_ACCOUNT = 1;
-	private static final int STATE_DONE = 3;*/
-	
 	private static final int CHOOSE_ACCOUNT = 0;
 	
 	private Session session;
 	private GoogleAccountManager gaccman;
 	private Preference accpref;
-	//private int frstate;
+	private ListPreference lpstart;
+	private ListPreference lplocal;
+	private IntListPreference lpsyint;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		// Load the preferences from an XML resource
 		addPreferencesFromResource(R.xml.preferences);
 
 		session = Session.getInstance(getActivity());
 		gaccman = new GoogleAccountManager(getActivity());
-		// Initialize the preferred account setting.
-		accpref = this.findPreference(PK.GDRVAUTH);
+		
+		accpref = findPreference(PK.GDRVAUTH);
 		accpref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				chooseAccount();
+				Intent intent = AccountPicker.newChooseAccountIntent(getPreferenceAccount(), null, ACCOUNT_TYPE,
+					false, null, null, null, null);
+				startActivityForResult(intent, CHOOSE_ACCOUNT);
 				return true;
 			}
 		});
-		//frstate = STATE_INITIAL;
+		
+		lpstart = (ListPreference) findPreference(PK.STARTUPV);
+		lpstart.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				preference.setSummary(getStartupDescr(newValue.toString()));
+				return true;
+			}
+		});
+		
+		lplocal = (ListPreference) findPreference(PK.LANGUAGE);
+		lplocal.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				preference.setSummary(getLanguageDescr(newValue.toString()));
+				return true;
+			}
+		});
+		
+		lpsyint = (IntListPreference) findPreference(PK.GDRVINTV);
+		lpsyint.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				preference.setSummary(getIntervalDescr(newValue.toString()));
+				return true;
+			}
+		});
 	}
 	
 	@Override
 	public void onResume() {
 		super.onResume();
+
+		lpstart.setSummary(getStartupDescr(null));
+		lplocal.setSummary(getLanguageDescr(null));
+		lpsyint.setSummary(getIntervalDescr(null));
 		
 		Account preferenceAccount = getPreferenceAccount();
-		if (preferenceAccount != null) {
+		if (preferenceAccount != null)
 			accpref.setSummary(preferenceAccount.name);
-			//frstate = STATE_DONE;
-			/*
-		} else if (frstate == STATE_INITIAL) {
-			chooseAccount();
-			*/
-		}
 	}
 	
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == CHOOSE_ACCOUNT) {
-			if (data != null) {
-				String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-				if (!TextUtils.isEmpty(accountName)) {
-					Account account = gaccman.getAccountByName(accountName);
-					setAccount(account);
-				}
-			} //else
-				//frstate = STATE_INITIAL;
+		if (requestCode == CHOOSE_ACCOUNT && data != null) {
+			Account accsel = gaccman.getAccountByName(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
+			if (accsel != null) {
+				session.setDriveUserAccount(accsel.name);
+				accpref.setSummary(accsel.name);
+			}
 		}
+	}
+	
+	private String getStartupDescr(String id) {
+		if (TextUtils.isEmpty(id))
+			id = session.getPrefs().getString(PK.STARTUPV, "sernext");
+		String[] keys = session.getRes().getStringArray(R.array.view_defser_ids);
+		String[] vals = session.getRes().getStringArray(R.array.view_defser_titles);
+		for (int i = 0; i < keys.length; i++)
+			if (keys[i].equals(id))
+				return vals[i];
+		return "";
+	}
+	
+	private String getLanguageDescr(String id) {
+		if (TextUtils.isEmpty(id))
+			id = session.getPrefs().getString(PK.LANGUAGE, "en");
+		String[] keys = session.getRes().getStringArray(R.array.pk_language_values);
+		String[] vals = session.getRes().getStringArray(R.array.pk_language_names);
+		for (int i = 0; i < keys.length; i++)
+			if (keys[i].equals(id))
+				return vals[i];
+		return "";
+	}
+	
+	private String getIntervalDescr(String id) {
+		if (TextUtils.isEmpty(id))
+			id = Integer.toString(session.getPrefs().getInt(PK.GDRVINTV, 30));
+		String[] keys = session.getRes().getStringArray(R.array.pk_gdrvintv_values);
+		String[] vals = session.getRes().getStringArray(R.array.pk_gdrvintv_names);
+		for (int i = 0; i < keys.length; i++)
+			if (keys[i].equals(id))
+				return vals[i];
+		return "";
 	}
 	
 	private Account getPreferenceAccount() {
-		//return session.driveAccountSet() ? gaccman.getAccountByName(session.driveAccountName()) : null;
 		return gaccman.getAccountByName(session.driveAccountName());
-	}
-	
-	private void chooseAccount() {
-		//frstate = STATE_CHOOSING_ACCOUNT;
-		Intent intent = AccountPicker.newChooseAccountIntent(getPreferenceAccount(), null, ACCOUNT_TYPE, false, null,
-			null, null, null);
-		startActivityForResult(intent, CHOOSE_ACCOUNT);
-	}
-	
-	private void setAccount(Account account) {
-		if (account != null) {
-			session.setDriveUserAccount(account.name);
-			accpref.setSummary(account.name);
-			//frstate = STATE_DONE;
-		}
 	}
 }

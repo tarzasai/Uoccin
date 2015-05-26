@@ -27,7 +27,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
@@ -551,9 +550,6 @@ public class Series extends Title {
 			else
 				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "watchlist", Boolean.toString(watchlist));
-			String msg = session.getRes().getString(watchlist ? R.string.msg_wlst_add_ser : R.string.msg_wlst_del_ser);
-			msg = String.format(msg, name);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
 	
@@ -606,8 +602,6 @@ public class Series extends Title {
 			else
 				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
-			String msg = String.format(session.getRes().getString(R.string.msg_tags_add), tag);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
 	
@@ -620,8 +614,6 @@ public class Series extends Title {
 			else
 				refresh(true);
 			session.driveQueue(Session.QUEUE_SERIES, tvdb_id, "tags", TextUtils.join(",", tags));
-			String msg = String.format(session.getRes().getString(R.string.msg_tags_del), tag);
-			Toast.makeText(session.getContext(), msg, Toast.LENGTH_SHORT).show();
 		}
 	}
 	

@@ -43,24 +43,25 @@ public class Commons {
 	public static final long yearLong = (365 * dayLong);
 	
 	public static class PK {
-		public static final String STARTUPV = "pk_startup";
-		public static final String LANGUAGE = "pk_locale";
-		public static final String METAWIFI = "pk_mdwifi";
+		public static final String STARTUPV = "pk_startupv";
+		public static final String LANGUAGE = "pk_language";
 		public static final String SPECIALS = "pk_specials";
-		public static final String TVDBFEED = "pk_tvdbrss";
+		public static final String METAWIFI = "pk_metawifi";
+		public static final String TVDBFEED = "pk_tvdbfeed";
 		public static final String TVDBGFLT = "pk_tvdbgflt";
-		public static final String GDRVUUID = "pk_gdrvuid";
-		public static final String GDRVSYNC = "pk_gdrvbak";
+		public static final String GDRVAUTH = "pk_gdrvauth";
+		public static final String GDRVSYNC = "pk_gdrvsync";
 		public static final String GDRVWIFI = "pk_gdrvwifi";
-		public static final String GDRVINTV = "pk_gdrvint";
-		public static final String GDRVAUTH = "pk_gdrv_account";
-		public static final String GDRVLCID = "pk_gdrv_lastcid";
-		public static final String SPLRPROT = "pk_splrpro";
-		public static final String NOTMOVWL = "pk_notmovw";
-		public static final String NOTMOVCO = "pk_notmovc";
-		public static final String NOTSERWL = "pk_notserw";
-		public static final String NOTSERCO = "pk_notserc";
+		public static final String GDRVINTV = "pk_gdrvintv";
+		public static final String NOTMOVWL = "pk_notmovwl";
+		public static final String NOTMOVCO = "pk_notmovco";
+		public static final String NOTSERWL = "pk_notserwl";
+		public static final String NOTSERCO = "pk_notserco";
 		public static final String NOTIFSND = "pk_notifsnd";
+		public static final String SPLRPROT = "pk_splrprot";
+		// internal
+		public static final String GDRVUUID = "pk_gdrvuuid";
+		public static final String GDRVLCID = "pk_gdrvlcid";
 	}
 	
 	public static class SR {
@@ -82,6 +83,7 @@ public class Commons {
 		public static final String MOV_COLL = "net.ggelardi.uoccin.MOV_COLL";
 		public static final String SER_WLST = "net.ggelardi.uoccin.SER_WLST";
 		public static final String SER_COLL = "net.ggelardi.uoccin.SER_COLL";
+		public static final String SER_PREM = "net.ggelardi.uoccin.SER_PREM";
 	}
 
 	public static class MA {

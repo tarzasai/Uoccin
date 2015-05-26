@@ -2,108 +2,112 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <ListPreference
-        android:defaultValue="ser2see"
-        android:dialogTitle="@string/pk_startup_title"
+        android:key="pk_startupv"
+        android:defaultValue="sernext"
+        android:title="@string/pk_startupv_title"
         android:entries="@array/view_defser_titles"
         android:entryValues="@array/view_defser_ids"
-        android:key="pk_startup"
-        android:summary="@string/pk_startup_summ"
-        android:title="@string/pk_startup_title" />
+        android:dialogTitle="@string/pk_startupv_title" />
     
     <ListPreference
+        android:key="pk_language"
         android:defaultValue="en"
-        android:dialogTitle="@string/pk_locale_title"
-        android:entries="@array/pk_locale_names"
-        android:entryValues="@array/pk_locale_values"
-        android:key="pk_locale"
-        android:summary="@string/pk_locale_summ"
-        android:title="@string/pk_locale_title" />
+        android:title="@string/pk_language_title"
+        android:entries="@array/pk_language_names"
+        android:entryValues="@array/pk_language_values"
+        android:dialogTitle="@string/pk_language_title" />
     
     <CheckBoxPreference
+        android:key="pk_specials"
+        android:defaultValue="false"
+        android:title="@string/pk_specials_title"
+        android:summary="@string/pk_specials_summ" />
+    
+    <CheckBoxPreference
+        android:key="pk_metawifi"
         android:defaultValue="true"
-        android:key="pk_mdwifi"
-        android:summary="@string/pk_mdwifi_summ"
-        android:title="@string/pk_mdwifi_title" />
+        android:title="@string/pk_metawifi_title"
+        android:summary="@string/pk_metawifi_summ" />
 
     <PreferenceCategory
-        android:key="pc_tvdbcat"
-        android:title="@string/pc_tvdbcat_title" >
+        android:key="pc_tvdbfeed"
+        android:title="@string/pc_tvdbfeed_title" >
         
         <CheckBoxPreference
+            android:key="pk_tvdbfeed"
             android:defaultValue="false"
-            android:key="pk_tvdbrss"
-            android:summary="@string/pk_tvdbrss_summ"
-            android:title="@string/pk_tvdbrss_title" />
+            android:title="@string/pk_tvdbfeed_title"
+            android:summary="@string/pk_tvdbfeed_summ" />
 
         <net.ggelardi.uoccin.comp.GenreFilterDialog
-            android:dialogTitle="@string/pk_tvdbgnf_title"
             android:key="pk_tvdbgflt"
-            android:summary="@string/pk_tvdbgnf_summ"
-            android:title="@string/pk_tvdbgnf_title" />
+            android:title="@string/pk_tvdbgflt_title"
+            android:summary="@string/pk_tvdbgflt_summ"
+            android:dialogTitle="@string/pk_tvdbgflt_title" />
     </PreferenceCategory>
     
     <PreferenceCategory
-        android:key="pc_gdrvcat"
-        android:title="@string/pc_gdrvcat_title" >
+        android:key="pc_gdrvauth"
+        android:title="@string/pc_gdrvauth_title" >
         
         <Preference
-            android:key="pk_gdrv_account"
-            android:title="@string/pk_gdrvacc_title" />
+            android:key="pk_gdrvauth"
+            android:title="@string/pk_gdrvauth_title" />
 
         <CheckBoxPreference
+            android:key="pk_gdrvsync"
             android:defaultValue="false"
-            android:key="pk_gdrvbak"
-            android:summary="@string/pk_gdrvbak_summ"
-            android:title="@string/pk_gdrvbak_title" />
+            android:title="@string/pk_gdrvsync_title"
+            android:summary="@string/pk_gdrvsync_summ" />
         
         <CheckBoxPreference
-            android:defaultValue="false"
             android:key="pk_gdrvwifi"
-            android:title="@string/pk_gdrvwif_title" />
+            android:defaultValue="false"
+            android:title="@string/pk_gdrvwifi_title" />
 
         <net.ggelardi.uoccin.comp.IntListPreference
+            android:key="pk_gdrvintv"
             android:defaultValue="30"
-            android:dialogTitle="@string/pk_gdrvint_title"
-            android:entries="@array/pk_gdrvint_names"
-            android:entryValues="@array/pk_gdrvint_values"
-            android:key="pk_gdrvint"
-            android:title="@string/pk_gdrvint_title" />
+            android:title="@string/pk_gdrvintv_title"
+            android:entries="@array/pk_gdrvintv_names"
+            android:entryValues="@array/pk_gdrvintv_values"
+            android:dialogTitle="@string/pk_gdrvintv_title" />
 
         <CheckBoxPreference
+            android:key="pk_notmovwl"
             android:defaultValue="true"
-            android:key="pk_notmovw"
-            android:title="@string/pk_notmovw_title" />
+            android:title="@string/pk_notmovwl_title" />
 
         <CheckBoxPreference
+            android:key="pk_notmovco"
             android:defaultValue="true"
-            android:key="pk_notmovc"
-            android:title="@string/pk_notmovc_title" />
+            android:title="@string/pk_notmovco_title" />
 
         <CheckBoxPreference
+            android:key="pk_notserwl"
             android:defaultValue="true"
-            android:key="pk_notserw"
-            android:title="@string/pk_notserw_title" />
+            android:title="@string/pk_notserwl_title" />
 
         <CheckBoxPreference
+            android:key="pk_notserco"
             android:defaultValue="true"
-            android:key="pk_notserc"
-            android:title="@string/pk_notserc_title" />
+            android:title="@string/pk_notserco_title" />
     </PreferenceCategory>
     
     <PreferenceCategory
-        android:key="pc_misccat"
-        android:title="@string/pc_misccat_title" >
+        android:key="pc_whatever"
+        android:title="@string/pc_whatever_title" >
 
         <CheckBoxPreference
-            android:defaultValue="true"
             android:key="pk_notifsnd"
-            android:title="@string/pk_notsnds_title" />
+            android:defaultValue="true"
+            android:title="@string/pk_notifsnd_title" />
 
         <CheckBoxPreference
+            android:key="pk_splrprot"
             android:defaultValue="true"
-            android:key="pk_splrpro"
-            android:summary="@string/pk_splrpro_summ"
-            android:title="@string/pk_splrpro_title" />
+            android:title="@string/pk_splrprot_title"
+            android:summary="@string/pk_splrprot_summ" />
         
     </PreferenceCategory>
 
