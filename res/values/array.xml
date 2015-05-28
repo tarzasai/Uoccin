@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     
+    <string-array name="sel_filter_names">
+        <item>Title</item>
+        <item>People</item>
+        <item>Plot</item>
+        <item>Year</item>
+        <item>Tag</item>
+        <item>Rating</item>
+    </string-array>
+    
     <string-array name="pk_language_values">
         <item>de</item>
         <item>en</item>

@@ -3,8 +3,10 @@ package net.ggelardi.uoccin.data;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import net.ggelardi.uoccin.api.XML.OMDB;
 import net.ggelardi.uoccin.serv.Commons;
@@ -33,9 +35,10 @@ public class Movie extends Title {
 	private static final String TABLE = "movie";
 	
 	private static final SimpleCache cache = new SimpleCache(500);
-
-	private int rating = 0;
+	
+	private List<String> people = new ArrayList<String>();
 	private List<String> tags = new ArrayList<String>();
+	private int rating = 0;
 	private boolean watchlist = false;
 	private boolean collected = false;
 	private boolean watched = false;
@@ -262,6 +265,7 @@ public class Movie extends Title {
 				Log.e(TAG, chk, err);
 			}
 		}
+		people.clear();
 		// at least we want to update the timestamp
 		save(true);
 	}
@@ -329,6 +333,7 @@ public class Movie extends Title {
 		collected = cr.getInt(cr.getColumnIndex("collected")) == 1;
 		watched = cr.getInt(cr.getColumnIndex("watched")) == 1;
 		timestamp = cr.getLong(cr.getColumnIndex("timestamp"));
+		people.clear();
 		// tags
 		tags.clear();
 		Cursor ct = session.getDB().query("movtag", new String[] { "tag" }, "movie = ?", new String[] { imdb_id },
@@ -672,6 +677,20 @@ public class Movie extends Title {
 		return TextUtils.isEmpty(language) ? "N/A" : language;
 	}
 	
+	public String people() {
+		if (people.isEmpty()) {
+			people.add(director());
+			people.addAll(actors);
+			people.addAll(writers);
+			people.removeAll(Arrays.asList("", "N/A", null));
+			Set<String> hs = new HashSet<String>();
+			hs.addAll(people);
+			people.clear();
+			people.addAll(hs);
+		}
+		return people.isEmpty() ? "N/A" : TextUtils.join(", ", people);
+	}
+	
 	public String director() {
 		return TextUtils.isEmpty(director) ? "N/A" : director;
 	}
@@ -713,6 +732,10 @@ public class Movie extends Title {
 	
 	public String tags() {
 		return tags.isEmpty() ? "N/D" : TextUtils.join(", ", tags);
+	}
+	
+	public String rating() {
+		return rating <= 0 ? "N/A" : Integer.toString(rating);
 	}
 	
 	public String subtitles() {

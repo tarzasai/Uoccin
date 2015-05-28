@@ -105,11 +105,11 @@
 
     <!-- settings -->
     <string name="settings_title">Configurazione di Uoccin</string>
-    <string name="pk_startupv_title">Visualizza all\'avvio</string>
+    <string name="pk_startupv_title">Mostra all\'avvio dell\'app</string>
     <string name="pk_language_title">Lingua per titoli e trame</string>
     <string name="pk_specials_title">Non ignorare gli special</string>
     <string name="pk_specials_summ">(gli episodi \"speciali\" di solito sono solo riassunti della stagione precedente)</string>
-    <string name="pk_metawifi_title">Aggiornamento automatico solo su rete WiFi</string>
+    <string name="pk_metawifi_title">Aggiorn. automatico solo su WiFi</string>
     <string name="pk_metawifi_summ">(le informazioni su film, serie ed episodi sono aggiornate periodicamente in background)</string>
     <string name="pc_tvdbfeed_title">Opzioni per TVDB</string>
     <string name="pk_tvdbfeed_title">Segnala le nuove serie TV</string>
@@ -118,16 +118,17 @@
     <string name="pk_tvdbgflt_summ">Indica le categorie da ignorare (ad es. \"animation\", \"family\") per la segnalazione delle nuove serie.</string>
     <string name="pc_gdrvauth_title">Google Drive</string>
     <string name="pk_gdrvauth_title">Il tuo account Google</string>
-    <string name="pk_gdrvsync_title">Sincronizzazione preferiti, libreria e valutazioni</string>
-    <string name="pk_gdrvsync_summ">Attiva per gestire i tuoi dati su tutti i tuoi dispositivi Android.</string>
-    <string name="pk_gdrvwifi_title">Sincronizza solo quando sei su rete WiFi</string>
+    <string name="pk_gdrvsync_title">Sincronizzazione dati</string>
+    <string name="pk_gdrvsync_summ">Attiva per gestire preferiti, libreria e valutazioni su tutti i tuoi dispositivi Android.</string>
+    <string name="pk_gdrvuuid_title">L\'id univoco di questo device</string>
+    <string name="pk_gdrvwifi_title">Sincronizza solo su WiFi</string>
     <string name="pk_gdrvintv_title">Intervallo di sincronizzazione</string>
-    <string name="pk_notmovwl_title">Segnala i film aggiunti ai preferiti</string>
-    <string name="pk_notmovco_title">Segnala i film aggiunti alla libreria</string>
-    <string name="pk_notserwl_title">Segnala le serie aggiunte ai preferiti</string>
-    <string name="pk_notserco_title">Segnala gli episodi aggiunti alla libreria</string>
+    <string name="pk_notmovwl_title">Segnala nuovi film in preferiti</string>
+    <string name="pk_notmovco_title">Segnala nuovi film in libreria</string>
+    <string name="pk_notserwl_title">Segnala nuove serie in preferiti</string>
+    <string name="pk_notserco_title">Segnala nuovi episodi in libreria</string>
     <string name="pc_whatever_title">Cose varie</string>
-    <string name="pk_notifsnd_title">Attiva il suono di sistema sulle segnalazioni</string>
+    <string name="pk_notifsnd_title">Suono di sistema su segnalazioni</string>
     <string name="pk_splrprot_title">Protezione dagli spoiler</string>
     <string name="pk_splrprot_summ">Accorcia le trame troppo lunghe (spesso rivelano troppe cose).</string>
     

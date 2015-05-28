@@ -30,11 +30,14 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.android.photos.views.HeaderGridView;
@@ -60,11 +63,13 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	private MenuItem miSortName;
 	private MenuItem miSortYear;
 	private MenuItem miSortRats;
+	private Spinner spnFilter;
 	private EditText edtFltText;
 	private ImageView imgFltClear;
 	
 	private MovieAdapter mAdapter;
 	private MovieTask mTask;
+	private ArrayAdapter<CharSequence> mFilter;
 	
 	public static MovieListFragment newFragment(String type, String data) {
 		MovieListFragment fragment = new MovieListFragment();
@@ -88,6 +93,9 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 		sortDesc = args.getBoolean("sortDesc", false);
 		
 		mAdapter = new MovieAdapter(getActivity(), this, type, data);
+		mFilter = ArrayAdapter.createFromResource(getActivity(), R.array.sel_filter_names,
+			android.R.layout.simple_spinner_item);
+		mFilter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 	}
 	
 	@SuppressLint("InflateParams")
@@ -96,6 +104,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 		View view = inflater.inflate(R.layout.fragment_movie_items, container, false);
 
 		listView = (AbsListView) view.findViewById(android.R.id.list);
+		spnFilter = (Spinner) view.findViewById(R.id.spn_ml_flt);
 		edtFltText = (EditText) view.findViewById(R.id.edt_ml_flt);
 		imgFltClear = (ImageView) view.findViewById(R.id.img_ml_flt);
 		
@@ -120,11 +129,22 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 			}
 		});
 		
+		spnFilter.setAdapter(mFilter);
+		spnFilter.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+				mAdapter.setFilter(position, edtFltText.getText().toString());
+			}
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+			}
+		});
+		
 		edtFltText.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 				imgFltClear.setVisibility(TextUtils.isEmpty(edtFltText.getText()) ? View.GONE : View.VISIBLE);
-				mAdapter.getFilter().filter(edtFltText.getText());
+				mAdapter.setFilter(spnFilter.getSelectedItemPosition(), edtFltText.getText().toString());
 			}
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {

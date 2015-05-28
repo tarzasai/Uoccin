@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.TVDB;
@@ -38,8 +40,9 @@ public class Series extends Title {
 	
 	private static final SimpleCache cache = new SimpleCache(500);
 	
-	private int rating = 0;
+	private List<String> people = new ArrayList<String>();
 	private List<String> tags = new ArrayList<String>();
+	private int rating = 0;
 	private boolean watchlist = false;
 	private boolean updated = false;
 
@@ -231,6 +234,7 @@ public class Series extends Title {
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(rated) || !rated.equals(chk))) {
 			rated = chk;
 		}
+		people.clear();
 		int purged = 0;
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
@@ -339,6 +343,7 @@ public class Series extends Title {
 		} finally {
 			ct.close();
 		}
+		people.clear();
 		dispatch(OnTitleListener.READY, null);
 	}
 	
@@ -640,6 +645,14 @@ public class Series extends Title {
 		return !TextUtils.isEmpty(status) && status.equals("Ended");
 	}
 	
+	public String name() {
+		return TextUtils.isEmpty(name) ? "N/A" : name;
+	}
+	
+	public String year() {
+		return year <= 0 ? "N/A" : Integer.toString(year);
+	}
+	
 	public String plot() {
 		if (TextUtils.isEmpty(plot))
 			return "N/A";
@@ -673,6 +686,22 @@ public class Series extends Title {
 		return (TextUtils.isEmpty(network) ? "N/A" : network) + " - " + airTime();
 	}
 	
+	public String people() {
+		if (people.isEmpty()) {
+			people.addAll(actors);
+			for (Episode ep: episodes) {
+				ep.people();
+				people.addAll(ep.people);
+			}
+			people.removeAll(Arrays.asList("", "N/A", null));
+			Set<String> hs = new HashSet<String>();
+			hs.addAll(people);
+			people.clear();
+			people.addAll(hs);
+		}
+		return people.isEmpty() ? "N/A" : TextUtils.join(", ", people);
+	}
+	
 	public String actors() {
 		return actors.isEmpty() ? "N/A" : TextUtils.join(", ", actors);
 	}
@@ -683,6 +712,10 @@ public class Series extends Title {
 	
 	public String tags() {
 		return tags.isEmpty() ? "N/D" : TextUtils.join(", ", tags);
+	}
+	
+	public String rating() {
+		return rating <= 0 ? "N/A" : Integer.toString(rating);
 	}
 	
 	public List<Episode> episodes(int season) {

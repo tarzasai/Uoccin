@@ -14,33 +14,34 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.MultiAutoCompleteTextView;
 
-public class GenreFilterDialog extends DialogPreference {
+public class GenresDialogPreference extends DialogPreference {
 	
 	private final Session session;
-	private MultiAutoCompleteTextView mEdtGflt;
+	private MultiAutoCompleteTextView edt;
 	
-	public GenreFilterDialog(Context context, AttributeSet attrs) {
+	public GenresDialogPreference(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		
 		session = Session.getInstance(context);
 		
 		setPersistent(false);
 		
-		setDialogLayoutResource(R.layout.dialog_genrefilter);
+		setDialogLayoutResource(R.layout.dialog_genres);
 	}
 	
 	@Override
 	public void onBindDialogView(View view) {
 		super.onBindDialogView(view);
 		
-		mEdtGflt = (MultiAutoCompleteTextView) view.findViewById(R.id.txt_tvdbgflt);
+		edt = (MultiAutoCompleteTextView) view.getRootView();
 		
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(session.getContext(),
 			android.R.layout.simple_dropdown_item_1line, session.getRes().getStringArray(R.array.def_tvdb_genres));
-		mEdtGflt.setAdapter(adapter);
-		mEdtGflt.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
-		mEdtGflt.setDropDownBackgroundResource(R.color.textColorNormal);
-		mEdtGflt.setText(TextUtils.join(", ", session.tvdbGenreFilter()));
+		edt.setAdapter(adapter);
+		edt.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+		edt.setThreshold(1);
+		edt.setDropDownBackgroundResource(R.color.textColorNormal);
+		edt.setText(TextUtils.join(", ", session.tvdbGenreFilter()));
 	}
 	
 	@Override
@@ -51,12 +52,12 @@ public class GenreFilterDialog extends DialogPreference {
 		if (isPersistent())
 			return superState;
 		
-		if (mEdtGflt == null)
+		if (edt == null)
 			return null;
 		
 		// Create instance of custom BaseSavedState
 		final SavedState ss = new SavedState(superState);
-		ss.value = mEdtGflt.getText().toString();
+		ss.value = edt.getText().toString();
 		return ss;
 	}
 	
@@ -74,7 +75,7 @@ public class GenreFilterDialog extends DialogPreference {
 		super.onRestoreInstanceState(myState.getSuperState());
 		
 		// Set this Preference's widget to reflect the restored state
-		mEdtGflt.setText(myState.value);
+		edt.setText(myState.value);
 	}
 	
 	@Override
@@ -83,7 +84,7 @@ public class GenreFilterDialog extends DialogPreference {
 		
 		if (positiveResult) {
 			SharedPreferences.Editor editor = session.getPrefs().edit();
-			String[] vals = mEdtGflt.getText().toString().split(",\\s*");
+			String[] vals = edt.getText().toString().split(",\\s*");
 			if (vals.length > 0)
 				editor.putString(PK.TVDBGFLT, TextUtils.join(",", vals));
 			else

@@ -45,6 +45,7 @@ public class Episode extends Title implements Comparable<Episode> {
 	public long firstAired;
 	public String imdb_id;
 	public List<String> subtitles = new ArrayList<String>();
+	public List<String> people = new ArrayList<String>();
 	
 	public Episode(Context context, EID eid) {
 		this(context, eid.series, eid.season, eid.episode);
@@ -326,6 +327,16 @@ public class Episode extends Title implements Comparable<Episode> {
 		if (Math.abs(now - firstAired)/(1000 * 60 * 60) < 168)
 			res += " (" + Commons.SDF.loc("EEE").format(firstAired) + ")";
 		return res;
+	}
+	
+	public String people() {
+		if (people.isEmpty()) {
+			people.add(director());
+			people.addAll(guestStars);
+			people.addAll(writers);
+			people.removeAll(Arrays.asList("", "N/A", null));
+		}
+		return people.isEmpty() ? "N/A" : TextUtils.join(", ", people);
 	}
 	
 	public String guests() {

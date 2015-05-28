@@ -7,6 +7,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -25,10 +26,11 @@ public class SettingsFragment extends PreferenceFragment {
 	
 	private Session session;
 	private GoogleAccountManager gaccman;
-	private Preference accpref;
+	private Preference cpdauth;
 	private ListPreference lpstart;
 	private ListPreference lplocal;
 	private IntListPreference lpsyint;
+	private EditTextPreference epduuid;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -39,8 +41,8 @@ public class SettingsFragment extends PreferenceFragment {
 		session = Session.getInstance(getActivity());
 		gaccman = new GoogleAccountManager(getActivity());
 		
-		accpref = findPreference(PK.GDRVAUTH);
-		accpref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+		cpdauth = findPreference(PK.GDRVAUTH);
+		cpdauth.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				Intent intent = AccountPicker.newChooseAccountIntent(getPreferenceAccount(), null, ACCOUNT_TYPE,
@@ -76,6 +78,15 @@ public class SettingsFragment extends PreferenceFragment {
 				return true;
 			}
 		});
+		
+		epduuid = (EditTextPreference) findPreference(PK.GDRVUUID);
+		epduuid.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				preference.setSummary(newValue.toString());
+				return true;
+			}
+		});
 	}
 	
 	@Override
@@ -85,10 +96,11 @@ public class SettingsFragment extends PreferenceFragment {
 		lpstart.setSummary(getStartupDescr(null));
 		lplocal.setSummary(getLanguageDescr(null));
 		lpsyint.setSummary(getIntervalDescr(null));
+		epduuid.setSummary(session.driveDeviceID());
 		
 		Account preferenceAccount = getPreferenceAccount();
 		if (preferenceAccount != null)
-			accpref.setSummary(preferenceAccount.name);
+			cpdauth.setSummary(preferenceAccount.name);
 	}
 	
 	@Override
@@ -97,7 +109,7 @@ public class SettingsFragment extends PreferenceFragment {
 			Account accsel = gaccman.getAccountByName(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
 			if (accsel != null) {
 				session.setDriveUserAccount(accsel.name);
-				accpref.setSummary(accsel.name);
+				cpdauth.setSummary(accsel.name);
 			}
 		}
 	}

@@ -122,6 +122,7 @@
     <string name="pk_gdrvauth_title">Select a Google account</string>
     <string name="pk_gdrvsync_title">Synchronization</string>
     <string name="pk_gdrvsync_summ">Manage your data on multiple devices (phones or desktop apps).</string>
+    <string name="pk_gdrvuuid_title">This device unique identifier</string>
     <string name="pk_gdrvwifi_title">Only on WiFi</string>
     <string name="pk_gdrvintv_title">Sync interval</string>
     <string name="pk_notmovwl_title">Notify new movies in watchlist</string>

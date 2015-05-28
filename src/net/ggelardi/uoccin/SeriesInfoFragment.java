@@ -7,6 +7,7 @@ import net.ggelardi.uoccin.comp.ExpandableHeightGridView;
 import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -23,14 +24,16 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.RatingBar;
 import android.widget.RatingBar.OnRatingBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class SeriesInfoFragment extends BaseFragment implements OnTitleListener {
-
+	
 	private String tvdb_id;
 	private Series series;
 	
@@ -175,7 +178,7 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		txt_tags.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Toast.makeText(getActivity(), "Coming soon :)", Toast.LENGTH_SHORT).show();
+				editTags();
 			}
 		});
 		
@@ -294,5 +297,28 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		txt_tags.setText(series.tags());
 		grd_seas.setAdapter(new SeasonAdapter(getActivity(), series));
 		txt_imdb.setEnabled(!TextUtils.isEmpty(series.imdb_id));
+	}
+	
+	@SuppressLint("InflateParams")
+	private void editTags() {
+		final LayoutInflater inflater = getActivity().getLayoutInflater();
+		final View view = inflater.inflate(R.layout.dialog_tags, null);
+		final MultiAutoCompleteTextView edt = (MultiAutoCompleteTextView) view.getRootView();
+		final AlertDialog dlg = new AlertDialog.Builder(getActivity()).setTitle(R.string.lbl_comm_tags).
+			setView(view).setCancelable(true).setIcon(R.drawable.ic_action_tags).
+			setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					series.setTags(edt.getText().toString().split(",\\s*"));
+				}
+			}).setNegativeButton(R.string.dlg_btn_cancel, null).create();
+		final ArrayAdapter<String> adapter = new ArrayAdapter<String>(session.getContext(),
+			android.R.layout.simple_dropdown_item_1line, session.getAllTags());
+		edt.setAdapter(adapter);
+		edt.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+		edt.setThreshold(1);
+		edt.setDropDownBackgroundResource(R.color.textColorNormal);
+		edt.setText(TextUtils.join(", ", series.getTags()));
+		dlg.show();
 	}
 }

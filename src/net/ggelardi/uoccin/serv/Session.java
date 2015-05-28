@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +25,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -52,7 +56,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 	private final SharedPreferences prefs;
 	private final Storage dbhlp;
 	private SQLiteDatabase dbconn;
-	private String gdruid;
 	private Picasso picasso;
 	
 	public Session(Context context) {
@@ -76,6 +79,8 @@ public class Session implements OnSharedPreferenceChangeListener {
 					WakefulIntentService.sendWakefulWork(acntx,
 						new Intent(acntx, Service.class).setAction(SR.GDRIVE_SYNCNOW));
 			}
+		} else if (key.equals(PK.GDRVUUID)) {
+			// ?
 		}
 	}
 	
@@ -212,16 +217,14 @@ public class Session implements OnSharedPreferenceChangeListener {
 	// app saved stuff
 	
 	public String driveDeviceID() {
-		if (TextUtils.isEmpty(gdruid))
-			gdruid = getPrefs().getString(PK.GDRVUUID, "");
-		if (TextUtils.isEmpty(gdruid)) {
-			gdruid = UUID.randomUUID().toString();
+		String res = getPrefs().getString(PK.GDRVUUID, "");
+		if (TextUtils.isEmpty(res)) {
+			res = UUID.randomUUID().toString();
 			SharedPreferences.Editor editor = prefs.edit();
-			editor.putString(PK.GDRVUUID, gdruid);
+			editor.putString(PK.GDRVUUID, res);
 			editor.commit();
-			Log.v(TAG, "Device ID for Drive Sync: " + gdruid);
 		}
-		return gdruid;
+		return res;
 	}
 	
 	public boolean driveAccountSet() {
@@ -299,6 +302,31 @@ public class Session implements OnSharedPreferenceChangeListener {
 		if (TextUtils.isEmpty(value))
 			return acntx.getResources().getString(resId);
 		return value;
+	}
+	
+	public List<String> getAllTags() {
+		List<String> res = new ArrayList<String>();
+		Cursor cr = getDB().query(true, "movtag", new String[] { "tag" }, null, null, null, null, null, null, null);
+		try {
+			while (cr.moveToNext())
+				res.add(cr.getString(0));
+		} finally {
+			cr.close();
+		}
+		cr = getDB().query(true, "sertag", new String[] { "tag" }, null, null, null, null, null, null, null);
+		try {
+			while (cr.moveToNext())
+				res.add(cr.getString(0));
+		} finally {
+			cr.close();
+		}
+		res.removeAll(Arrays.asList("", null));
+		Set<String> hs = new HashSet<String>();
+		hs.addAll(res);
+		res.clear();
+		res.addAll(hs);
+		Collections.sort(res.subList(1, res.size()));
+		return res;
 	}
 	
 	public static final String QUEUE_MOVIE = "movie";

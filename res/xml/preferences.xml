@@ -39,7 +39,7 @@
             android:title="@string/pk_tvdbfeed_title"
             android:summary="@string/pk_tvdbfeed_summ" />
 
-        <net.ggelardi.uoccin.comp.GenreFilterDialog
+        <net.ggelardi.uoccin.comp.GenresDialogPreference
             android:key="pk_tvdbgflt"
             android:title="@string/pk_tvdbgflt_title"
             android:summary="@string/pk_tvdbgflt_summ"
@@ -59,6 +59,10 @@
             android:defaultValue="false"
             android:title="@string/pk_gdrvsync_title"
             android:summary="@string/pk_gdrvsync_summ" />
+        
+        <EditTextPreference 
+            android:key="pk_gdrvuuid"
+            android:title="@string/pk_gdrvuuid_title" />
         
         <CheckBoxPreference
             android:key="pk_gdrvwifi"

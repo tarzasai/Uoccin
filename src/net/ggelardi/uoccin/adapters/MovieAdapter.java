@@ -177,6 +177,11 @@ public class MovieAdapter extends BaseAdapter implements Filterable {
 		return filterObject;
 	}
 	
+	public void setFilter(int scope, String text) {
+		filterObject.scope = scope;
+		filterObject.filter(text);
+	}
+	
 	public void setTitles(List<Movie> titles, boolean forceReload) {
 		allItems = titles;
 		if (forceReload)
@@ -205,13 +210,20 @@ public class MovieAdapter extends BaseAdapter implements Filterable {
 	}
 	
 	private class ItemFilter extends Filter {
+		public int scope = 0;
 		@Override
 		protected FilterResults performFiltering(CharSequence constraint) {
 			filterText = TextUtils.isEmpty(constraint) ? null : constraint.toString().toLowerCase(Locale.getDefault());
 			final List<Movie> list = allItems;
 			final ArrayList<Movie> nlist = new ArrayList<Movie>(list.size());
 			for (Movie mov: list)
-				if (TextUtils.isEmpty(filterText) || mov.name.toLowerCase(Locale.getDefault()).contains(filterText))
+				if (TextUtils.isEmpty(filterText) ||
+					(scope == 0 && mov.name().toLowerCase(Locale.getDefault()).contains(filterText)) ||
+					(scope == 1 && mov.people().toLowerCase(Locale.getDefault()).contains(filterText)) ||
+					(scope == 2 && mov.plot().toLowerCase(Locale.getDefault()).contains(filterText)) ||
+					(scope == 3 && mov.year().contains(filterText)) ||
+					(scope == 4 && mov.hasTag(filterText)) ||
+					(scope == 5 && mov.rating().contains(filterText)))
 					nlist.add(mov);
 			FilterResults results = new FilterResults();
 			results.values = nlist;

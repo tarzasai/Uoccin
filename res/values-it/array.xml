@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     
+    <string-array name="sel_filter_names">
+        <item>Titolo</item>
+        <item>Persone</item>
+        <item>Trama</item>
+        <item>Anno</item>
+        <item>Tag</item>
+        <item>Valutaz.</item>
+    </string-array>
+    
     <string-array name="pk_gdrvintv_names">
         <item>15 minuti</item>
         <item>30 minuti</item>

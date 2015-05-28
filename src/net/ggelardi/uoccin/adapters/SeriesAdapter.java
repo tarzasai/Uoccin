@@ -248,6 +248,11 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 			filterObject.filter(filterText);
 	}
 	
+	public void setFilter(int scope, String text) {
+		filterObject.scope = scope;
+		filterObject.filter(text);
+	}
+	
 	static class ViewHolder {
 		ImageView img_post;
 		LinearLayout box_size;
@@ -269,13 +274,20 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 	}
 	
 	private class ItemFilter extends Filter {
+		public int scope = 0;
 		@Override
 		protected FilterResults performFiltering(CharSequence constraint) {
 			filterText = TextUtils.isEmpty(constraint) ? null : constraint.toString().toLowerCase(Locale.getDefault());
 			final List<Series> list = allItems;
 			final ArrayList<Series> nlist = new ArrayList<Series>(list.size());
 			for (Series ser: list)
-				if (TextUtils.isEmpty(filterText) || ser.name.toLowerCase(Locale.getDefault()).contains(filterText))
+				if (TextUtils.isEmpty(filterText) ||
+					(scope == 0 && ser.name().toLowerCase(Locale.getDefault()).contains(filterText)) ||
+					(scope == 1 && ser.people().toLowerCase(Locale.getDefault()).contains(filterText)) ||
+					(scope == 2 && ser.plot().toLowerCase(Locale.getDefault()).contains(filterText)) ||
+					(scope == 3 && ser.year().contains(filterText)) ||
+					(scope == 4 && ser.hasTag(filterText)) ||
+					(scope == 5 && ser.rating().contains(filterText)))
 					nlist.add(ser);
 			FilterResults results = new FilterResults();
 			results.values = nlist;
