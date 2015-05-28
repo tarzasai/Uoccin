@@ -85,7 +85,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/sample_title2"
+                    android:text="@string/sample_title1"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textStyle="bold" />
 
@@ -123,6 +123,7 @@
                     android:layout_weight="1"
                     android:drawableTop="@drawable/ic_action_back"
                     android:gravity="center_horizontal"
+                    android:lines="1"
                     android:text="@string/sample_epnum" />
 
                 <TextView
@@ -132,6 +133,7 @@
                     android:layout_weight="1"
                     android:drawableTop="@drawable/ic_action_storage"
                     android:gravity="center_horizontal"
+                    android:lines="1"
                     android:text="@string/lbl_comm_coll" />
 
                 <TextView
@@ -141,6 +143,7 @@
                     android:layout_weight="1"
                     android:drawableTop="@drawable/ic_action_seen"
                     android:gravity="center_horizontal"
+                    android:lines="1"
                     android:text="@string/lbl_comm_seen" />
 
                 <TextView
@@ -150,6 +153,7 @@
                     android:layout_weight="1"
                     android:drawableTop="@drawable/ic_action_share"
                     android:gravity="center_horizontal"
+                    android:lines="1"
                     android:text="@string/lbl_comm_shar" />
 
                 <TextView
@@ -159,6 +163,7 @@
                     android:layout_weight="1"
                     android:drawableTop="@drawable/ic_action_refresh"
                     android:gravity="center_horizontal"
+                    android:lines="1"
                     android:text="@string/lbl_comm_refr" />
 
                 <TextView
@@ -168,7 +173,9 @@
                     android:layout_weight="1"
                     android:drawableTop="@drawable/ic_action_forward"
                     android:gravity="center_horizontal"
+                    android:lines="1"
                     android:text="@string/sample_epnum" />
+
             </LinearLayout>
 
             <TextView
