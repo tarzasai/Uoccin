@@ -54,6 +54,7 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 	private RatingBar rat_myrt;
 	private TextView txt_tags;
 	private ExpandableHeightGridView grd_seas;
+	private AlertDialog dlg_tags;
 	
 	private int pstHeight = 1;
 	private int pstWidth = 1;
@@ -231,6 +232,11 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		super.onPause();
 		
 		Title.removeOnTitleEventListener(this);
+		
+		if (dlg_tags != null) {
+			dlg_tags.dismiss(); // to avoid the "Activity has leaked window bla bla" error.
+			dlg_tags = null;
+		}
 	}
 	
 	@Override
@@ -304,14 +310,20 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		final LayoutInflater inflater = getActivity().getLayoutInflater();
 		final View view = inflater.inflate(R.layout.dialog_tags, null);
 		final MultiAutoCompleteTextView edt = (MultiAutoCompleteTextView) view.getRootView();
-		final AlertDialog dlg = new AlertDialog.Builder(getActivity()).setTitle(R.string.lbl_comm_tags).
+		dlg_tags = new AlertDialog.Builder(getActivity()).setTitle(R.string.lbl_comm_tags).
 			setView(view).setCancelable(true).setIcon(R.drawable.ic_action_tags).
 			setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					series.setTags(edt.getText().toString().split(",\\s*"));
+					dlg_tags = null;
 				}
-			}).setNegativeButton(R.string.dlg_btn_cancel, null).create();
+			}).setNegativeButton(R.string.dlg_btn_cancel, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dlg_tags = null;
+				}
+			}).create();
 		final ArrayAdapter<String> adapter = new ArrayAdapter<String>(session.getContext(),
 			android.R.layout.simple_dropdown_item_1line, session.getAllTags());
 		edt.setAdapter(adapter);
@@ -319,6 +331,6 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		edt.setThreshold(1);
 		edt.setDropDownBackgroundResource(R.color.textColorNormal);
 		edt.setText(TextUtils.join(", ", series.getTags()));
-		dlg.show();
+		dlg_tags.show();
 	}
 }

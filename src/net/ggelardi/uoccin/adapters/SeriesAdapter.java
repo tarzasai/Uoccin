@@ -241,11 +241,7 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 		if (forceReload)
 			for (Series ser: allItems)
 				ser.reload();
-		if (TextUtils.isEmpty(filterText)) {
-			fltItems = titles;
-			notifyDataSetChanged();
-		} else
-			filterObject.filter(filterText);
+		filterObject.filter(filterText);
 	}
 	
 	public void setFilter(int scope, String text) {
@@ -297,7 +293,8 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 		@SuppressWarnings("unchecked")
 		@Override
 		protected void publishResults(CharSequence constraint, FilterResults results) {
-			fltItems = (ArrayList<Series>) results.values;
+			fltItems.clear();
+			fltItems.addAll((ArrayList<Series>) results.values);
 			notifyDataSetChanged();
 		}
 	}

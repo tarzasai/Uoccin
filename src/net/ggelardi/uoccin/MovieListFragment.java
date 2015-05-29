@@ -357,7 +357,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 	}
 	
 	private void reload() {
-		Log.v(getTag(), "reload()");
+		Log.v(tag(), "reload()");
 		mTask = new MovieTask(this, type);
 		if (type.equals(TL.SEARCH))
 			mTask.execute(data);

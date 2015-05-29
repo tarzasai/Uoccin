@@ -187,11 +187,7 @@ public class MovieAdapter extends BaseAdapter implements Filterable {
 		if (forceReload)
 			for (Movie mov: fltItems)
 				mov.reload();
-		if (TextUtils.isEmpty(filterText)) {
-			fltItems = titles;
-			notifyDataSetChanged();
-		} else
-			filterObject.filter(filterText);
+		filterObject.filter(filterText);
 	}
 	
 	static class ViewHolder {
@@ -233,7 +229,8 @@ public class MovieAdapter extends BaseAdapter implements Filterable {
 		@SuppressWarnings("unchecked")
 		@Override
 		protected void publishResults(CharSequence constraint, FilterResults results) {
-			fltItems = (ArrayList<Movie>) results.values;
+			fltItems.clear();
+			fltItems.addAll((ArrayList<Movie>) results.values);
 			notifyDataSetChanged();
 		}
 	}

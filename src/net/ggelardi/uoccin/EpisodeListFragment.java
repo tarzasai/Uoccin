@@ -247,7 +247,7 @@ public class EpisodeListFragment extends BaseFragment implements AbsListView.OnI
 	}
 	
 	private void reload() {
-		Log.v(getTag(), "reload()");
+		Log.v(tag(), "reload()");
 		Series ser = Series.get(getActivity(), series);
 		getActivity().setTitle(ser.name);
 		lblShdrSeas.setText(Integer.toString(season));

@@ -306,6 +306,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	
 	@Override
 	public void onTitleEvent(final String state, final Throwable error) {
+		Log.d(tag(), "onTitleEvent(): " + state);
 		final Activity context = getActivity();
 		if (context != null)
 			context.runOnUiThread(new Runnable() {
@@ -384,7 +385,7 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	}
 	
 	private void reload() {
-		Log.v(getTag(), "reload()");
+		Log.v(tag(), "reload()");
 		mTask = new SeriesTask(this, type);
 		if (type.equals(TL.SEARCH))
 			mTask.execute(data);

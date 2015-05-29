@@ -178,19 +178,19 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return prefs.getBoolean(PK.NOTIFSND, false);
 	}
 	
-	public boolean notifyWatchlistedMovies() {
+	public boolean notifyMovWlst() {
 		return prefs.getBoolean(PK.NOTMOVWL, true);
 	}
 	
-	public boolean notifyCollectedMovies() {
+	public boolean notifyMovColl() {
 		return prefs.getBoolean(PK.NOTMOVCO, true);
 	}
 	
-	public boolean notifyWatchlistedSeries() {
+	public boolean notifySerWlst() {
 		return prefs.getBoolean(PK.NOTSERWL, true);
 	}
 	
-	public boolean notifyCollectedEpisodes() {
+	public boolean notifySerColl() {
 		return prefs.getBoolean(PK.NOTSERCO, true);
 	}
 	

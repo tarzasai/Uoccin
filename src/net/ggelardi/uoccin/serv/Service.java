@@ -29,7 +29,6 @@ import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.Commons.MT;
-import net.ggelardi.uoccin.serv.Commons.SDF;
 import net.ggelardi.uoccin.serv.Commons.SN;
 import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Service.UFile.UMovie;
@@ -244,6 +243,8 @@ public class Service extends WakefulIntentService {
 	private void checkTVdbNews() throws Exception {
 		if (!session.isOnWIFI())
 			return;
+		List<String> genFilter = session.tvdbGenreFilter();
+		Log.d(TAG, "checkTVdbNews() begin (unwanted genres: " + TextUtils.join(", ", genFilter) + ")");
 		String content = null;
 	    URL url = new URL("http://thetvdb.com/rss/newtoday.php");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -281,29 +282,35 @@ public class Service extends WakefulIntentService {
 					if (lst != null && lst.getLength() > 0) {
 						node = (Element) lst.item(0);
 						check = new EID(node);
+						Log.d(TAG, "Evaluating episode " + check.toString() + " -> " + link);
 						if (check.isValid(session.specials()) && check.season == 1 && check.episode == 1) {
 							doc = XML.TVDB.getInstance().getSeries(check.series, session.language());
 							ser = Series.get(this, (Element)doc.getElementsByTagName("Series").item(0), null);
-							Log.d(TAG, "Evalutaing series: " + ser.name);
-							// check unwanted genres
-							List<String> gflt = session.tvdbGenreFilter();
-							if (gflt.size() <= 0 || ser.genres.size() <= 0) {
-								boolean good = true;
-								for (String g: ser.genres)
-									if (gflt.contains(g.toLowerCase(Locale.getDefault()))) {
-										good = false;
-										break;
-									}
-								if (good) {
-									String text = ser.name + " (" + ser.genres() + ")";
-									Log.d(TAG, "Tagging series: " + text);
-									ser.addTag(Series.TAG_DISCOVER);
-									// notification
-									Intent notif = new Intent(SN.SER_PREM);
-									notif.putExtra("tvdb_id", ser.tvdb_id);
-									notif.putExtra("name", text);
-									sendBroadcast(notif);
-								}
+							Log.d(TAG, "Evaluating series \"" + ser.name + "\"");
+							boolean good = true;
+							// check genres (or not)
+							if (!genFilter.isEmpty()) {
+								if (ser.genres.isEmpty()) {
+									Log.d(TAG, "Skipping because it's undefined.");
+									good = false;
+									break;
+								} else
+									for (String g: ser.genres)
+										if (genFilter.contains(g.toLowerCase(Locale.getDefault()))) {
+											Log.d(TAG, "Skipping because it's a " + g);
+											good = false;
+											break;
+										}
+							}
+							if (good) {
+								String text = ser.name + " (" + ser.genres() + ")";
+								Log.d(TAG, "Tagging series: " + text);
+								ser.addTag(Series.TAG_DISCOVER);
+								// notification
+								Intent notif = new Intent(SN.SER_PREM);
+								notif.putExtra("tvdb_id", ser.tvdb_id);
+								notif.putExtra("name", text);
+								sendBroadcast(notif);
 							}
 						}
 					}
@@ -312,6 +319,7 @@ public class Service extends WakefulIntentService {
 				}
 			}
 		}
+		Log.d(TAG, "checkTVdbNews() end");
 	}
 	
 	private void checkDrive() throws Exception {
@@ -400,9 +408,9 @@ public class Service extends WakefulIntentService {
 		}
 		// notify the user
 		Intent notif = null;
-		if (data.containsKey("watchlist") && data.getAsBoolean("watchlist") && !wlst && session.notifyWatchlistedMovies())
+		if (data.containsKey("watchlist") && data.getAsBoolean("watchlist") && !wlst && session.notifyMovWlst())
 			notif = new Intent(SN.MOV_WLST);
-		else if (data.containsKey("collected") && data.getAsBoolean("collected") && !coll && session.notifyCollectedMovies())
+		else if (data.containsKey("collected") && data.getAsBoolean("collected") && !coll && session.notifyMovColl())
 			notif = new Intent(SN.MOV_COLL);
 		if (notif != null) {
 			notif.putExtra("imdb_id", args[0]);
@@ -454,10 +462,8 @@ public class Service extends WakefulIntentService {
 			}
 		}
 		// notify the user
-		Intent notif = null;
-		if (data.containsKey("watchlist") && data.getAsBoolean("watchlist") && !wlst && session.notifyWatchlistedSeries())
-			notif = new Intent(SN.SER_WLST);
-		if (notif != null) {
+		if (data.containsKey("watchlist") && data.getAsBoolean("watchlist") && !wlst && session.notifySerWlst()) {
+			Intent notif = new Intent(SN.SER_WLST);
 			notif.putExtra("tvdb_id", args[0]);
 			if (!TextUtils.isEmpty(name))
 				notif.putExtra("name", name);
@@ -496,10 +502,8 @@ public class Service extends WakefulIntentService {
 			db.insertOrThrow("episode", null, data);
 		}
 		// notify the user
-		Intent notif = null;
-		if (data.containsKey("collected") && data.getAsBoolean("collected") && !coll && session.notifyCollectedEpisodes())
-			notif = new Intent(SN.SER_COLL);
-		if (notif != null) {
+		if (data.containsKey("collected") && data.getAsBoolean("collected") && !coll && session.notifySerColl()) {
+			Intent notif = new Intent(SN.SER_COLL);
 			notif.putExtra("series", args[0]);
 			notif.putExtra("season", data.getAsInteger("season"));
 			notif.putExtra("episode", data.getAsInteger("episode"));
@@ -602,7 +606,8 @@ public class Service extends WakefulIntentService {
 					qo.close();
 				}
 				if (sb.length() > 0) {
-					String fn = SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
+					//String fn = SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
+					String fn = Long.toString(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
 					for (String fid: others)
 						drive.writeFile(null, fid, fn, MT.TEXT, sb.toString());
 				}

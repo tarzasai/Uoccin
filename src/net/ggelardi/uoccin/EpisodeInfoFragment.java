@@ -200,7 +200,7 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 		episode = Series.get(getActivity(), series).checkEpisode(seasNo, episNo);
 		if (episode == null) {
 			EID eid = new EID(series, seasNo, episNo);
-			Log.i(getTag(), "Invalid episode " + eid.toString());
+			Log.i(tag(), "Invalid episode " + eid.toString());
 			// TODO: dialog
 			Toast.makeText(getActivity(), "Invalid episode " + eid.sequence(), Toast.LENGTH_SHORT).show();
 			getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
