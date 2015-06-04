@@ -5,8 +5,8 @@
     android:layout_height="wrap_content"
     android:background="@drawable/item_frame"
     android:orientation="horizontal"
-    android:paddingBottom="1dp"
-    android:paddingTop="1dp"
+    android:paddingBottom="0.5dp"
+    android:paddingTop="0.5dp"
     tools:ignore="RtlHardcoded" >
 
     <ImageView

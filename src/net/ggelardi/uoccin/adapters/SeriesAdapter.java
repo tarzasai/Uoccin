@@ -100,6 +100,7 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 				pstHeight = view.getMeasuredHeight();
 				pstWidth = Math.round((pstHeight*340)/500);
 			}
+			//
 			view.setTag(vh);
 		} else {
 			vh = (ViewHolder) view.getTag();
