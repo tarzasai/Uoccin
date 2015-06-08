@@ -616,7 +616,6 @@ public class Service extends WakefulIntentService {
 					qo.close();
 				}
 				if (sb.length() > 0) {
-					//String fn = SDF.timestamp(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
 					String fn = Long.toString(System.currentTimeMillis()) + "." + session.driveDeviceID() + ".diff";
 					for (String fid: others)
 						drive.writeFile(null, fid, fn, MT.TEXT, sb.toString());
