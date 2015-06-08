@@ -21,14 +21,14 @@
         <item>Serie preferite</item>
         <item>Prossimi episodi</item>
         <item>Episodi persi</item>
-        <item>Episodi disponibili</item>
+        <item>Episodi in libreria</item>
         <item>Nuove serie TV</item>
         <item>Statistiche</item>
     </string-array>
     
     <string-array name="view_defmov_titles">
         <item>Film da vedere</item>
-        <item>Film disponibili</item>
+        <item>Film in libreria</item>
         <item>Film già visti</item>
     </string-array>
     

@@ -29,16 +29,16 @@
             android:layout_alignParentTop="true"
             android:layout_marginLeft="3dp"
             android:layout_marginRight="3dp"
-            android:divider="@drawable/divider_1dp"
+            android:divider="@drawable/divider_2dp"
             android:orientation="vertical"
-            android:padding="5dp"
-            android:showDividers="middle" >
+            android:padding="5dp" >
 
             <TextView
                 android:id="@+id/txt_is_series"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="28dp"
+                android:drawableLeft="@drawable/ics_active_news"
                 android:drawablePadding="3dp"
                 android:ellipsize="end"
                 android:lines="1"
@@ -61,65 +61,12 @@
                     android:visibility="gone" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:orientation="vertical" >
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" >
-
-                        <TextView
-                            android:id="@+id/textView1"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:drawableLeft="@drawable/ics_action_tv"
-                            android:text="@string/empty_text"
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                        <TextView
-                            android:id="@+id/textView2"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:lines="1"
-                            android:text="Small Text"
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" >
-
-                        <TextView
-                            android:id="@+id/textView3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:drawableLeft="@drawable/ics_action_tv"
-                            android:text="@string/empty_text"
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                        <TextView
-                            android:id="@+id/textView4"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:lines="2"
-                            android:text="Small Text"
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <LinearLayout
                     android:id="@+id/box_is_anyep"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:orientation="vertical"
-                    android:visibility="gone" >
+                    android:visibility="visible" >
 
                     <TextView
                         android:id="@+id/txt_is_anyid"
@@ -131,16 +78,30 @@
                         android:text="@string/sample_episode"
                         android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/txt_is_anyad"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:drawablePadding="3dp"
-                        android:ellipsize="end"
-                        android:lines="2"
-                        android:text="@string/sample_date1"
-                        android:textColor="@android:color/darker_gray"
-                        android:textStyle="bold" />
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:id="@+id/txt_is_anyad"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:drawablePadding="3dp"
+                            android:ellipsize="end"
+                            android:text="@string/sample_date1"
+                            android:textColor="@android:color/darker_gray"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:lines="2"
+                            android:text="@string/empty_text"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
@@ -149,7 +110,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:orientation="vertical"
-                    android:visibility="gone" >
+                    android:visibility="visible" >
 
                     <TextView
                         android:id="@+id/txt_is_avtit"
@@ -176,8 +137,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
+                    android:layout_marginBottom="5dp"
                     android:orientation="vertical"
-                    android:visibility="visible" >
+                    android:visibility="gone" >
 
                     <TextView
                         android:id="@+id/txt_seritm_coll"
@@ -188,8 +150,7 @@
                         android:ellipsize="end"
                         android:gravity="center_vertical"
                         android:lines="1"
-                        android:text="@string/sample_stat"
-                        android:textStyle="bold" />
+                        android:text="@string/sample_stat" />
 
                     <TextView
                         android:id="@+id/txt_seritm_seen"
@@ -198,10 +159,7 @@
                         android:drawableLeft="@drawable/ics_action_seen"
                         android:drawablePadding="4dp"
                         android:ellipsize="end"
-                        android:lines="2"
-                        android:text="@string/sample_stat"
-                        android:textStyle="bold" />
-
+                        android:text="@string/sample_stat" />
                 </LinearLayout>
             </RelativeLayout>
 
@@ -235,7 +193,6 @@
                         android:layout_alignParentLeft="true"
                         android:layout_centerVertical="true"
                         android:numStars="5" />
-
                 </RelativeLayout>
 
                 <TextView

@@ -90,32 +90,14 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 			vh.txt_subs = (TextView) view.findViewById(R.id.txt_is_subs);
 			vh.rat_myrt = (RatingBar) view.findViewById(R.id.rat_is_myrt);
 			vh.txt_info = (TextView) view.findViewById(R.id.txt_is_info);
-			//
 			vh.img_star.setOnClickListener(listener);
 			vh.box_2see.setOnClickListener(listener);
-			//
-			if (pstHeight <= 1) {
-				view.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
-					MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-				pstHeight = view.getMeasuredHeight();
-				pstWidth = Math.round((pstHeight*340)/500);
-			}
-			//
 			view.setTag(vh);
 		} else {
 			vh = (ViewHolder) view.getTag();
 		}
-		//
-		vh.img_star.setTag(Integer.valueOf(position));
-		//
 		Series ser = getItem(position);
-		session.picasso(ser.poster, true).resize(pstWidth, pstHeight).into(vh.img_post);
-		if (pstWidth > 1) {
-			vh.img_post.setMinimumWidth(pstWidth);
-			vh.img_post.setMaxWidth(pstWidth);
-			vh.img_post.setMinimumHeight(pstHeight);
-			vh.img_post.setMaxHeight(pstHeight);
-		}
+		vh.img_star.setTag(Integer.valueOf(position));
 		vh.txt_name.setText(ser.name);
 		vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(ser.isRecent() ? R.drawable.ics_active_news : 0, 0, 0, 0);
 		vh.img_star.setImageResource(ser.inWatchlist() ? R.drawable.ic_active_loved : R.drawable.ic_action_loved);
@@ -126,7 +108,6 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 			vh.box_stat.setVisibility(View.GONE);
 			vh.txt_subs.setVisibility(View.GONE);
 			vh.rat_myrt.setVisibility(View.GONE);
-			//
 			vh.txt_plot.setText(ser.plot);
 		} else if (data.equals("sermiss")) {
 			vh.txt_plot.setVisibility(View.GONE);
@@ -134,7 +115,6 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 			vh.box_2see.setVisibility(View.VISIBLE);
 			vh.box_stat.setVisibility(View.GONE);
 			vh.rat_myrt.setVisibility(View.GONE);
-			//
 			Episode ep = null;
 			for (int i = 0; i < ser.episodes.size(); i++) {
 				ep = ser.episodes.get(i);
@@ -155,7 +135,6 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 			vh.box_2see.setVisibility(View.VISIBLE);
 			vh.box_stat.setVisibility(View.GONE);
 			vh.rat_myrt.setVisibility(View.GONE);
-			//
 			Episode ep = null;
 			for (int i = 0; i < ser.episodes.size(); i++) {
 				ep = ser.episodes.get(i);
@@ -178,7 +157,6 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 			vh.box_stat.setVisibility(View.VISIBLE);
 			vh.txt_subs.setVisibility(View.GONE);
 			vh.rat_myrt.setVisibility(View.VISIBLE);
-			//
 			int n = ser.episodeAired(null);
 			int m = ser.episodeCollected(null);
 			vh.txt_coll.setText(m == n ? String.format(session.getString(R.string.fmt_nums_done), m) :
@@ -194,9 +172,7 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 			vh.box_stat.setVisibility(View.GONE);
 			vh.txt_subs.setVisibility(View.GONE);
 			vh.rat_myrt.setVisibility(View.VISIBLE);
-			//
 			vh.rat_myrt.setRating(ser.getRating());
-			//
 			List<Episode> chk = new ArrayList<Episode>();
 			chk.add(ser.lastEpisode());
 			chk.add(ser.nextEpisode());
@@ -213,7 +189,6 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 				ep = chk.get(1);
 			else
 				ep = chk.get(0);
-			//
 			if (ep == null) {
 				vh.txt_epis.setText("N/A");
 				vh.txt_epis.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
@@ -229,6 +204,20 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 			}
 		}
 		vh.txt_info.setText(ser.airInfo());
+		// check poster sizes and load it
+		if (pstHeight <= 1) {
+			view.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
+				MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+			pstHeight = view.getMeasuredHeight();
+			pstWidth = Math.round((pstHeight*340)/500);
+		}
+		session.picasso(ser.poster, true).resize(pstWidth, pstHeight).into(vh.img_post);
+		if (pstWidth > 1) {
+			vh.img_post.setMinimumWidth(pstWidth);
+			vh.img_post.setMaxWidth(pstWidth);
+			vh.img_post.setMinimumHeight(pstHeight);
+			vh.img_post.setMaxHeight(pstHeight);
+		}
 		return view;
 	}
 	

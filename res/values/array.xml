@@ -63,7 +63,7 @@
         <item>Series watchlist</item>
         <item>Upcoming episodes</item>
         <item>Missing episodes</item>
-        <item>Available episodes</item>
+        <item>Collected episodes</item>
         <item>New TV shows</item>
         <item>Series stats</item>
     </string-array>
@@ -76,7 +76,7 @@
     
     <string-array name="view_defmov_titles">
         <item>Movies watchlist</item>
-        <item>Available movies</item>
+        <item>Collected movies</item>
         <item>Watched movies</item>
     </string-array>
     
