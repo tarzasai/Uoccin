@@ -104,6 +104,8 @@
     <string name="notif_ser_wlst">Uoccin: new series in watchlist</string>
     <string name="notif_ser_coll">Uoccin: new episode in library</string>
     <string name="notif_gen_miss">Tap here to retrieve all the title info</string>
+    <string name="notif_dbg_rsst">Uoccin: TVDB rss evaluated</string>
+    <string name="notif_dbg_rssm">%1$d elements, %2$d premieres, %3$d passed.</string>
 
     <!-- settings -->
     <string name="settings_title">Uoccin settings</string>

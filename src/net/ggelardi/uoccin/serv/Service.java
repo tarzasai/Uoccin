@@ -273,6 +273,8 @@ public class Service extends WakefulIntentService {
 			Element node;
 			EID check;
 			Series ser;
+			int nPrems = 0;
+			int nGoods = 0;
 			for (int i = 0; i < items.getLength(); i++) {
 				link = Commons.XML.nodeText((Element) items.item(i), "link");
 				try {
@@ -284,6 +286,7 @@ public class Service extends WakefulIntentService {
 						check = new EID(node);
 						Log.d(TAG, "Evaluating episode " + check.toString() + " -> " + link);
 						if (check.isValid(session.specials()) && check.season == 1 && check.episode == 1) {
+							nPrems++;
 							doc = XML.TVDB.getInstance().getSeries(check.series, session.language());
 							ser = Series.get(this, (Element)doc.getElementsByTagName("Series").item(0), null);
 							Log.d(TAG, "Evaluating series \"" + ser.name + "\"");
@@ -303,6 +306,7 @@ public class Service extends WakefulIntentService {
 										}
 							}
 							if (good) {
+								nGoods++;
 								String text = ser.name + " (" + ser.genres() + ")";
 								Log.d(TAG, "Tagging series: " + text);
 								ser.addTag(Series.TAG_DISCOVER);
@@ -318,6 +322,12 @@ public class Service extends WakefulIntentService {
 					Log.e(TAG, link, err);
 				}
 			}
+			// *DEBUG ONLY* notification
+			Intent notif = new Intent(SN.DBG_TVDB_RSS);
+			notif.putExtra("tot", items.getLength());
+			notif.putExtra("chk", nPrems);
+			notif.putExtra("oks", nGoods);
+			sendBroadcast(notif);
 		}
 		Log.d(TAG, "checkTVdbNews() end");
 	}

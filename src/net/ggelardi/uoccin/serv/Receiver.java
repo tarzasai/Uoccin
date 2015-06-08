@@ -160,6 +160,17 @@ public class Receiver extends BroadcastReceiver {
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
+		} else if (action.equals(SN.DBG_TVDB_RSS)) {
+			
+			title = session.getString(R.string.notif_dbg_rsst);
+			text = String.format(session.getString(R.string.notif_dbg_rssm), data.getInt("tot"), data.getInt("chk"),
+				data.getInt("oks"));
+			pi = newPI(newAI(SN.GENERAL_INFO), false);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_info).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			nm.notify(NOTIF_GENERAL_INFO, ncb.build());
+			
 		}
 	}
 	
