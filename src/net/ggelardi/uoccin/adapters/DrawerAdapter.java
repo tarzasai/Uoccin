@@ -63,7 +63,7 @@ public class DrawerAdapter extends BaseExpandableListAdapter {
 		children.add(new DrawerItem("action_restore", session.getString(R.string.action_restore)));
 		children.add(new DrawerItem("action_syncnow", session.getString(R.string.action_syncnow)));
 		
-		/*
+		///*
 		// debug
 		di = new DrawerItem("debug", session.getString(R.string.drwhdr_develop), R.drawable.ic_action_debug);
 		heads.add(di);
@@ -71,7 +71,7 @@ public class DrawerAdapter extends BaseExpandableListAdapter {
 		children = items.get(di);
 		children.add(new DrawerItem("action_cleandb", session.getString(R.string.action_cleandb)));
 		children.add(new DrawerItem("action_chktvdb", session.getString(R.string.action_chktvdb)));
-		*/
+		//*/
 	}
 	
 	@Override

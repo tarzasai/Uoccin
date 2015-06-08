@@ -130,7 +130,7 @@ public class Receiver extends BroadcastReceiver {
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.SER_COLL)) {
-
+			
 			int season = data.getInt("season");
 			int episode = data.getInt("episode");
 			title = session.getString(R.string.notif_ser_coll);
@@ -154,11 +154,22 @@ public class Receiver extends BroadcastReceiver {
 			text = data.getString("name", session.getString(R.string.notif_gen_miss));
 			pi = newPI(newAI(MA.SERIES_INFO).putExtra("tvdb_id", data.getString("tvdb_id")), true);
 			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_series).setContentTitle(
+				true).setSmallIcon(R.drawable.ic_notification_premiere).setContentTitle(
 				title).setContentText(text).setContentIntent(pi);
 			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
+			
+		} else if (action.equals(SN.DBG_TVDB_RSS)) {
+			
+			title = session.getString(R.string.notif_dbg_rsst);
+			text = String.format(session.getString(R.string.notif_dbg_rssm), data.getInt("tot"), data.getInt("chk"),
+				data.getInt("oks"));
+			pi = newPI(newAI(SN.GENERAL_INFO), false);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
+				true).setSmallIcon(R.drawable.ic_notification_info).setContentTitle(
+				title).setContentText(text).setContentIntent(pi);
+			nm.notify(NOTIF_GENERAL_INFO, ncb.build());
 			
 		}
 	}
