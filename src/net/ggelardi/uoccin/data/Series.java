@@ -515,13 +515,10 @@ public class Series extends Title {
 		if (timestamp > 0) {
 			long now = System.currentTimeMillis();
 			long ageLocal = now - timestamp;
-			if (firstAired > 0) {
-				long ageAired = Math.abs(now - firstAired);
-				if (ageAired < Commons.weekLong)
-					return ageLocal > Commons.dayLong;
-				if (ageAired > Commons.yearLong)
-					return ageLocal > Commons.monthLong;
-			}
+			if (firstAired > 0 && Math.abs(now - firstAired) < (Commons.weekLong * 2))
+				return ageLocal > Commons.dayLong;
+			if (isEnded())
+				return ageLocal > Commons.monthLong;
 			return ageLocal > Commons.weekLong;
 		}
 		return false;
