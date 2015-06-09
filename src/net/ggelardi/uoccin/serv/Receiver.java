@@ -53,8 +53,10 @@ public class Receiver extends BroadcastReceiver {
 			
 			session.registerAlarms();
 			
-		} else if (action.equals(SR.CLEAN_DB_CACHE) || action.equals(SR.GDRIVE_SYNCNOW)) {
+		} else if (action.equals(SR.CLEAN_DB_CACHE) || action.equals(SR.GDRIVE_SYNCNOW) ||
+			action.equals(SR.CHECK_TVDB_RSS)) {
 			
+			session.registerAlarms();
 			WakefulIntentService.sendWakefulWork(context, new Intent(context, Service.class).setAction(action));
 			
 		} else if (action.equals(SN.CONNECT_FAIL)) {

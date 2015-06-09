@@ -122,30 +122,42 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
 	}
 	
-	private PendingIntent mkPI(String action) {
+	private PendingIntent getPI(String action, boolean create) {
 		return PendingIntent.getBroadcast(acntx, 0, new Intent(acntx, Receiver.class).setAction(action),
-			PendingIntent.FLAG_UPDATE_CURRENT);
+			create ? PendingIntent.FLAG_UPDATE_CURRENT : PendingIntent.FLAG_NO_CREATE);
 	}
 	
 	public void registerAlarms() {
+		Log.d(TAG, "registerAlarms() begin");
 		AlarmManager am = (AlarmManager) acntx.getSystemService(Context.ALARM_SERVICE);
-		// clean database cache every hour
-		PendingIntent cc = mkPI(SR.CLEAN_DB_CACHE);
-		am.cancel(cc);
-		am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HOUR,
-			AlarmManager.INTERVAL_HOUR, cc);
-		// check TVDB rss feed for premiers a couple of times a day
-		PendingIntent tv = mkPI(SR.CHECK_TVDB_RSS);
-		am.cancel(tv);
-		if (checkPremieres())
-			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-				AlarmManager.INTERVAL_HALF_DAY, tv);
-		// check Uoccin files changes in Drive every 15 mins
-		PendingIntent gd = mkPI(SR.GDRIVE_SYNCNOW);
-		am.cancel(gd);
-		if (driveSyncEnabled() && driveAccountSet())
-			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, driveSyncInterval(),
-				driveSyncInterval(), gd);
+		PendingIntent cc = getPI(SR.CLEAN_DB_CACHE, false);
+		if (cc == null) {
+			cc = getPI(SR.CLEAN_DB_CACHE, true);
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 60000, AlarmManager.INTERVAL_HOUR, cc);
+			Log.d(TAG, "CLEAN_DB_CACHE alarm set");
+		}
+		PendingIntent tv = getPI(SR.CHECK_TVDB_RSS, false);
+		if (checkPremieres() && tv == null) {
+			tv = getPI(SR.CHECK_TVDB_RSS, true);
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 5 * 60000, AlarmManager.INTERVAL_HOUR * 4, tv);
+			Log.d(TAG, "CHECK_TVDB_RSS alarm set");
+		} else if (!checkPremieres() && tv != null) {
+			am.cancel(tv);
+			tv.cancel();
+			Log.d(TAG, "CHECK_TVDB_RSS alarm canceled");
+		}
+		PendingIntent gd = getPI(SR.GDRIVE_SYNCNOW, false);
+		boolean should = driveSyncEnabled() && driveAccountSet();
+		if (should && gd == null) {
+			gd = getPI(SR.GDRIVE_SYNCNOW, true);
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 2 * 60000, driveSyncInterval(), gd);
+			Log.d(TAG, "GDRIVE_SYNCNOW alarm set");
+		} else if (!should && gd != null) {
+			am.cancel(gd);
+			gd.cancel();
+			Log.d(TAG, "GDRIVE_SYNCNOW alarm canceled");
+		}
+		Log.d(TAG, "registerAlarms() end");
 	}
 	
 	public String versionName() {

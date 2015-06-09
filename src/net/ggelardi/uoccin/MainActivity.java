@@ -169,6 +169,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 	protected void onResume() {
 		super.onResume();
 		
+		session.registerAlarms();
+		
 		dropHourGlass();
 		
 		if (session.driveSyncEnabled() && !session.driveAccountSet()) {
