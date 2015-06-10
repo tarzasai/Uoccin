@@ -55,13 +55,16 @@ public class DrawerAdapter extends BaseExpandableListAdapter {
 			children.add(new DrawerItem(DrawerItem.MOVIE, views[i], titles[i]));
 		
 		// services
-		di = new DrawerItem("services", session.getString(R.string.drwhdr_services), R.drawable.ic_action_cloud);
-		heads.add(di);
-		items.put(di, new ArrayList<DrawerAdapter.DrawerItem>());
-		children = items.get(di);
-		children.add(new DrawerItem("action_backup", session.getString(R.string.action_backup)));
-		children.add(new DrawerItem("action_restore", session.getString(R.string.action_restore)));
-		children.add(new DrawerItem("action_syncnow", session.getString(R.string.action_syncnow)));
+		if (session.driveAccountSet()) {
+			di = new DrawerItem("services", session.getString(R.string.drwhdr_services), R.drawable.ic_action_cloud);
+			heads.add(di);
+			items.put(di, new ArrayList<DrawerAdapter.DrawerItem>());
+			children = items.get(di);
+			children.add(new DrawerItem("action_backup", session.getString(R.string.action_backup)));
+			children.add(new DrawerItem("action_restore", session.getString(R.string.action_restore)));
+			if (session.driveSyncEnabled())
+				children.add(new DrawerItem("action_syncnow", session.getString(R.string.action_syncnow)));
+		}
 		
 		/*
 		// debug
