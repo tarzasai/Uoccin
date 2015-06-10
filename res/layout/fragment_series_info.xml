@@ -109,15 +109,6 @@
                     android:text="@string/lbl_comm_seen" />
 
                 <TextView
-                    android:id="@+id/txt_serinf_shar"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableTop="@drawable/ic_action_share"
-                    android:gravity="center_horizontal"
-                    android:text="@string/lbl_comm_shar" />
-
-                <TextView
                     android:id="@+id/txt_serinf_refr"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

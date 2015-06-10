@@ -19,6 +19,9 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -51,7 +54,6 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 	private TextView txt_wlst;
 	private TextView txt_coll;
 	private TextView txt_seen;
-	private TextView txt_shar;
 	private TextView txt_imdb;
 	private TextView txt_refr;
 	private TextView txt_plot;
@@ -65,6 +67,8 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 	private LinearLayout box_wrts;
 	private LinearLayout box_awrd;
 	private AlertDialog dlg_tags;
+	private MenuItem miShare;
+	private MenuItem miForget;
 	
 	private int pstHeight = 1;
 	private int pstWidth = 1;
@@ -80,6 +84,8 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		setHasOptionsMenu(true);
 		
 		Bundle args = getArguments();
 		imdb_id = args.getString("imdb_id");
@@ -104,7 +110,6 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 		txt_wlst = (TextView) view.findViewById(R.id.txt_movinf_wlst);
 		txt_coll = (TextView) view.findViewById(R.id.txt_movinf_coll);
 		txt_seen = (TextView) view.findViewById(R.id.txt_movinf_seen);
-		txt_shar = (TextView) view.findViewById(R.id.txt_movinf_shar);
 		txt_imdb = (TextView) view.findViewById(R.id.txt_movinf_imdb);
 		txt_refr = (TextView) view.findViewById(R.id.txt_movinf_refr);
 		txt_plot = (TextView) view.findViewById(R.id.txt_movinf_plot);
@@ -147,18 +152,6 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 			public void onClick(View v) {
 				movie.setWatched(!movie.isWatched());
 				txt_wlst.startAnimation(blink);
-			}
-		});
-		
-		txt_shar.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent si = new Intent(Intent.ACTION_SEND);
-			    si.setType("text/plain");
-			    si.putExtra(Intent.EXTRA_TITLE, movie.name);
-			    si.putExtra(Intent.EXTRA_SUBJECT, movie.name);
-			    si.putExtra(Intent.EXTRA_TEXT, movie.imdbUrl());
-			    startActivity(Intent.createChooser(si, "Share movie info"));
 			}
 		});
 		
@@ -224,6 +217,43 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 			dlg_tags.dismiss(); // to avoid the "Activity has leaked window bla bla" error.
 			dlg_tags = null;
 		}
+	}
+	
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		
+		inflater.inflate(R.menu.movie, menu);
+
+		miShare = menu.findItem(R.id.action_share);
+		miForget = menu.findItem(R.id.action_forget);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item == miShare) {
+			Intent si = new Intent(Intent.ACTION_SEND);
+		    si.setType("text/plain");
+		    si.putExtra(Intent.EXTRA_TITLE, movie.name);
+		    si.putExtra(Intent.EXTRA_SUBJECT, movie.name);
+		    si.putExtra(Intent.EXTRA_TEXT, movie.imdbUrl());
+		    startActivity(Intent.createChooser(si, "Share movie info"));
+			return true;
+		}
+		if (item == miForget) {
+			new AlertDialog.Builder(getActivity()).setTitle(movie.name).setMessage(R.string.ask_forget_movie).
+			setIcon(android.R.drawable.ic_dialog_alert).setNegativeButton(R.string.dlg_btn_cancel, null).
+			setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					movie.setWatchlist(false);
+					movie.setCollected(false);
+					movie.setWatched(false);
+				}
+			}).show();
+			return true;
+		}
+		return false;
 	}
 	
 	@Override

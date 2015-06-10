@@ -29,7 +29,6 @@
             android:layout_alignParentTop="true"
             android:layout_marginLeft="3dp"
             android:layout_marginRight="3dp"
-            android:divider="@drawable/divider_2dp"
             android:orientation="vertical"
             android:padding="5dp" >
 

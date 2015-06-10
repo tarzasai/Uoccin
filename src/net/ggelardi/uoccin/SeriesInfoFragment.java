@@ -18,6 +18,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -44,7 +47,6 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 	private TextView txt_wlst;
 	private TextView txt_coll;
 	private TextView txt_seen;
-	private TextView txt_shar;
 	private TextView txt_tvdb;
 	private TextView txt_imdb;
 	private TextView txt_refr;
@@ -55,6 +57,8 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 	private TextView txt_tags;
 	private ExpandableHeightGridView grd_seas;
 	private AlertDialog dlg_tags;
+	private MenuItem miShare;
+	private MenuItem miForget;
 	
 	private int pstHeight = 1;
 	private int pstWidth = 1;
@@ -71,6 +75,8 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		setHasOptionsMenu(true);
+		
 		Bundle args = getArguments();
 		tvdb_id = args.getString("tvdb_id");
 	}
@@ -86,7 +92,6 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 		txt_wlst = (TextView) view.findViewById(R.id.txt_serinf_wlst);
 		txt_coll = (TextView) view.findViewById(R.id.txt_serinf_coll);
 		txt_seen = (TextView) view.findViewById(R.id.txt_serinf_seen);
-		txt_shar = (TextView) view.findViewById(R.id.txt_serinf_shar);
 		txt_tvdb = (TextView) view.findViewById(R.id.txt_serinf_tvdb);
 		txt_imdb = (TextView) view.findViewById(R.id.txt_serinf_imdb);
 		txt_refr = (TextView) view.findViewById(R.id.txt_serinf_refr);
@@ -136,27 +141,6 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 							txt_seen.startAnimation(blink);
 						}
 					}).show();
-			}
-		});
-		
-		txt_shar.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				StringBuilder sb = new StringBuilder();
-				sb.append("*").append(series.name.toUpperCase(Locale.getDefault())).append("*");
-				sb.append("\n").append(series.network);
-				if (series.isRecent())
-					sb.append(" #premiere");
-				sb.append(" - _").append(series.genres()).append("_");
-				sb.append("\n").append("\n").append(series.plot);
-				sb.append("\n").append("\n").append(series.poster);
-				sb.append("\n").append(!TextUtils.isEmpty(series.imdbUrl()) ? series.imdbUrl() : series.tvdbUrl());
-				Intent si = new Intent(Intent.ACTION_SEND);
-			    si.setType("text/plain");
-			    si.putExtra(Intent.EXTRA_TITLE, series.name);
-			    si.putExtra(Intent.EXTRA_SUBJECT, series.name);
-			    si.putExtra(Intent.EXTRA_TEXT, sb.toString());
-			    startActivity(Intent.createChooser(si, "Share series info"));
 			}
 		});
 		
@@ -237,6 +221,52 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 			dlg_tags.dismiss(); // to avoid the "Activity has leaked window bla bla" error.
 			dlg_tags = null;
 		}
+	}
+	
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		
+		inflater.inflate(R.menu.series, menu);
+
+		miShare = menu.findItem(R.id.action_share);
+		miForget = menu.findItem(R.id.action_forget);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item == miShare) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("*").append(series.name.toUpperCase(Locale.getDefault())).append("*");
+			sb.append("\n").append(series.network);
+			if (series.isRecent())
+				sb.append(" #premiere");
+			sb.append(" - _").append(series.genres()).append("_");
+			sb.append("\n").append("\n").append(series.plot);
+			sb.append("\n").append("\n").append(series.poster);
+			sb.append("\n").append(!TextUtils.isEmpty(series.imdbUrl()) ? series.imdbUrl() : series.tvdbUrl());
+			Intent si = new Intent(Intent.ACTION_SEND);
+		    si.setType("text/plain");
+		    si.putExtra(Intent.EXTRA_TITLE, series.name);
+		    si.putExtra(Intent.EXTRA_SUBJECT, series.name);
+		    si.putExtra(Intent.EXTRA_TEXT, sb.toString());
+		    startActivity(Intent.createChooser(si, "Share series info"));
+			return true;
+		}
+		if (item == miForget) {
+			new AlertDialog.Builder(getActivity()).setTitle(series.name).setMessage(R.string.ask_forget_series).
+			setIcon(android.R.drawable.ic_dialog_alert).setNegativeButton(R.string.dlg_btn_cancel, null).
+			setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					series.setWatchlist(false);
+					series.setCollected(false, null);
+					series.setWatched(false, null);
+				}
+			}).show();
+			return true;
+		}
+		return false;
 	}
 	
 	@Override

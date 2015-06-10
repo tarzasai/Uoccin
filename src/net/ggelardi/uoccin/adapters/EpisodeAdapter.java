@@ -69,13 +69,6 @@ public class EpisodeAdapter extends BaseAdapter {
 			vh.box_flgs = (LinearLayout) view.findViewById(R.id.box_epitm_flgs);
 			vh.img_coll.setOnClickListener(listener);
 			vh.img_seen.setOnClickListener(listener);
-			// calculate poster size
-			if (pstHeight <= 1) {
-				view.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
-					MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-				pstHeight = view.getMeasuredHeight();
-				pstWidth = Math.round((pstHeight*400)/225);
-			}
 			view.setTag(vh);
 		} else {
 			vh = (ViewHolder) view.getTag();
@@ -84,15 +77,6 @@ public class EpisodeAdapter extends BaseAdapter {
 		vh.img_coll.setTag(Integer.valueOf(position));
 		vh.img_seen.setTag(Integer.valueOf(position));
 		Episode ep = getItem(position);
-		String scrn = ep.poster;
-		if (TextUtils.isEmpty(scrn))
-			scrn = ep.getSeries().fanart;
-		if (TextUtils.isEmpty(scrn))
-			vh.img_scrn.setVisibility(View.GONE);
-		else {
-			vh.img_scrn.setVisibility(View.VISIBLE);
-			session.picasso(scrn).resize(pstWidth, pstHeight).into(vh.img_scrn);
-		}
 		vh.txt_name.setText(Integer.toString(ep.episode) + " - " + (TextUtils.isEmpty(ep.name) ? "N/A" : ep.name));
 		if (ep.isWatched())
 			vh.txt_name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ics_action_seen, 0, 0, 0);
@@ -108,6 +92,28 @@ public class EpisodeAdapter extends BaseAdapter {
 		vh.txt_subs.setVisibility(ep.hasSubtitles() ? View.VISIBLE : View.GONE);
 		vh.img_coll.setImageResource(ep.inCollection() ? R.drawable.ic_active_storage : R.drawable.ic_action_storage);
 		vh.img_seen.setImageResource(ep.isWatched() ? R.drawable.ic_active_seen : R.drawable.ic_action_seen);
+		// check poster sizes and load it
+		if (pstHeight <= 1) {
+			view.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
+				MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+			pstHeight = view.getMeasuredHeight();
+			pstWidth = Math.round((pstHeight*400)/225);
+		}
+		String scrn = ep.poster;
+		if (TextUtils.isEmpty(scrn))
+			scrn = ep.getSeries().fanart;
+		if (TextUtils.isEmpty(scrn))
+			vh.img_scrn.setVisibility(View.GONE);
+		else {
+			vh.img_scrn.setVisibility(View.VISIBLE);
+			session.picasso(scrn, true).resize(pstWidth, pstHeight).into(vh.img_scrn);
+		}
+		if (pstWidth > 1) {
+			vh.img_scrn.setMinimumWidth(pstWidth);
+			vh.img_scrn.setMaxWidth(pstWidth);
+			vh.img_scrn.setMinimumHeight(pstHeight);
+			vh.img_scrn.setMaxHeight(pstHeight);
+		}
 		return view;
 	}
 	

@@ -8,6 +8,8 @@ import java.util.Locale;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Series;
+import net.ggelardi.uoccin.data.Title;
+import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
@@ -286,6 +288,7 @@ public class SeriesAdapter extends BaseAdapter implements Filterable {
 			fltItems.clear();
 			fltItems.addAll((ArrayList<Series>) results.values);
 			notifyDataSetChanged();
+			Title.dispatch(OnTitleListener.READY, null);
 		}
 	}
 }

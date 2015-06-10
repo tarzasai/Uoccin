@@ -227,6 +227,8 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		
 		inflater.inflate(R.menu.lists, menu);
 
 		miSortDir = menu.findItem(R.id.action_sort_toggle);
@@ -237,6 +239,8 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
+		super.onPrepareOptionsMenu(menu);
+		
 		checkMenu();
 	}
 	
@@ -306,7 +310,6 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 	
 	@Override
 	public void onTitleEvent(final String state, final Throwable error) {
-		Log.d(tag(), "onTitleEvent(): " + state);
 		final Activity context = getActivity();
 		if (context != null)
 			context.runOnUiThread(new Runnable() {
@@ -319,17 +322,14 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 							((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
 						else
 							mAdapter.notifyDataSetChanged();
-						checkMenu();
 					} else if (state.equals(OnTitleListener.WORKING)) {
 						showHourGlass(true);
-						checkMenu();
 					} else if (state.equals(OnTitleListener.RELOAD)) {
 						forceReload = true;
 						reload();
 					} else if (state.equals(OnTitleListener.ERROR)) {
 						showHourGlass(false);
 						mAdapter.notifyDataSetChanged();
-						checkMenu();
 						Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
 					} else if (state.equals(OnTitleListener.READY)) {
 						showHourGlass(false);

@@ -6,6 +6,8 @@ import java.util.Locale;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.data.Movie;
+import net.ggelardi.uoccin.data.Title;
+import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
@@ -232,6 +234,7 @@ public class MovieAdapter extends BaseAdapter implements Filterable {
 			fltItems.clear();
 			fltItems.addAll((ArrayList<Movie>) results.values);
 			notifyDataSetChanged();
+			Title.dispatch(OnTitleListener.READY, null);
 		}
 	}
 }

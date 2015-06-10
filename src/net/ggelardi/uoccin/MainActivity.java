@@ -9,7 +9,6 @@ import net.ggelardi.uoccin.api.GSA;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.MA;
 import net.ggelardi.uoccin.serv.Commons.PK;
-import net.ggelardi.uoccin.serv.Commons.SN;
 import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.Service;
@@ -295,37 +294,8 @@ public class MainActivity extends ActionBarActivity implements BaseFragment.OnFr
 			case R.id.action_settings:
 				startActivity(new Intent(this, SettingsActivity.class));
 				return true;
-			case R.id.action_test:
-				
-				Intent si;
-				
-				/*
-				
-				si = new Intent(SN.MOV_WLST);
-				si.putExtra("imdb_id", "tt1964418");
-				si.putExtra("name", "Tomorrowland");
-				sendBroadcast(si);
-				
-				si = new Intent(SN.MOV_WLST);
-				si.putExtra("imdb_id", "tt1392190");
-				si.putExtra("name", "Mad Max: Fury Road");
-				sendBroadcast(si);
-				
-				si = new Intent(SN.MOV_COLL);
-				si.putExtra("imdb_id", "tt1392190");
-				si.putExtra("name", "Mad Max: Fury Road");
-				sendBroadcast(si);
-				
-				*/
-				
-				si = new Intent(SN.SER_COLL);
-				si.putExtra("series", "259063");
-				si.putExtra("season", 1);
-				si.putExtra("episode", 6);
-				si.putExtra("name", "De fddsf sdff");
-				sendBroadcast(si);
-				
-				return true;
+			/*case R.id.action_test:
+				return true;*/
 		}
 		return super.onOptionsItemSelected(item);
 	}

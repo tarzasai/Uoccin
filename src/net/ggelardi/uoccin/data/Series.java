@@ -519,7 +519,7 @@ public class Series extends Title {
 				return ageLocal > Commons.dayLong;
 			if (isEnded())
 				return ageLocal > Commons.monthLong;
-			return ageLocal > Commons.weekLong;
+			return ageLocal > (Commons.dayLong * 3);
 		}
 		return false;
 	}

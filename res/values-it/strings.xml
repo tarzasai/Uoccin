@@ -2,10 +2,12 @@
 <resources>
     
     <string name="action_search">Trova</string>
+    <string name="action_share">Condividi</string>
     <string name="action_settings">Impostazioni</string>
     <string name="action_sort_name">Ordina per titolo</string>
     <string name="action_sort_year">Ordina per anno</string>
     <string name="action_sort_rats">Ordina per punteggio</string>
+    <string name="action_forget">Elimina</string>
     <string name="action_backup">Backup database</string>
     <string name="action_restore">Ripristino database</string>
     <string name="action_syncnow">Sincronizza adesso</string>
@@ -76,6 +78,8 @@
     <string name="hint_filter">filtro</string>
     <string name="ask_backup">Questa operazione sostituirà il file di backup (uoccin.json) già condiviso su Google Drive. Vuoi continuare?</string>
     <string name="ask_restore">Questa operazione sostituirà le serie e i film al momento presenti in preferiti e libreria con quelli contenuti nel backup. Vuoi continuare?</string>
+    <string name="ask_forget_series">Questa operazione rimuoverà la serie dai preferiti e gli episodi dalla libreria, vuoi continuare?</string>
+    <string name="ask_forget_movie">Questa operazione rimuoverà il film dai preferiti e dalla libreria, vuoi continuare?</string>
     <string name="ask_set_series_coll_true">Sei sicuro di voler inserire tutti gli episodi nella libreria?</string>
     <string name="ask_set_series_coll_false">Sei sicuro di voler togliere tutti gli episodi dalla libreria?</string>
     <string name="ask_set_series_seen_true">Sei sicuro di voler segnare tutti gli episodi come già visti?</string>

@@ -15,6 +15,9 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -41,7 +44,6 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 	private TextView txt_prev;
 	private TextView txt_coll;
 	private TextView txt_seen;
-	private TextView txt_shar;
 	private TextView txt_refr;
 	private TextView txt_next;
 	private TextView txt_plot;
@@ -53,6 +55,7 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 	private TextView txt_dire;
 	private TextView txt_tvdb;
 	private TextView txt_imdb;
+	private MenuItem miShare;
 	
 	private int pstHeight = 1;
 	private int pstWidth = 1;
@@ -70,6 +73,8 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		setHasOptionsMenu(true);
 		
 		Bundle args = getArguments();
 		series = args.getString("series");
@@ -91,7 +96,6 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 		txt_prev = (TextView) view.findViewById(R.id.txt_epinf_prev);
 		txt_coll = (TextView) view.findViewById(R.id.txt_epinf_coll);
 		txt_seen = (TextView) view.findViewById(R.id.txt_epinf_seen);
-		txt_shar = (TextView) view.findViewById(R.id.txt_epinf_shar);
 		txt_refr = (TextView) view.findViewById(R.id.txt_epinf_refr);
 		txt_next = (TextView) view.findViewById(R.id.txt_epinf_next);
 		txt_plot = (TextView) view.findViewById(R.id.txt_epinf_plot);
@@ -135,30 +139,6 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 			public void onClick(View v) {
 				episode.setWatched(!episode.isWatched());
 				txt_seen.startAnimation(blink);
-			}
-		});
-		
-		txt_shar.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Series ser = episode.getSeries();
-				String title = ser.name + " " + episode.eid().sequence();
-				StringBuilder sb = new StringBuilder();
-				sb.append("*").append(title).append("*");
-				if (!TextUtils.isEmpty(episode.name))
-					sb.append(": ").append("_").append(episode.name).append("_");
-				sb.append("\n").append(ser.network).append(", ").append(episode.firstAired());
-				if (!TextUtils.isEmpty(episode.plot))
-					sb.append("\n").append("\n").append(episode.plot());
-				if (!TextUtils.isEmpty(episode.poster))
-					sb.append("\n").append("\n").append(episode.poster);
-				sb.append("\n").append(!TextUtils.isEmpty(episode.imdbUrl()) ? episode.imdbUrl() : episode.tvdbUrl());
-				Intent si = new Intent(Intent.ACTION_SEND);
-			    si.setType("text/plain");
-			    si.putExtra(Intent.EXTRA_TITLE, title);
-			    si.putExtra(Intent.EXTRA_SUBJECT, title);
-			    si.putExtra(Intent.EXTRA_TEXT, sb.toString());
-			    startActivity(Intent.createChooser(si, "Share episode info"));
 			}
 		});
 		
@@ -220,6 +200,41 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 		super.onPause();
 		
 		Title.removeOnTitleEventListener(this);
+	}
+	
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		
+		inflater.inflate(R.menu.episode, menu);
+
+		miShare = menu.findItem(R.id.action_share);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item == miShare) {
+			Series ser = episode.getSeries();
+			String title = ser.name + " " + episode.eid().sequence();
+			StringBuilder sb = new StringBuilder();
+			sb.append("*").append(title).append("*");
+			if (!TextUtils.isEmpty(episode.name))
+				sb.append(": ").append("_").append(episode.name).append("_");
+			sb.append("\n").append(ser.network).append(", ").append(episode.firstAired());
+			if (!TextUtils.isEmpty(episode.plot))
+				sb.append("\n").append("\n").append(episode.plot());
+			if (!TextUtils.isEmpty(episode.poster))
+				sb.append("\n").append("\n").append(episode.poster);
+			sb.append("\n").append(!TextUtils.isEmpty(episode.imdbUrl()) ? episode.imdbUrl() : episode.tvdbUrl());
+			Intent si = new Intent(Intent.ACTION_SEND);
+		    si.setType("text/plain");
+		    si.putExtra(Intent.EXTRA_TITLE, title);
+		    si.putExtra(Intent.EXTRA_SUBJECT, title);
+		    si.putExtra(Intent.EXTRA_TEXT, sb.toString());
+		    startActivity(Intent.createChooser(si, "Share episode info"));
+			return true;
+		}
+		return false;
 	}
 	
 	@Override

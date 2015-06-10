@@ -73,6 +73,11 @@ public abstract class BaseFragment extends Fragment implements OnClickListener {
 	}
 	
 	@Override
+	public void onPrepareOptionsMenu(Menu menu) {
+		Log.v(tag(), "onPrepareOptionsMenu");
+	}
+	
+	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		

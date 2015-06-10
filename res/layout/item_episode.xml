@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/item_frame"
-    android:orientation="horizontal" >
+    android:orientation="horizontal"
+    android:paddingBottom="0.5dp"
+    android:paddingTop="0.5dp"
+    tools:ignore="RtlHardcoded" >
 
     <ImageView
         android:id="@+id/img_epitm_scrn"
@@ -12,25 +16,21 @@
         android:contentDescription="@string/empty_text"
         android:src="@drawable/ic_action_image" />
 
-    <Space
-        android:layout_width="2dp"
-        android:layout_height="match_parent" />
-
     <RelativeLayout
-        android:id="@+id/aaa"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" >
+        android:layout_height="wrap_content" >
 
         <LinearLayout
             android:id="@+id/box_epitm_size"
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:divider="@drawable/divider_2dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:orientation="vertical"
-            android:padding="5dp"
-            android:showDividers="beginning|middle|end" >
+            android:padding="5dp" >
 
             <TextView
                 android:id="@+id/txt_epitm_name"
@@ -85,14 +85,14 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:layout_margin="2dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:background="@color/contentBackground"
             android:divider="@drawable/divider_8dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="5dp"
             android:showDividers="middle"
-            android:visibility="gone" >
+            android:visibility="visible" >
 
             <ImageView
                 android:id="@+id/img_epitm_coll"
