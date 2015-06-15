@@ -281,53 +281,66 @@ public class Service extends WakefulIntentService {
 					String eid = Uri.parse(link).getQueryParameter("id");
 					Document doc = XML.TVDB.getInstance().getEpisodeById(eid, "en");
 					NodeList lst = doc.getElementsByTagName("Episode");
-					if (lst != null && lst.getLength() > 0) {
-						node = (Element) lst.item(0);
-						check = new EID(node);
-						Log.d(TAG, "Evaluating episode " + check.toString() + " -> " + link);
-						if (check.isValid(session.specials()) && check.season == 1 && check.episode == 1) {
-							nPrems++;
-							doc = XML.TVDB.getInstance().getSeries(check.series, session.language());
-							ser = Series.get(this, (Element)doc.getElementsByTagName("Series").item(0), null);
-							Log.d(TAG, "Evaluating series \"" + ser.name + "\"");
-							boolean good = true;
-							// check genres (or not)
-							if (!genFilter.isEmpty()) {
-								if (ser.genres.isEmpty()) {
-									Log.d(TAG, "Skipping because it's undefined.");
+					if (lst == null || lst.getLength() <= 0)
+						continue;
+					node = (Element) lst.item(0);
+					check = new EID(node);
+					Log.d(TAG, "Evaluating episode " + check.toString() + " -> " + link);
+					if (!check.isValid(session.specials()) || check.season != 1 || check.episode != 1)
+						continue;
+					nPrems++;
+					Cursor cur = session.getDB().query("series", null, "tvdb_id = ?", new String[] { check.series },
+						null, null, null);
+					try {
+						if (cur.moveToFirst()) {
+							Log.d(TAG, "Skipping because it's not new to us.");
+							continue;
+						}
+					} finally {
+						cur.close();
+					}
+					doc = XML.TVDB.getInstance().getSeries(check.series, session.language());
+					ser = Series.get(this, (Element)doc.getElementsByTagName("Series").item(0), null);
+					Log.d(TAG, "Evaluating series \"" + ser.name + "\"");
+					boolean good = true;
+					// check genres (or not)
+					if (!genFilter.isEmpty()) {
+						if (ser.genres.isEmpty()) {
+							Log.d(TAG, "Skipping because it's undefined.");
+							good = false;
+						} else
+							for (String g: ser.genres)
+								if (genFilter.contains(g.toLowerCase(Locale.getDefault()))) {
+									Log.d(TAG, "Skipping because it's a " + g);
 									good = false;
 									break;
-								} else
-									for (String g: ser.genres)
-										if (genFilter.contains(g.toLowerCase(Locale.getDefault()))) {
-											Log.d(TAG, "Skipping because it's a " + g);
-											good = false;
-											break;
-										}
-							}
-							if (good) {
-								nGoods++;
-								String text = ser.name + " (" + ser.genres() + ")";
-								Log.d(TAG, "Tagging series: " + text);
-								ser.addTag(Series.TAG_DISCOVER);
-								// notification
-								Intent notif = new Intent(SN.SER_PREM);
-								notif.putExtra("tvdb_id", ser.tvdb_id);
-								notif.putExtra("name", text);
-								sendBroadcast(notif);
-							}
-						}
+								}
+					}
+					if (good) {
+						nGoods++;
+						String text = ser.name + " (" + ser.genres() + ")";
+						Log.d(TAG, "Tagging series: " + text);
+						ser.addTag(Series.TAG_DISCOVER);
+						// notification
+						Intent notif = new Intent(SN.SER_PREM);
+						notif.putExtra("tvdb_id", ser.tvdb_id);
+						notif.putExtra("name", text);
+						notif.putExtra("plot", ser.plot);
+						notif.putExtra("poster", ser.poster);
+						sendBroadcast(notif);
 					}
 				} catch (Exception err) {
 					Log.e(TAG, link, err);
 				}
 			}
+			/*
 			// *DEBUG ONLY* notification
 			Intent notif = new Intent(SN.DBG_TVDB_RSS);
 			notif.putExtra("tot", items.getLength());
 			notif.putExtra("chk", nPrems);
 			notif.putExtra("oks", nGoods);
 			sendBroadcast(notif);
+			*/
 		}
 		Log.d(TAG, "checkTVdbNews() end");
 	}
@@ -404,6 +417,7 @@ public class Service extends WakefulIntentService {
 		} else {
 			data.put("name", "N/A");
 			data.put("timestamp", 1);
+			data.put("createtime", System.currentTimeMillis());
 			db.insertOrThrow("movie", null, data);
 		}
 		if (!tagSet.isEmpty()) {
@@ -459,6 +473,7 @@ public class Service extends WakefulIntentService {
 		} else {
 			data.put("name", "N/A");
 			data.put("timestamp", 1);
+			data.put("createtime", System.currentTimeMillis());
 			db.insertOrThrow("series", null, data);
 		}
 		if (!tagSet.isEmpty()) {
@@ -794,6 +809,7 @@ public class Service extends WakefulIntentService {
 				cv.put("collected", collected);
 				cv.put("watched", watched);
 				cv.put("timestamp", 1);
+				cv.put("createtime", System.currentTimeMillis());
 				if (rating > 0)
 					cv.put("rating", rating);
 				if (subtitles != null && subtitles.length > 0)
@@ -879,9 +895,10 @@ public class Service extends WakefulIntentService {
 				cv.put("tvdb_id", tvdb_id);
 				cv.put("name", name);
 				cv.put("watchlist", watchlist);
+				cv.put("timestamp", 1);
+				cv.put("createtime", System.currentTimeMillis());
 				if (rating > 0)
 					cv.put("rating", rating);
-				cv.put("timestamp", 1);
 				db.insertOrThrow("series", null, cv);
 				// tags
 				if (tags != null)
@@ -902,10 +919,10 @@ public class Service extends WakefulIntentService {
 						cv.put("season", Integer.parseInt(season));
 						cv.put("episode", Integer.parseInt(episode));
 						cv.put("collected", true);
+						cv.put("timestamp", 1);
 						Object[] tmp = smap.get(episode);
 						if (tmp != null && tmp.length > 0)
 							cv.put("subtitles", TextUtils.join(",", smap.get(episode)));
-						cv.put("timestamp", 1);
 						db.insertOrThrow("episode", null, cv);
 						chk.add(season + "|" + episode);
 					}

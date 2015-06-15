@@ -1,5 +1,8 @@
 package net.ggelardi.uoccin.serv;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.ggelardi.uoccin.MainActivity;
@@ -13,6 +16,8 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -171,6 +176,13 @@ public class Receiver extends BroadcastReceiver {
 			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
 				true).setSmallIcon(R.drawable.ic_notification_info).setContentTitle(
 				title).setContentText(text).setContentIntent(pi);
+			String plot = data.getString("plot");
+			if (!TextUtils.isEmpty(plot))
+				ncb.setStyle(new NotificationCompat.BigTextStyle().bigText(plot));
+			String purl = data.getString("poster");
+			Bitmap poster = !TextUtils.isEmpty(purl) ? getBitmapFromURL(purl) : null;
+			if (poster != null)
+				ncb.setLargeIcon(poster);
 			nm.notify(NOTIF_GENERAL_INFO, ncb.build());
 			
 		}
@@ -183,5 +195,20 @@ public class Receiver extends BroadcastReceiver {
 	private PendingIntent newPI(Intent action, boolean unique) {
 		return PendingIntent.getActivity(session.getContext(), unique ? INTENT_ID.incrementAndGet() : 0, action,
 			PendingIntent.FLAG_UPDATE_CURRENT);
+	}
+	
+	private Bitmap getBitmapFromURL(String strURL) {
+		try {
+			URL url = new URL(strURL);
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setDoInput(true);
+			connection.connect();
+			InputStream input = connection.getInputStream();
+			Bitmap myBitmap = BitmapFactory.decodeStream(input);
+			return myBitmap;
+		} catch (Exception err) {
+			Log.e(TAG, "getBitmapFromURL", err);
+			return null;
+		}
 	}
 }

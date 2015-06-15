@@ -90,7 +90,7 @@ public class Storage extends SQLiteOpenHelper {
 		"collected" + DT_FLG + CS +
 		"watched" + DT_FLG + CS +
 		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" + CS +
-		"createtime" + DT_INT + CC_NNU + " DEFAULT (strftime('%s','now'))" +
+		"createtime" + DT_INT + CC_NNU +
 		")";
 	
 	private static final String CREATE_TABLE_MOVTAG = "CREATE TABLE movtag (" +
@@ -120,7 +120,7 @@ public class Storage extends SQLiteOpenHelper {
 		"rating" + DT_INT + CS +
 		"watchlist" + DT_FLG + CS +
 		"timestamp" + DT_INT + CC_NNU + " DEFAULT 0" + CS +
-		"createtime" + DT_INT + CC_NNU + " DEFAULT (strftime('%s','now'))" +
+		"createtime" + DT_INT + CC_NNU +
 		")";
 	
 	private static final String CREATE_TABLE_SERTAG = "CREATE TABLE sertag (" +

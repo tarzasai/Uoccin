@@ -467,9 +467,10 @@ public class Movie extends Title {
 			timestamp = System.currentTimeMillis();
 			cv.put("timestamp", timestamp);
 		}
-		if (isnew)
+		if (isnew) {
+			cv.put("createtime", System.currentTimeMillis());
 			db.insertOrThrow(TABLE, null, cv);
-		else
+		} else
 			db.update(TABLE, cv, "imdb_id=?", new String[] { imdb_id });
 		
 		// tags

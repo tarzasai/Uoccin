@@ -211,7 +211,8 @@ public class Series extends Title {
 		chk = Commons.XML.nodeText(serxml, "Airs_Time");
 		if (!TextUtils.isEmpty(chk)) {
 			chk = chk.replace(".", ":").replace(" ", "").toUpperCase(Locale.getDefault());
-			String fmt = chk.contains("M") ? "hh:mma" : "HH:mm";
+			String fmt = chk.length() <= 4 ? (chk.contains("M") ? "hha" : "HH") :
+				(chk.contains("M") ? "hh:mma" : "HH:mm");
 			try {
 				long t = Commons.SDF.eng(fmt).parse(chk).getTime();
 				if (t > 0)
@@ -446,9 +447,10 @@ public class Series extends Title {
 			timestamp = System.currentTimeMillis();
 			cv.put("timestamp", timestamp);
 		}
-		if (isnew)
+		if (isnew) {
+			cv.put("createtime", System.currentTimeMillis());
 			db.insertOrThrow(TABLE, null, cv);
-		else
+		} else
 			db.update(TABLE, cv, "tvdb_id = ?", new String[] { tvdb_id });
 		
 		// tags
