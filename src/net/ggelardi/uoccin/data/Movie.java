@@ -521,21 +521,15 @@ public class Movie extends Title {
 	}
 	
 	public boolean isOld() {
+		if (timestamp <= 0)
+			return false;
 		if (timestamp == 1)
 			return true;
-		if (timestamp > 0) {
-			long now = System.currentTimeMillis();
-			long ageLocal = now - timestamp;
-			if (released > 0) {
-				long ageAired = Math.abs(now - released);
-				if (ageAired < Commons.weekLong)
-					return ageLocal > Commons.dayLong;
-				if (ageAired > Commons.yearLong)
-					return ageLocal > Commons.monthLong;
-			}
-			return ageLocal > Commons.weekLong;
-		}
-		return false;
+		if (!Commons.olderThan(released, Commons.days(30)))
+			return Commons.olderThan(timestamp, Commons.days(isWatched() ? 4 : 2));
+		if (Commons.olderThan(released, Commons.days(365)))
+			return Commons.olderThan(timestamp, Commons.days(60));
+		return Commons.olderThan(timestamp, Commons.days(7));
 	}
 	
 	public boolean inWatchlist() {

@@ -137,11 +137,11 @@ public class Session implements OnSharedPreferenceChangeListener {
 			Log.d(TAG, "CLEAN_DB_CACHE alarm set");
 		}
 		PendingIntent tv = getPI(SR.CHECK_TVDB_RSS, false);
-		if (checkPremieres() && tv == null) {
+		if (tvdbCheckFeed() && tv == null) {
 			tv = getPI(SR.CHECK_TVDB_RSS, true);
-			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 5 * 60000, AlarmManager.INTERVAL_HOUR * 4, tv);
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 5 * 60000, AlarmManager.INTERVAL_HOUR, tv);
 			Log.d(TAG, "CHECK_TVDB_RSS alarm set");
-		} else if (!checkPremieres() && tv != null) {
+		} else if (!tvdbCheckFeed() && tv != null) {
 			am.cancel(tv);
 			tv.cancel();
 			Log.d(TAG, "CHECK_TVDB_RSS alarm canceled");
@@ -182,8 +182,17 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return prefs.getBoolean(PK.METAWIFI, true);
 	}
 	
-	public boolean checkPremieres() {
+	public boolean tvdbCheckFeed() {
 		return prefs.getBoolean(PK.TVDBFEED, false);
+	}
+	
+	public List<String> tvdbGenreFilter() {
+		return new ArrayList<String>(Arrays.asList(prefs.getString(PK.TVDBGFLT,
+			"").toLowerCase(Locale.getDefault()).split(",")));
+	}
+	
+	public long tvdbLastCheck() {
+		return prefs.getLong(PK.TVDBLAST, 0);
 	}
 	
 	public boolean notificationSound() {
@@ -208,10 +217,6 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	public boolean blockSpoilers() {
 		return prefs.getBoolean(PK.SPLRPROT, true);
-	}
-	
-	public List<String> tvdbGenreFilter() {
-		return new ArrayList<String>(Arrays.asList(prefs.getString(PK.TVDBGFLT, "").toLowerCase(Locale.getDefault()).split(",")));
 	}
 	
 	public boolean driveSyncEnabled() {

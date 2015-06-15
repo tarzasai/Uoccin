@@ -247,21 +247,15 @@ public class Episode extends Title implements Comparable<Episode> {
 	}
 	
 	public boolean isOld() {
+		if (timestamp <= 0)
+			return false;
 		if (timestamp == 1)
 			return true;
-		if (timestamp > 0) {
-			long now = System.currentTimeMillis();
-			long ageLocal = now - timestamp;
-			if (firstAired > 0) {
-				long ageAired = Math.abs(now - firstAired);
-				if (ageAired < Commons.weekLong)
-					return ageLocal > Commons.dayLong;
-				if (ageAired > Commons.yearLong)
-					return ageLocal > Commons.monthLong;
-			}
-			return ageLocal > Commons.weekLong;
-		}
-		return false;
+		if (!Commons.olderThan(firstAired, Commons.days(7)))
+			return Commons.olderThan(timestamp, Commons.days(1));
+		if (Commons.olderThan(firstAired, Commons.days(365)) || getSeries().isEnded())
+			return Commons.olderThan(timestamp, Commons.days(30));
+		return Commons.olderThan(timestamp, Commons.days(7));
 	}
 	
 	public boolean inCollection() {

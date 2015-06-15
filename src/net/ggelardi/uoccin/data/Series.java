@@ -512,18 +512,15 @@ public class Series extends Title {
 	}
 	
 	public boolean isOld() {
+		if (timestamp <= 0)
+			return false;
 		if (timestamp == 1)
 			return true;
-		if (timestamp > 0) {
-			long now = System.currentTimeMillis();
-			long ageLocal = now - timestamp;
-			if (firstAired > 0 && Math.abs(now - firstAired) < (Commons.weekLong * 2))
-				return ageLocal > Commons.dayLong;
-			if (isEnded())
-				return ageLocal > Commons.monthLong;
-			return ageLocal > (Commons.dayLong * 3);
-		}
-		return false;
+		if (isEnded())
+			return Commons.olderThan(timestamp, Commons.days(30));
+		if (!Commons.olderThan(firstAired, Commons.days(15)))
+			return Commons.olderThan(timestamp, Commons.days(1));
+		return Commons.olderThan(timestamp, Commons.days(3));
 	}
 	
 	public boolean inWatchlist() {
@@ -637,7 +634,7 @@ public class Series extends Title {
 			fa = episodes(1).get(0).firstAired;
 		} catch (Exception err) {
 		}
-		return fa > System.currentTimeMillis() || Math.abs(fa - System.currentTimeMillis()) < Commons.weekLong;
+		return !Commons.olderThan(fa, Commons.days(7));
 	}
 	
 	public boolean isEnded() {

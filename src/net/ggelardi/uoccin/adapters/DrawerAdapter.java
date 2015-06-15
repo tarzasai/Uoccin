@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.ggelardi.uoccin.BuildConfig;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.serv.Session;
 import android.content.Context;
@@ -66,15 +67,14 @@ public class DrawerAdapter extends BaseExpandableListAdapter {
 				children.add(new DrawerItem("action_syncnow", session.getString(R.string.action_syncnow)));
 		}
 		
-		/*
-		// debug
-		di = new DrawerItem("debug", session.getString(R.string.drwhdr_develop), R.drawable.ic_action_debug);
-		heads.add(di);
-		items.put(di, new ArrayList<DrawerAdapter.DrawerItem>());
-		children = items.get(di);
-		children.add(new DrawerItem("action_cleandb", session.getString(R.string.action_cleandb)));
-		children.add(new DrawerItem("action_chktvdb", session.getString(R.string.action_chktvdb)));
-		*/
+		if (BuildConfig.DEBUG) {
+			di = new DrawerItem("debug", session.getString(R.string.drwhdr_develop), R.drawable.ic_action_debug);
+			heads.add(di);
+			items.put(di, new ArrayList<DrawerAdapter.DrawerItem>());
+			children = items.get(di);
+			children.add(new DrawerItem("action_cleandb", session.getString(R.string.action_cleandb)));
+			children.add(new DrawerItem("action_chktvdb", session.getString(R.string.action_chktvdb)));
+		}
 	}
 	
 	@Override

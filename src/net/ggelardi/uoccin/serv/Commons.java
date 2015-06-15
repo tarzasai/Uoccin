@@ -37,11 +37,6 @@ public class Commons {
 	
 	public static final String[] weekdays = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
 	
-	public static final long dayLong = (24 * 60 * 60 * 1000);
-	public static final long weekLong = (7 * dayLong);
-	public static final long monthLong = (30 * dayLong);
-	public static final long yearLong = (365 * dayLong);
-	
 	public static class PK {
 		public static final String STARTUPV = "pk_startupv";
 		public static final String LANGUAGE = "pk_language";
@@ -49,19 +44,19 @@ public class Commons {
 		public static final String METAWIFI = "pk_metawifi";
 		public static final String TVDBFEED = "pk_tvdbfeed";
 		public static final String TVDBGFLT = "pk_tvdbgflt";
+		public static final String TVDBLAST = "pk_tvdblast";
 		public static final String GDRVAUTH = "pk_gdrvauth";
 		public static final String GDRVSYNC = "pk_gdrvsync";
+		public static final String GDRVUUID = "pk_gdrvuuid";
 		public static final String GDRVWIFI = "pk_gdrvwifi";
 		public static final String GDRVINTV = "pk_gdrvintv";
+		public static final String GDRVLCID = "pk_gdrvlcid";
 		public static final String NOTMOVWL = "pk_notmovwl";
 		public static final String NOTMOVCO = "pk_notmovco";
 		public static final String NOTSERWL = "pk_notserwl";
 		public static final String NOTSERCO = "pk_notserco";
 		public static final String NOTIFSND = "pk_notifsnd";
 		public static final String SPLRPROT = "pk_splrprot";
-		// internal
-		public static final String GDRVUUID = "pk_gdrvuuid";
-		public static final String GDRVLCID = "pk_gdrvlcid";
 	}
 	
 	public static class SR {
@@ -101,6 +96,22 @@ public class Commons {
 	public static class TL {
 		public static final String QUERY = "QUERY";
 		public static final String SEARCH = "SEARCH";
+	}
+	
+	public static long minutes(long m) {
+		return m * 60 * 1000;
+	}
+	
+	public static long hours(long h) {
+		return h * minutes(60);
+	}
+	
+	public static long days(long d) {
+		return d * hours(24);
+	}
+	
+	public static boolean olderThan(long time, long howMuch) {
+		return time > 0 && (time < System.currentTimeMillis()) && ((System.currentTimeMillis() - time) > howMuch);
 	}
 	
 	public static long convertTZ(long timestamp, String fromTimeZone, String toTimeZone) {

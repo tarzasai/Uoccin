@@ -19,6 +19,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import net.ggelardi.uoccin.BuildConfig;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.GSA;
 import net.ggelardi.uoccin.api.XML;
@@ -29,6 +30,7 @@ import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.data.Title;
 import net.ggelardi.uoccin.data.Title.OnTitleListener;
 import net.ggelardi.uoccin.serv.Commons.MT;
+import net.ggelardi.uoccin.serv.Commons.PK;
 import net.ggelardi.uoccin.serv.Commons.SN;
 import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Service.UFile.UMovie;
@@ -41,6 +43,7 @@ import org.xml.sax.InputSource;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -98,7 +101,7 @@ public class Service extends WakefulIntentService {
 				boolean forced = extra.getBoolean("forced", false);
 				refreshEpisode(series, season, episode, forced);
 			} else if (act.equals(SR.CHECK_TVDB_RSS)) {
-				checkTVdbNews();
+				checkTVDB();
 			} else if (act.equals(SR.GDRIVE_SYNCNOW)) {
 				driveSync();
 			} else if (act.equals(SR.GDRIVE_BACKUP)) {
@@ -130,7 +133,7 @@ public class Service extends WakefulIntentService {
 		SQLiteDatabase db = session.getDB();
 		db.beginTransaction();
 		try {
-			String age = "createtime < " + Long.toString(System.currentTimeMillis() - Commons.weekLong);
+			String age = "createtime < " + Long.toString(System.currentTimeMillis() - Commons.days(7));
 			// old stuff
 			db.execSQL("delete from movie where " + age + " and watchlist = 0 and collected = 0 and watched = 0");
 			db.execSQL("delete from series where " + age + " and watchlist = 0 and not tvdb_id in " +
@@ -240,8 +243,8 @@ public class Service extends WakefulIntentService {
 		}
 	}
 	
-	private void checkTVdbNews() throws Exception {
-		if (!session.isOnWIFI())
+	private void checkTVDB() throws Exception {
+		if (!(session.isOnWIFI() && (Commons.olderThan(session.tvdbLastCheck(), Commons.hours(6)) || BuildConfig.DEBUG)))
 			return;
 		List<String> genFilter = session.tvdbGenreFilter();
 		Log.d(TAG, "checkTVdbNews() begin (unwanted genres: " + TextUtils.join(", ", genFilter) + ")");
@@ -333,15 +336,17 @@ public class Service extends WakefulIntentService {
 					Log.e(TAG, link, err);
 				}
 			}
-			/*
-			// *DEBUG ONLY* notification
-			Intent notif = new Intent(SN.DBG_TVDB_RSS);
-			notif.putExtra("tot", items.getLength());
-			notif.putExtra("chk", nPrems);
-			notif.putExtra("oks", nGoods);
-			sendBroadcast(notif);
-			*/
+			if (BuildConfig.DEBUG) {
+				Intent notif = new Intent(SN.DBG_TVDB_RSS);
+				notif.putExtra("tot", items.getLength());
+				notif.putExtra("chk", nPrems);
+				notif.putExtra("oks", nGoods);
+				sendBroadcast(notif);
+			}
 		}
+		SharedPreferences.Editor editor = session.getPrefs().edit();
+		editor.putLong(PK.TVDBLAST, System.currentTimeMillis());
+		editor.commit();
 		Log.d(TAG, "checkTVdbNews() end");
 	}
 	
