@@ -163,6 +163,13 @@ public class Receiver extends BroadcastReceiver {
 			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
 				true).setSmallIcon(R.drawable.ic_notification_premiere).setContentTitle(
 				title).setContentText(text).setContentIntent(pi);
+			String plot = data.getString("plot");
+			if (!TextUtils.isEmpty(plot))
+				ncb.setStyle(new NotificationCompat.BigTextStyle().bigText(plot));
+			String purl = data.getString("poster");
+			Bitmap poster = !TextUtils.isEmpty(purl) ? getBitmapFromURL(purl) : null;
+			if (poster != null)
+				ncb.setLargeIcon(poster);
 			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
@@ -176,13 +183,6 @@ public class Receiver extends BroadcastReceiver {
 			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
 				true).setSmallIcon(R.drawable.ic_notification_info).setContentTitle(
 				title).setContentText(text).setContentIntent(pi);
-			String plot = data.getString("plot");
-			if (!TextUtils.isEmpty(plot))
-				ncb.setStyle(new NotificationCompat.BigTextStyle().bigText(plot));
-			String purl = data.getString("poster");
-			Bitmap poster = !TextUtils.isEmpty(purl) ? getBitmapFromURL(purl) : null;
-			if (poster != null)
-				ncb.setLargeIcon(poster);
 			nm.notify(NOTIF_GENERAL_INFO, ncb.build());
 			
 		}
