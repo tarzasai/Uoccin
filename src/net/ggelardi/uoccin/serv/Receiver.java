@@ -1,6 +1,5 @@
 package net.ggelardi.uoccin.serv;
 
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -197,15 +196,12 @@ public class Receiver extends BroadcastReceiver {
 			PendingIntent.FLAG_UPDATE_CURRENT);
 	}
 	
-	private Bitmap getBitmapFromURL(String strURL) {
+	private Bitmap getBitmapFromURL(String url) {
 		try {
-			URL url = new URL(strURL);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 			connection.setDoInput(true);
 			connection.connect();
-			InputStream input = connection.getInputStream();
-			Bitmap myBitmap = BitmapFactory.decodeStream(input);
-			return myBitmap;
+			return BitmapFactory.decodeStream(connection.getInputStream());
 		} catch (Exception err) {
 			Log.e(TAG, "getBitmapFromURL", err);
 			return null;

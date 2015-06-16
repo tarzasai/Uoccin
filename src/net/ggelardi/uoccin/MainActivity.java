@@ -25,7 +25,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -50,7 +50,7 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 
-public class MainActivity extends ActionBarActivity implements BaseFragment.OnFragmentListener {
+public class MainActivity extends AppCompatActivity implements BaseFragment.OnFragmentListener {
 	private static final String TAG = "MainActivity";
 	private static final int REQUEST_ACCOUNT_PICKER = 1;
 	private static final int REQUEST_AUTHORIZATION = 2;
