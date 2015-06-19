@@ -288,7 +288,7 @@ public class Session implements OnSharedPreferenceChangeListener {
 	
 	// utilities
 	
-	private Picasso picasso() {
+	private Picasso getPicasso() {
 		if (picasso == null) {
 			OkHttpClient client = new OkHttpClient();
 			client.setConnectTimeout(15, TimeUnit.SECONDS);
@@ -305,14 +305,22 @@ public class Session implements OnSharedPreferenceChangeListener {
 		return picasso;
 	}
 	
+	public Picasso picasso() {
+		return getPicasso();
+	}
+	
 	public RequestCreator picasso(String path) {
-		return picasso().load(path).noPlaceholder();
+		return getPicasso().load(path).noPlaceholder();
+	}
+	
+	public RequestCreator picasso(String path, int placeholder) {
+		return getPicasso().load(path).placeholder(placeholder);
 	}
 	
 	public RequestCreator picasso(String path, boolean placeholder) {
 		if (!placeholder)
 			return picasso(path);
-		return picasso().load(path).placeholder(R.drawable.ic_action_image);
+		return getPicasso().load(path).placeholder(R.drawable.ic_action_image);
 	}
 	
 	public String defaultText(String value, int resId) {

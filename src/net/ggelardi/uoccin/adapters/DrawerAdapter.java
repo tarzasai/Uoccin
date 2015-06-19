@@ -74,6 +74,7 @@ public class DrawerAdapter extends BaseExpandableListAdapter {
 			children = items.get(di);
 			children.add(new DrawerItem("action_cleandb", session.getString(R.string.action_cleandb)));
 			children.add(new DrawerItem("action_chktvdb", session.getString(R.string.action_chktvdb)));
+			//children.add(new DrawerItem("action_test", "test test"));
 		}
 	}
 	

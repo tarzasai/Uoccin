@@ -1,12 +1,10 @@
 package net.ggelardi.uoccin.serv;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.ggelardi.uoccin.MainActivity;
 import net.ggelardi.uoccin.R;
-import net.ggelardi.uoccin.data.Episode;
+import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.serv.Commons.MA;
 import net.ggelardi.uoccin.serv.Commons.SN;
 import net.ggelardi.uoccin.serv.Commons.SR;
@@ -16,7 +14,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +23,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.squareup.picasso.Picasso.LoadedFrom;
+import com.squareup.picasso.Target;
 
 public class Receiver extends BroadcastReceiver {
 	private static final String TAG = "Receiver";
@@ -47,11 +47,8 @@ public class Receiver extends BroadcastReceiver {
 		session = Session.getInstance(context);
 		String action = intent.getAction();
 		Bundle data = intent.getExtras();
-		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder ncb;
-		String title;
-		String text;
-		PendingIntent pi;
+		final NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		final NotificationCompat.Builder ncb;
 		
 		if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
 			
@@ -65,123 +62,123 @@ public class Receiver extends BroadcastReceiver {
 			
 		} else if (action.equals(SN.CONNECT_FAIL)) {
 			
-			title = session.getString(R.string.notif_gac_fail);
-			text = data.getString("what");
-			pi = newPI(newAI(SN.CONNECT_FAIL), false);
-			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_error).setContentTitle(
-				title).setContentText(text).setContentIntent(pi);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_error);
+			ncb.setContentTitle(session.getString(R.string.notif_gac_fail));
+			ncb.setContentText(data.getString("what"));
+			ncb.setContentIntent(newPI(newAI(SN.CONNECT_FAIL), false));
 			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_CONNECT_FAIL, ncb.build());
 			
 		} else if (action.equals(Commons.SN.GENERAL_FAIL)) {
 			
-			title = session.getString(R.string.notif_srv_fail);
-			text = data.getString("what");
-			pi = newPI(newAI(SN.GENERAL_FAIL), false);
-			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_error).setContentTitle(
-				title).setContentText(text).setContentIntent(pi);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_error);
+			ncb.setContentTitle(session.getString(R.string.notif_srv_fail));
+			ncb.setContentText(data.getString("what"));
+			ncb.setContentIntent(newPI(newAI(SN.GENERAL_FAIL), false));
 			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_GENERAL_FAIL, ncb.build());
 			
 		} else if (action.equals(Commons.SN.GENERAL_INFO)) {
 			
-			title = session.getString(R.string.notif_srv_info);
-			text = data.getString("what");
-			pi = newPI(newAI(SN.GENERAL_INFO), false);
-			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_info).setContentTitle(
-				title).setContentText(text).setContentIntent(pi);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_info);
+			ncb.setContentTitle(session.getString(R.string.notif_srv_info));
+			ncb.setContentText(data.getString("what"));
+			ncb.setContentIntent(newPI(newAI(SN.GENERAL_INFO), false));
 			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_GENERAL_INFO, ncb.build());
 			
 		} else if (action.equals(SN.MOV_WLST)) {
 			
-			title = session.getString(R.string.notif_mov_wlst);
-			text = data.getString("name", session.getString(R.string.notif_gen_miss));
-			pi = newPI(newAI(MA.MOVIE_INFO).putExtra("imdb_id", data.getString("imdb_id")), true);
-			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_movie).setContentTitle(
-				title).setContentText(text).setContentIntent(pi);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_movie);
+			ncb.setContentTitle(session.getString(R.string.notif_mov_wlst));
+			ncb.setContentText(data.getString("name", session.getString(R.string.notif_gen_miss)));
+			ncb.setContentIntent(newPI(newAI(MA.MOVIE_INFO).putExtra("imdb_id", data.getString("imdb_id")), true));
 			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.MOV_COLL)) {
 			
-			title = session.getString(R.string.notif_mov_coll);
-			text = data.getString("name", session.getString(R.string.notif_gen_miss));
-			pi = newPI(newAI(MA.MOVIE_INFO).putExtra("imdb_id", data.getString("imdb_id")), true);
-			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_movie).setContentTitle(
-				title).setContentText(text).setContentIntent(pi);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_movie);
+			ncb.setContentTitle(session.getString(R.string.notif_mov_coll));
+			ncb.setContentText(data.getString("name", session.getString(R.string.notif_gen_miss)));
+			ncb.setContentIntent(newPI(newAI(MA.MOVIE_INFO).putExtra("imdb_id", data.getString("imdb_id")), true));
 			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.SER_WLST)) {
 			
-			title = session.getString(R.string.notif_ser_wlst);
-			text = data.getString("name", session.getString(R.string.notif_gen_miss));
-			pi = newPI(newAI(MA.SERIES_INFO).putExtra("tvdb_id", data.getString("tvdb_id")), true);
-			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_series).setContentTitle(
-				title).setContentText(text).setContentIntent(pi);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_series);
+			ncb.setContentTitle(session.getString(R.string.notif_ser_wlst));
+			ncb.setContentText(data.getString("name", session.getString(R.string.notif_gen_miss)));
+			ncb.setContentIntent(newPI(newAI(MA.SERIES_INFO).putExtra("tvdb_id", data.getString("tvdb_id")), true));
 			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.SER_COLL)) {
 			
-			int season = data.getInt("season");
-			int episode = data.getInt("episode");
-			title = session.getString(R.string.notif_ser_coll);
-			text = data.getString("name");
-			if (TextUtils.isEmpty(text))
-				text = session.getString(R.string.notif_gen_miss);
-			else
-				text = new Episode.EID(season, episode).readable() + " " + text;
-			pi = newPI(newAI(MA.EPISODE_INFO).putExtra("series", data.getString("series")).putExtra("season",
-				season).putExtra("episode", episode), true);
-			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_series).setContentTitle(
-				title).setContentText(text).setContentIntent(pi);
+			EID eid = new EID(data.getString("series"), data.getInt("season"), data.getInt("episode"));
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_series);
+			ncb.setContentTitle(session.getString(R.string.notif_ser_coll));
+			ncb.setContentText(eid.readable() + " " + data.getString("name",
+				session.getString(R.string.unknown_title)));
+			ncb.setContentIntent(newPI(newAI(MA.EPISODE_INFO).putExtra("series", eid.series).putExtra("season",
+				eid.season).putExtra("episode", eid.episode), true));
 			if (session.notificationSound())
 				ncb.setSound(NOTIF_SOUND);
 			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
 			
 		} else if (action.equals(SN.SER_PREM)) {
 			
-			title = session.getString(R.string.notif_ser_prem);
-			text = data.getString("name", session.getString(R.string.notif_gen_miss));
-			pi = newPI(newAI(MA.SERIES_INFO).putExtra("tvdb_id", data.getString("tvdb_id")), true);
-			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_premiere).setContentTitle(
-				title).setContentText(text).setContentIntent(pi);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_premiere);
+			ncb.setContentTitle(session.getString(R.string.notif_ser_prem));
+			ncb.setContentText(data.getString("name", session.getString(R.string.notif_gen_miss)));
+			ncb.setContentIntent(newPI(newAI(MA.SERIES_INFO).putExtra("tvdb_id", data.getString("tvdb_id")), true));
+			if (session.notificationSound())
+				ncb.setSound(NOTIF_SOUND);
 			String plot = data.getString("plot");
 			if (!TextUtils.isEmpty(plot))
 				ncb.setStyle(new NotificationCompat.BigTextStyle().bigText(plot));
 			String purl = data.getString("poster");
-			Bitmap poster = !TextUtils.isEmpty(purl) ? getBitmapFromURL(purl) : null;
-			if (poster != null)
-				ncb.setLargeIcon(poster);
-			if (session.notificationSound())
-				ncb.setSound(NOTIF_SOUND);
-			nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
+			if (TextUtils.isEmpty(purl))
+				nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
+			else
+				session.picasso().load(purl).placeholder(R.drawable.ic_notification_premiere).into(new Target() {
+					@Override
+					public void onPrepareLoad(Drawable arg0) {
+					}
+					@Override
+					public void onBitmapLoaded(Bitmap bitmap, LoadedFrom source) {
+						ncb.setLargeIcon(bitmap);
+						nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
+					}
+					@Override
+					public void onBitmapFailed(Drawable arg0) {
+						nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
+					}
+				});
 			
 		} else if (action.equals(SN.DBG_TVDB_RSS)) {
 			
-			title = session.getString(R.string.notif_dbg_rsst);
-			text = String.format(session.getString(R.string.notif_dbg_rssm), data.getInt("tot"), data.getInt("chk"),
-				data.getInt("oks"));
-			pi = newPI(newAI(SN.GENERAL_INFO), false);
-			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(
-				true).setSmallIcon(R.drawable.ic_notification_info).setContentTitle(
-				title).setContentText(text).setContentIntent(pi);
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_info);
+			ncb.setContentTitle(session.getString(R.string.notif_dbg_rsst));
+			ncb.setContentText(String.format(session.getString(R.string.notif_dbg_rssm), data.getInt("tot"),
+				data.getInt("chk"), data.getInt("oks")));
+			ncb.setContentIntent(newPI(newAI(SN.GENERAL_INFO), false));
 			nm.notify(NOTIF_GENERAL_INFO, ncb.build());
 			
 		}
@@ -194,17 +191,5 @@ public class Receiver extends BroadcastReceiver {
 	private PendingIntent newPI(Intent action, boolean unique) {
 		return PendingIntent.getActivity(session.getContext(), unique ? INTENT_ID.incrementAndGet() : 0, action,
 			PendingIntent.FLAG_UPDATE_CURRENT);
-	}
-	
-	private Bitmap getBitmapFromURL(String url) {
-		try {
-			HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-			connection.setDoInput(true);
-			connection.connect();
-			return BitmapFactory.decodeStream(connection.getInputStream());
-		} catch (Exception err) {
-			Log.e(TAG, "getBitmapFromURL", err);
-			return null;
-		}
 	}
 }

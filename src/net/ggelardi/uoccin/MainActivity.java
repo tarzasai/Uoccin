@@ -6,9 +6,11 @@ import java.util.regex.Pattern;
 import net.ggelardi.uoccin.adapters.DrawerAdapter;
 import net.ggelardi.uoccin.adapters.DrawerAdapter.DrawerItem;
 import net.ggelardi.uoccin.api.GSA;
+import net.ggelardi.uoccin.data.Series;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.MA;
 import net.ggelardi.uoccin.serv.Commons.PK;
+import net.ggelardi.uoccin.serv.Commons.SN;
 import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Commons.TL;
 import net.ggelardi.uoccin.serv.Service;
@@ -433,6 +435,16 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.OnFr
 			WakefulIntentService.sendWakefulWork(this,
 				new Intent(this, Service.class).setAction(SR.CHECK_TVDB_RSS));
 			Toast.makeText(this, "TVDB feed check requested", Toast.LENGTH_SHORT).show();
+		} else if (action.equals("action_test")) {
+			
+			Series ser = Series.get(this, "259063");
+			Intent notif = new Intent(SN.SER_PREM);
+			notif.putExtra("tvdb_id", ser.tvdb_id);
+			notif.putExtra("name", ser.name);
+			notif.putExtra("plot", ser.plot);
+			notif.putExtra("poster", ser.poster);
+			sendBroadcast(notif);
+			
 		}
 	}
 	
