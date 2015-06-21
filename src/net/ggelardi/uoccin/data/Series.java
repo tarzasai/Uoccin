@@ -13,6 +13,7 @@ import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.TVDB;
 import net.ggelardi.uoccin.data.Episode.EID;
 import net.ggelardi.uoccin.serv.Commons;
+import net.ggelardi.uoccin.serv.Commons.SN;
 import net.ggelardi.uoccin.serv.Commons.SR;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
@@ -184,6 +185,13 @@ public class Series extends Title {
 		}
 		chk = Commons.XML.nodeText(serxml, "Status");
 		if (!TextUtils.isEmpty(chk) && (TextUtils.isEmpty(status) || !status.equals(chk))) {
+			if (!TextUtils.isEmpty(status) && chk.toLowerCase(Locale.getDefault()).equals("ended")) {
+				Intent notif = new Intent(SN.SER_CANC);
+				notif.putExtra("tvdb_id", tvdb_id);
+				notif.putExtra("name", name);
+				notif.putExtra("poster", poster);
+				session.getContext().sendBroadcast(notif);
+			}
 			status = chk;
 		}
 		chk = Commons.XML.nodeText(serxml, "Network");

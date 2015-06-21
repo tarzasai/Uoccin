@@ -67,6 +67,7 @@
                 <action android:name="net.ggelardi.uoccin.SER_WLST" />
                 <action android:name="net.ggelardi.uoccin.SER_COLL" />
                 <action android:name="net.ggelardi.uoccin.SER_PREM" />
+                <action android:name="net.ggelardi.uoccin.SER_CANC" />
                 <action android:name="net.ggelardi.uoccin.DBG_TVDB_RSS" />
             </intent-filter>
         </receiver>

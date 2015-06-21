@@ -171,6 +171,37 @@ public class Receiver extends BroadcastReceiver {
 					}
 				});
 			
+		} else if (action.equals(SN.SER_CANC)) {
+			
+			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
+			ncb.setSmallIcon(R.drawable.ic_notification_premiere);
+			ncb.setContentTitle(session.getString(R.string.notif_ser_prem));
+			ncb.setContentText(data.getString("name", session.getString(R.string.notif_gen_miss)));
+			ncb.setContentIntent(newPI(newAI(MA.SERIES_INFO).putExtra("tvdb_id", data.getString("tvdb_id")), true));
+			if (session.notificationSound())
+				ncb.setSound(NOTIF_SOUND);
+			String plot = data.getString("plot");
+			if (!TextUtils.isEmpty(plot))
+				ncb.setStyle(new NotificationCompat.BigTextStyle().bigText(plot));
+			String purl = data.getString("poster");
+			if (TextUtils.isEmpty(purl))
+				nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
+			else
+				session.picasso().load(purl).placeholder(R.drawable.ic_notification_premiere).into(new Target() {
+					@Override
+					public void onPrepareLoad(Drawable arg0) {
+					}
+					@Override
+					public void onBitmapLoaded(Bitmap bitmap, LoadedFrom source) {
+						ncb.setLargeIcon(bitmap);
+						nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
+					}
+					@Override
+					public void onBitmapFailed(Drawable arg0) {
+						nm.notify(NOTIF_ID.incrementAndGet(), ncb.build());
+					}
+				});
+			
 		} else if (action.equals(SN.DBG_TVDB_RSS)) {
 			
 			ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);

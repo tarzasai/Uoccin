@@ -79,6 +79,7 @@ public class Commons {
 		public static final String SER_WLST = "net.ggelardi.uoccin.SER_WLST";
 		public static final String SER_COLL = "net.ggelardi.uoccin.SER_COLL";
 		public static final String SER_PREM = "net.ggelardi.uoccin.SER_PREM";
+		public static final String SER_CANC = "net.ggelardi.uoccin.SER_CANC";
 		public static final String DBG_TVDB_RSS = "net.ggelardi.uoccin.DBG_TVDB_RSS";
 	}
 

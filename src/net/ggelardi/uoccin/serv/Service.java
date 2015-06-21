@@ -336,13 +336,13 @@ public class Service extends WakefulIntentService {
 					Log.e(TAG, link, err);
 				}
 			}
-			if (BuildConfig.DEBUG) {
+			/*if (BuildConfig.DEBUG) {
 				Intent notif = new Intent(SN.DBG_TVDB_RSS);
 				notif.putExtra("tot", items.getLength());
 				notif.putExtra("chk", nPrems);
 				notif.putExtra("oks", nGoods);
 				sendBroadcast(notif);
-			}
+			}*/
 		}
 		SharedPreferences.Editor editor = session.getPrefs().edit();
 		editor.putLong(PK.TVDBLAST, System.currentTimeMillis());
