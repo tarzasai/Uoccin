@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.XML.TVDB;
@@ -61,7 +62,7 @@ public class Series extends Title {
 	public String network;
 	public long firstAired;
 	public int airsDay;
-	public long airsTime;
+	public long airsTime = -1;
 	public int runtime;
 	public String rated;
 	public String banner;
@@ -218,12 +219,12 @@ public class Series extends Title {
 		}
 		chk = Commons.XML.nodeText(serxml, "Airs_Time");
 		if (!TextUtils.isEmpty(chk)) {
-			chk = chk.replace(".", ":").replace(" ", "").toUpperCase(Locale.getDefault());
+			chk = chk.toUpperCase(Locale.getDefault()).replaceAll("P.M.", "PM").replace(".", ":").replace(" ", "");
 			String fmt = chk.length() <= 4 ? (chk.contains("M") ? "hha" : "HH") :
 				(chk.contains("M") ? "hh:mma" : "HH:mm");
 			try {
 				long t = Commons.SDF.eng(fmt).parse(chk).getTime();
-				if (t > 0)
+				if (t >= 0)
 					airsTime = t;
 			} catch (Exception err) {
 				Log.e(TAG, chk, err);
@@ -675,8 +676,9 @@ public class Series extends Title {
 		if (isEnded())
 			return session.getString(R.string.fmt_status_end);
 		String res = "N/A";
-		if (airsDay > 0 && airsTime > 0) {
+		if (airsDay > 0 && airsTime >= 0) {
 			Calendar cal = Calendar.getInstance();
+			cal.setTimeZone(TimeZone.getTimeZone("UTC"));
 			cal.setTimeInMillis(airsTime);
 			cal.set(Calendar.DAY_OF_WEEK, airsDay);
 			res = Commons.SDF.loc(session.getString(R.string.fmt_airtime)).format(cal.getTime());

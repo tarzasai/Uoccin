@@ -266,11 +266,15 @@ public class Commons {
 		public static final String TIMESTAMP = "yyyyMMddHHmmss";
 		
 		public static SimpleDateFormat eng(String format) {
-			return new SimpleDateFormat(format, Locale.ENGLISH);
+			SimpleDateFormat res = new SimpleDateFormat(format, Locale.ENGLISH);
+			res.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return res;
 		}
 		
 		public static SimpleDateFormat loc(String format) {
-			return new SimpleDateFormat(format, Locale.getDefault());
+			SimpleDateFormat res = new SimpleDateFormat(format, Locale.getDefault());
+			res.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return res;
 		}
 		
 		public static int day(String dayname) {

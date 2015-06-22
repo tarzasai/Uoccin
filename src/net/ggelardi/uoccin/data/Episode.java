@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Commons.SR;
@@ -291,7 +292,7 @@ public class Episode extends Title implements Comparable<Episode> {
 	}
 	
 	public boolean isToday() {
-		return DateUtils.isToday(firstAired);
+		return DateUtils.isToday(Commons.convertTZ(firstAired, "UTC", TimeZone.getDefault().getID()));
 	}
 	
 	public EID eid() {

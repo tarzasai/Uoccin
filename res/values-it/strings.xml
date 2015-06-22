@@ -105,6 +105,7 @@
     <string name="notif_ser_prem">Uoccin: trovata una nuova serie TV</string>
     <string name="notif_ser_wlst">Uoccin: serie TV aggiunta ai preferiti</string>
     <string name="notif_ser_coll">Uoccin: episodio aggiunto in libreria</string>
+    <string name="notif_ser_canc">Uoccin: serie terminata o cancellata</string>
     <string name="notif_gen_miss">Premi qui per visualizzare le informazioni</string>
 
     <!-- settings -->
