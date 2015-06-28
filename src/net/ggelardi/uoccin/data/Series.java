@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -677,11 +678,12 @@ public class Series extends Title {
 			return session.getString(R.string.fmt_status_end);
 		String res = "N/A";
 		if (airsDay > 0 && airsTime >= 0) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeZone(TimeZone.getTimeZone("UTC"));
-			cal.setTimeInMillis(airsTime);
-			cal.set(Calendar.DAY_OF_WEEK, airsDay);
-			res = Commons.SDF.loc(session.getString(R.string.fmt_airtime)).format(cal.getTime());
+			Calendar c1 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+			c1.setTimeInMillis(airsTime);
+			c1.set(Calendar.DAY_OF_WEEK, airsDay);
+			Calendar c2 = Calendar.getInstance();//new GregorianCalendar(TimeZone.getDefault());
+			c2.setTimeInMillis(c1.getTimeInMillis());
+			res = Commons.SDF.loc(session.getString(R.string.fmt_airtime)).format(c2.getTime());
 		}
 		return res;
 	}

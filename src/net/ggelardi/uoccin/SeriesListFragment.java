@@ -51,18 +51,18 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 		"select s.tvdb_id from series s where s.watchlist = 1",
 		//
 		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) where " +
-			"datetime(e.firstAired/1000, 'unixepoch') between datetime('now') and datetime('now', '+6 days') " +
-			"and (s.watchlist = 1 or (e.season = 1 and e.episode = 1))",
+			"datetime((e.firstAired + s.airsTime)/1000, 'unixepoch') between datetime('now') and " +
+			"datetime('now', '+6 days') and (s.watchlist = 1 or (e.season = 1 and e.episode = 1))",
 		//
 		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) where " +
-			"datetime(e.firstAired/1000, 'unixepoch') < datetime('now', '-12 hours') and " +
+			"datetime((e.firstAired + s.airsTime)/1000, 'unixepoch') < datetime('now', '-12 hours') and " +
 			"s.watchlist = 1 and e.collected = 0 and e.watched = 0",
 		//
 		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) where " +
 			"e.collected = 1 and e.watched = 0",
 		//
 		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id) where " +
-			"datetime(e.firstAired/1000, 'unixepoch') between datetime('now', '-7 days') " +
+			"datetime((e.firstAired + s.airsTime)/1000, 'unixepoch') between datetime('now', '-7 days') " +
 			"and datetime('now', '+90 days') and e.season = 1 and e.episode = 1",
 		//
 		"select distinct s.tvdb_id from series s join episode e on (e.series = s.tvdb_id)"

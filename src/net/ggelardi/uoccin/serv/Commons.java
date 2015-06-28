@@ -273,7 +273,6 @@ public class Commons {
 		
 		public static SimpleDateFormat loc(String format) {
 			SimpleDateFormat res = new SimpleDateFormat(format, Locale.getDefault());
-			res.setTimeZone(TimeZone.getTimeZone("UTC"));
 			return res;
 		}
 		

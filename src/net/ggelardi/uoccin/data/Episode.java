@@ -2,6 +2,8 @@ package net.ggelardi.uoccin.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -315,11 +317,21 @@ public class Episode extends Title implements Comparable<Episode> {
 	public String firstAired() {
 		if (firstAired <= 0)
 			return "N/A";
-		long now = System.currentTimeMillis();
+		Calendar c1 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+		c1.setTimeInMillis(getSeries().airsTime);
+		int h = c1.get(Calendar.HOUR_OF_DAY);
+		int m = c1.get(Calendar.MINUTE);
+		c1.setTimeInMillis(firstAired);
+		c1.set(Calendar.HOUR_OF_DAY, h);
+		c1.set(Calendar.MINUTE, m);
+		Calendar c2 = Calendar.getInstance();//new GregorianCalendar(TimeZone.getDefault());
+		c2.setTimeInMillis(c1.getTimeInMillis());
+		long loc = c2.getTimeInMillis();
+		long now = Commons.convertTZ(System.currentTimeMillis(), "UTC", TimeZone.getDefault().getID());
 		if (isToday())
-			return DateUtils.getRelativeTimeSpanString(firstAired, now, DateUtils.MINUTE_IN_MILLIS).toString();
-		String res = DateUtils.getRelativeTimeSpanString(firstAired, now, DateUtils.DAY_IN_MILLIS).toString();
-		if (Math.abs(now - firstAired)/(1000 * 60 * 60) < 168)
+			return DateUtils.getRelativeTimeSpanString(loc, now, DateUtils.MINUTE_IN_MILLIS).toString();
+		String res = DateUtils.getRelativeTimeSpanString(loc, now, DateUtils.DAY_IN_MILLIS).toString();
+		if (Math.abs(now - loc)/(1000 * 60 * 60) < 168)
 			res += " (" + Commons.SDF.loc("EEE").format(firstAired) + ")";
 		return res;
 	}
