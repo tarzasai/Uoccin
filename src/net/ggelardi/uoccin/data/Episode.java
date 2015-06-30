@@ -332,7 +332,7 @@ public class Episode extends Title implements Comparable<Episode> {
 			return DateUtils.getRelativeTimeSpanString(loc, now, DateUtils.MINUTE_IN_MILLIS).toString();
 		String res = DateUtils.getRelativeTimeSpanString(loc, now, DateUtils.DAY_IN_MILLIS).toString();
 		if (Math.abs(now - loc)/(1000 * 60 * 60) < 168)
-			res += " (" + Commons.SDF.loc("EEE").format(firstAired) + ")";
+			res += " (" + Commons.SDF.loc("EEE").format(loc) + ")";
 		return res;
 	}
 	
