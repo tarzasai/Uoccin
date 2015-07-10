@@ -44,6 +44,11 @@
             android:title="@string/pk_tvdbgflt_title"
             android:summary="@string/pk_tvdbgflt_summ"
             android:dialogTitle="@string/pk_tvdbgflt_title" />
+        
+        <EditTextPreference 
+            android:key="pk_tvdbgnet"
+            android:title="@string/pk_tvdbgnet_title"
+            android:summary="@string/pk_tvdbgnet_summ" />
     </PreferenceCategory>
     
     <PreferenceCategory

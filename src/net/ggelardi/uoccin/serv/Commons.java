@@ -44,6 +44,7 @@ public class Commons {
 		public static final String METAWIFI = "pk_metawifi";
 		public static final String TVDBFEED = "pk_tvdbfeed";
 		public static final String TVDBGFLT = "pk_tvdbgflt";
+		public static final String TVDBGNET = "pk_tvdbgnet";
 		public static final String TVDBLAST = "pk_tvdblast";
 		public static final String GDRVAUTH = "pk_gdrvauth";
 		public static final String GDRVSYNC = "pk_gdrvsync";

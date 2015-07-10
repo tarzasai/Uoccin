@@ -125,6 +125,8 @@
     <string name="pk_tvdbfeed_summ">Periodically check TVDB\'s \"airing today\" feed for new TV shows.</string>
     <string name="pk_tvdbgflt_title">Filter by genre</string>
     <string name="pk_tvdbgflt_summ">Ignore new TV shows labeled by these categories.</string>
+    <string name="pk_tvdbgnet_title">Filter by bradcasting network</string>
+    <string name="pk_tvdbgnet_summ">Ignore new TV shows aired by these networks.</string>
     <string name="pc_gdrvauth_title">Google Drive</string>
     <string name="pk_gdrvauth_title">Select a Google account</string>
     <string name="pk_gdrvsync_title">Synchronization</string>

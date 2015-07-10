@@ -121,6 +121,8 @@
     <string name="pk_tvdbfeed_summ">Controlla periodicamente il feed \"airing today\" di TVDB (solo su rete WiFi).</string>
     <string name="pk_tvdbgflt_title">Filtra per genere</string>
     <string name="pk_tvdbgflt_summ">Indica le categorie da ignorare (ad es. \"animation\", \"family\") per la segnalazione delle nuove serie.</string>
+    <string name="pk_tvdbgnet_title">Filtra per network emittente</string>
+    <string name="pk_tvdbgnet_summ">Indica i network da ignorare (ad es. \"HBO\", \"NBC\") per la segnalazione delle nuove serie.</string>
     <string name="pc_gdrvauth_title">Google Drive</string>
     <string name="pk_gdrvauth_title">Il tuo account Google</string>
     <string name="pk_gdrvsync_title">Sincronizzazione dati</string>

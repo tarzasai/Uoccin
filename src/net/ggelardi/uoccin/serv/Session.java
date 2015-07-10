@@ -191,6 +191,11 @@ public class Session implements OnSharedPreferenceChangeListener {
 			"").toLowerCase(Locale.getDefault()).split(",")));
 	}
 	
+	public List<String> tvdbNetworkFilter() {
+		return new ArrayList<String>(Arrays.asList(prefs.getString(PK.TVDBGNET,
+			"").toLowerCase(Locale.getDefault()).split(",")));
+	}
+	
 	public long tvdbLastCheck() {
 		return prefs.getLong(PK.TVDBLAST, 0);
 	}

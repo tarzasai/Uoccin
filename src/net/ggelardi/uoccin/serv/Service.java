@@ -247,7 +247,9 @@ public class Service extends WakefulIntentService {
 		if (!(session.isOnWIFI() && (Commons.olderThan(session.tvdbLastCheck(), Commons.hours(6)) || BuildConfig.DEBUG)))
 			return;
 		List<String> genFilter = session.tvdbGenreFilter();
-		Log.d(TAG, "checkTVdbNews() begin (unwanted genres: " + TextUtils.join(", ", genFilter) + ")");
+		List<String> netFilter = session.tvdbNetworkFilter();
+		Log.d(TAG, "checkTVdbNews() begin (unwanted genres: " + TextUtils.join(", ", genFilter) +
+			" - unwanted networks: " + TextUtils.join(", ", netFilter) + ")");
 		String content = null;
 	    URL url = new URL("http://thetvdb.com/rss/newtoday.php");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -276,8 +278,8 @@ public class Service extends WakefulIntentService {
 			Element node;
 			EID check;
 			Series ser;
-			int nPrems = 0;
-			int nGoods = 0;
+			/*int nPrems = 0;
+			int nGoods = 0;*/
 			for (int i = 0; i < items.getLength(); i++) {
 				link = Commons.XML.nodeText((Element) items.item(i), "link");
 				try {
@@ -291,7 +293,7 @@ public class Service extends WakefulIntentService {
 					Log.d(TAG, "Evaluating episode " + check.toString() + " -> " + link);
 					if (!check.isValid(session.specials()) || check.season != 1 || check.episode != 1)
 						continue;
-					nPrems++;
+					//nPrems++;
 					Cursor cur = session.getDB().query("series", null, "tvdb_id = ?", new String[] { check.series },
 						null, null, null);
 					try {
@@ -319,8 +321,15 @@ public class Service extends WakefulIntentService {
 									break;
 								}
 					}
+					if (good && !netFilter.isEmpty())
+						for (String n: netFilter)
+							if (ser.network().toLowerCase(Locale.getDefault()).contains(n)) {
+								Log.d(TAG, "Skipping because it's aired by " + ser.network());
+								good = false;
+								break;
+							}
 					if (good) {
-						nGoods++;
+						//nGoods++;
 						String text = ser.name + " (" + ser.genres() + ")";
 						Log.d(TAG, "Tagging series: " + text);
 						ser.addTag(Series.TAG_DISCOVER);
