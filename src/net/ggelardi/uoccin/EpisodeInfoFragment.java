@@ -113,6 +113,8 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 			public void onClick(View v) {
 				txt_prev.startAnimation(blink);
 				episode = episode.getPrior();
+				seasNo = episode.season;
+				episNo = episode.episode;
 				showInfo();
 			}
 		});
@@ -122,6 +124,8 @@ public class EpisodeInfoFragment extends BaseFragment implements OnTitleListener
 			public void onClick(View v) {
 				txt_next.startAnimation(blink);
 				episode = episode.getNext();
+				seasNo = episode.season;
+				episNo = episode.episode;
 				showInfo();
 			}
 		});
