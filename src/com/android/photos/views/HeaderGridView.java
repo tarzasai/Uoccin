@@ -39,7 +39,7 @@ import android.widget.WrapperListAdapter;
  * See {@link HeaderGridView#addHeaderView(View, Object, boolean)}
  */
 public class HeaderGridView extends GridView {
-    private static final String TAG = "HeaderGridView";
+    //private static final String TAG = "HeaderGridView";
 
     /**
      * A class that represents a fixed view in a list, for example a header at the top

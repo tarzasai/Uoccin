@@ -14,7 +14,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -292,7 +291,7 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 						showHourGlass(false);
 						Toast.makeText(context, R.string.search_not_found, Toast.LENGTH_SHORT).show();
 						if (type.equals(TL.SEARCH))
-							((ActionBarActivity) context).getSupportFragmentManager().popBackStack();
+							getActivity().getSupportFragmentManager().popBackStack();
 						else
 							mAdapter.notifyDataSetChanged();
 					} else if (state.equals(OnTitleListener.WORKING)) {

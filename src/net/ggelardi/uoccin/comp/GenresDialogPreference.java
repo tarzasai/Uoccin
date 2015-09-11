@@ -113,7 +113,7 @@ public class GenresDialogPreference extends DialogPreference {
 			// Write the preference's value
 			dest.writeString(value);
 		}
-		
+		/*
 		// Standard creator object using an instance of this class
 		public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
 			
@@ -127,5 +127,6 @@ public class GenresDialogPreference extends DialogPreference {
 				return new SavedState[size];
 			}
 		};
+		*/
 	}
 }
