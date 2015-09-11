@@ -24,6 +24,8 @@ public abstract class Title {
 	
 	protected Session session;
 	
+	public static String FORGET_TAG = "@FORGET@";
+	
 	public long timestamp = 0;
 	
 	public long age() {

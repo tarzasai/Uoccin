@@ -390,7 +390,8 @@ public class SeriesListFragment extends BaseFragment implements AbsListView.OnIt
 		if (type.equals(TL.SEARCH))
 			mTask.execute(data);
 		else {
-			String query = QUERIES[queryIdx()];
+			String query = QUERIES[queryIdx()] + " and not '" + Title.FORGET_TAG +
+				"' in (select tag from sertag where series = s.tvdb_id)";
 			if (sortVal == 0)
 				query += " order by s.name collate nocase" + (sortDesc ? " desc" : " asc");
 			else if (sortVal == 1)

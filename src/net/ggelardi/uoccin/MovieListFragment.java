@@ -363,7 +363,8 @@ public class MovieListFragment extends BaseFragment implements AbsListView.OnIte
 		if (type.equals(TL.SEARCH))
 			mTask.execute(data);
 		else {
-			String query = QUERIES[queryIdx()];
+			String query = QUERIES[queryIdx()] + " and not '" + Title.FORGET_TAG +
+				"' in (select tag from movtag where movie = imdb_id)";
 			if (sortVal == 0)
 				query += " order by name collate nocase" + (sortDesc ? " desc" : " asc");
 			else if (sortVal == 1)

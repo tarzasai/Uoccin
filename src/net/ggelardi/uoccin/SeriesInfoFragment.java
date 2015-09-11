@@ -262,6 +262,7 @@ public class SeriesInfoFragment extends BaseFragment implements OnTitleListener 
 					series.setWatchlist(false);
 					series.setCollected(false, null);
 					series.setWatched(false, null);
+					series.addTag(Title.FORGET_TAG);
 				}
 			}).show();
 			return true;

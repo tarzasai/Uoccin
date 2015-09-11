@@ -624,14 +624,16 @@ public class Movie extends Title {
 	}
 	
 	public void addTag(String tag) {
-		tag = tag.toLowerCase(Locale.getDefault());
+		if (!tag.equals(Title.FORGET_TAG))
+			tag = tag.toLowerCase(Locale.getDefault());
 		if (!hasTag(tag)) {
 			tags.add(tag);
 			if (isValid())
 				save(false);
 			else
 				refresh(true);
-			session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
+			if (!tag.equals(Title.FORGET_TAG))
+				session.driveQueue(Session.QUEUE_MOVIE, imdb_id, "tags", TextUtils.join(",", tags));
 		}
 	}
 	

@@ -249,6 +249,7 @@ public class MovieInfoFragment extends BaseFragment implements OnTitleListener {
 					movie.setWatchlist(false);
 					movie.setCollected(false);
 					movie.setWatched(false);
+					movie.addTag(Title.FORGET_TAG);
 				}
 			}).show();
 			return true;
