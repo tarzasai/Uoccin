@@ -141,10 +141,14 @@ public class Service extends WakefulIntentService {
 			// fields cleaning
 			db.execSQL("update movie set subtitles = null where subtitles = ''");
 			db.execSQL("update episode set subtitles = null where subtitles = ''");
+			// specials
+			if (!session.specials())
+				db.execSQL("delete from episode where season <= 0 or episode <= 0");
 			// done
 			db.setTransactionSuccessful();
 		} finally {
 			db.endTransaction();
+			Title.dispatch(OnTitleListener.RELOAD, null);
 		}
 	}
 	
