@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="net.ggelardi.uoccin.SeriesActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.design.widget.CollapsingToolbarLayout
+            android:id="@+id/toolbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:contentScrim="@color/colorPrimary"
+            app:expandedTitleMarginBottom="10dp"
+            app:expandedTitleMarginStart="20dp"
+            app:expandedTitleTextAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+            app:statusBarScrim="@color/colorPrimaryDark">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="0.8">
+
+                <ImageView
+                    android:id="@+id/img_fanart"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/series_fanart"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:alpha="0.5"
+                    android:background="@android:color/black"
+                    android:padding="5dp"
+                    android:text="@string/empty_text" />
+
+                <TextView
+                    android:id="@+id/txt_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:paddingTop="5dp"
+                    android:text="@string/sample_title1" />
+
+            </RelativeLayout>
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+        </android.support.design.widget.CollapsingToolbarLayout>
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/nested_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="fill_vertical"
+        android:layout_marginBottom="?attr/actionBarSize"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="10dp"
+            android:paddingBottom="80dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp">
+
+            <TextView
+                android:id="@+id/txt_plot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="@string/sample_plot1" />
+
+            <TextView
+                android:id="@+id/txt_term"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ics_action_ended"
+                android:drawablePadding="5dp"
+                android:text="@string/seract_lbl_ended"
+                android:textColor="@android:color/holo_red_dark"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/txt_airs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ics_action_aired"
+                android:drawablePadding="5dp"
+                android:text="@string/sample_ser_airs" />
+
+            <TextView
+                android:id="@+id/txt_genres"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ics_action_genres"
+                android:drawablePadding="5dp"
+                android:text="@string/sample_genres"/>
+
+            <TextView
+                android:id="@+id/txt_rated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ics_action_rated"
+                android:drawablePadding="5dp"
+                android:text="@string/sample_rated"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/seract_lbl_actors"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_cast"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sample_people" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/seract_lbl_episodes"
+                android:textStyle="bold" />
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:shrinkColumns="1">
+
+                <TableRow>
+                    <TextView
+                        android:paddingRight="5dp"
+                        android:text="@string/seract_tot_aired" />
+                    <TextView
+                        android:id="@+id/txt_count"
+                        android:text="1234"
+                        android:textStyle="bold" />
+                </TableRow>
+
+                <TableRow>
+                    <TextView
+                        android:paddingRight="5dp"
+                        android:text="@string/seract_tot_watched" />
+                    <TextView
+                        android:id="@+id/txt_watched"
+                        android:text="1234"
+                        android:textStyle="bold" />
+                </TableRow>
+
+                <TableRow>
+                    <TextView
+                        android:paddingRight="5dp"
+                        android:text="@string/seract_tot_collected" />
+                    <TextView
+                        android:id="@+id/txt_collected"
+                        android:text="1234"
+                        android:textStyle="bold" />
+                </TableRow>
+
+                <TableRow>
+                    <TextView
+                        android:paddingRight="5dp"
+                        android:text="@string/seract_tot_missing" />
+                    <TextView
+                        android:id="@+id/txt_missing"
+                        android:text="1234"
+                        android:textStyle="bold" />
+                </TableRow>
+
+                <TableRow>
+                    <TextView
+                        android:paddingRight="5dp"
+                        android:text="@string/seract_lbl_since" />
+                    <TextView
+                        android:id="@+id/txt_aired"
+                        android:text="@string/sample_date1" />
+                </TableRow>
+            </TableLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/seract_lbl_seasons"
+                android:textStyle="bold" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/grd_seasons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:focusable="false"
+                android:paddingTop="5dp"
+                android:scrollbars="horizontal"
+                tools:listitem="@layout/item_season" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/seract_lbl_tags"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_tags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sample_tags"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/colorAccent" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/seract_lbl_ratings"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginRight="5dp"
+                    android:src="@drawable/ic_tvdb" />
+
+                <TextView
+                    android:id="@+id/txt_ratings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sample_tvdbscore"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textStyle="normal" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/img_user"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginRight="5dp"
+                    android:src="@drawable/ic_user" />
+
+                <RatingBar
+                    android:id="@+id/rat_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:max="5"
+                    android:numStars="5" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </android.support.v4.widget.NestedScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:clickable="true"
+        android:src="@drawable/ic_action_menu"
+        app:fabSize="mini"
+        app:layout_anchor="@id/nested_view"
+        app:layout_anchorGravity="bottom|right|end" />
+
+</android.support.design.widget.CoordinatorLayout>

@@ -36,6 +36,9 @@ proguard/
 .AppleDouble
 .LSOverride
 
+# Icon must end with two \r
+Icon
+
 # Thumbnails
 ._*
 
@@ -69,8 +72,6 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 
-# Windows shortcuts
-*.lnk
+#
 
-fetch.bat
-*sha1_key.bat
+.idea

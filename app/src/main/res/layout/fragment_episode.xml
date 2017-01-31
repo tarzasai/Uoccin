@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/box_episode"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="fill_vertical"
+    android:layout_marginBottom="?attr/actionBarSize"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/img_thumb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:src="@drawable/series_fanart"
+            android:adjustViewBounds="true"
+            android:cropToPadding="false"/>
+
+        <android.support.v7.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/txt_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:text="@string/sample_title1"/>
+
+            <TextView
+                android:id="@+id/txt_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textStyle="bold"
+                android:text="@string/sample_date1"/>
+
+        </android.support.v7.widget.LinearLayoutCompat>
+
+        <TextView
+            android:id="@+id/txt_plot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_plot1"/>
+
+        <TextView
+            android:id="@+id/txt_subs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:drawablePadding="5dp"
+            android:drawableStart="@drawable/ics_action_subtitles"
+            android:text="@string/sample_subs"/>
+
+        <!-- guest stars -->
+
+        <android.support.v7.widget.LinearLayoutCompat
+            android:id="@+id/box_gues"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/epifra_lbl_guests"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/txt_guests"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sample_people"/>
+
+        </android.support.v7.widget.LinearLayoutCompat>
+
+        <!-- writers -->
+
+        <android.support.v7.widget.LinearLayoutCompat
+            android:id="@+id/box_writ"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/epifra_lbl_writers"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/txt_writers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sample_people"/>
+
+        </android.support.v7.widget.LinearLayoutCompat>
+
+        <!-- director -->
+
+        <android.support.v7.widget.LinearLayoutCompat
+            android:id="@+id/box_dire"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/epifra_lbl_director"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/txt_director"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sample_director"/>
+
+        </android.support.v7.widget.LinearLayoutCompat>
+
+    </LinearLayout>
+
+</android.support.v4.widget.NestedScrollView>

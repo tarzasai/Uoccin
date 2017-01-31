@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+
+    <string-array name="sql_series_columns">
+        <item>x.series_id as series_id</item>
+        <item>s.name as series_name</item>
+        <item>s.year as series_year</item>
+        <item>s.plot as series_plot</item>
+        <item>s.status as series_status</item>
+        <item>s.banner as series_banner</item>
+        <item>s.poster as series_poster</item>
+        <item>s.genres as series_genres</item>
+        <item>s.actors as series_actors</item>
+        <item>s.runtime as series_runtime</item>
+        <item>s.network as series_network</item>
+        <item>s.imdb_id as series_imdb_id</item>
+        <item>s.firstAired as series_firstAired</item>
+        <item>s.airsDay as series_airsDay</item>
+        <item>s.airsTime as series_airsTime</item>
+        <item>s.siteRating as series_siteRating</item>
+        <item>s.siteVotes as series_siteVotes</item>
+        <item>s.rating as series_rating</item>
+        <item>s.watchlist as series_watchlist</item>
+        <item>s.timestamp as series_timestamp</item>
+        <item>x.episode_id as episode_id</item>
+        <item>e.season as episode_season</item>
+        <item>e.episode as episode_number</item>
+        <item>e.name as episode_title</item>
+        <item>e.plot as episode_plot</item>
+        <item>e.thumb as episode_still</item>
+        <item>e.thumbWidth as episode_stillW</item>
+        <item>e.thumbHeight as episode_stillH</item>
+        <item>e.writers as episode_writers</item>
+        <item>e.director as episode_directors</item>
+        <item>e.guestStars as episode_guestStars</item>
+        <item>e.firstAired as episode_firstAired</item>
+        <item>e.imdb_id as episode_imdb_id</item>
+        <item>e.subtitles as episode_subtitles</item>
+        <item>e.collected as episode_collected</item>
+        <item>e.watched as episode_watched</item>
+        <item>e.timestamp as episode_timestamp</item>
+    </string-array>
+
+    <string-array name="sel_filter_names">
+        <item>Title</item>
+        <item>People</item>
+        <item>Plot</item>
+        <item>Year</item>
+        <item>Tag</item>
+        <item>Rating</item>
+    </string-array>
+    
+    <string-array name="pk_language_values">
+        <item>de</item>
+        <item>en</item>
+        <item>es</item>
+        <item>fa</item>
+        <item>fr</item>
+        <item>it</item>
+        <item>ja</item>
+        <item>ru</item>
+        <item>tr</item>
+        <item>zh-cn</item>
+    </string-array>
+    
+    <string-array name="pk_language_names">
+        <item>Deutsch</item>
+        <item>English</item>
+        <item>Español</item>
+        <item>فارسی</item>
+        <item>Français</item>
+        <item>Italiano</item>
+        <item>日本語</item>
+        <item>русский язык</item>
+        <item>Türkçe</item>
+        <item>中文(简体)</item>
+    </string-array>
+    
+    <string-array name="pk_gdrvintv_names">
+        <item>10 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>45 minutes</item>
+        <item>60 minutes</item>
+    </string-array>
+    
+    <string-array name="pk_gdrvintv_values">
+        <item>10</item>
+        <item>15</item>
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
+    </string-array>
+    
+    <string-array name="view_defser_ids">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    
+    <string-array name="view_defser_titles">
+        <item>Favorite series</item>
+        <item>New series</item>
+        <item>Next airing</item>
+        <item>Missing episodes</item>
+        <item>In library</item>
+        <item>All series</item>
+    </string-array>
+    
+    <string-array name="view_defmov_ids">
+        <item>movfavs</item>
+        <item>mov2see</item>
+        <item>movrats</item>
+    </string-array>
+    
+    <string-array name="view_defmov_titles">
+        <item>Movies watchlist</item>
+        <item>Collected movies</item>
+        <item>Watched movies</item>
+    </string-array>
+    
+    <string-array name="def_tvdb_genres">
+		<item>Action</item>
+		<item>Adventure</item>
+		<item>Animation</item>
+		<item>Children</item>
+		<item>Comedy</item>
+		<item>Crime</item>
+		<item>Documentary</item>
+		<item>Drama</item>
+		<item>Family</item>
+		<item>Fantasy</item>
+		<item>Food</item>
+		<item>Game Show</item>
+		<item>Home and Garden</item>
+		<item>Horror</item>
+		<item>Mini-Series</item>
+		<item>Mystery</item>
+		<item>News</item>
+		<item>Reality</item>
+		<item>Romance</item>
+		<item>Science-Fiction</item>
+		<item>Soap</item>
+		<item>Special Interest</item>
+		<item>Sport</item>
+		<item>Suspense</item>
+		<item>Talk Show</item>
+		<item>Thriller</item>
+		<item>Travel</item>
+		<item>Western</item>
+    </string-array>
+    
+    <string-array name="def_omdb_genres">
+        <item>Action</item>
+		<item>Adventure</item>
+		<item>Animation</item>
+		<item>Biography</item>
+		<item>Comedy</item>
+		<item>Crime</item>
+		<item>Documentary</item>
+		<item>Drama</item>
+		<item>Family</item>
+		<item>Fantasy</item>
+		<item>Film-Noir</item>
+		<item>History</item>
+		<item>Horror</item>
+		<item>Music</item>
+		<item>Musical</item>
+		<item>Mystery</item>
+		<item>Romance</item>
+		<item>Sci-Fi</item>
+		<item>Sport</item>
+		<item>Thriller</item>
+		<item>War</item>
+		<item>Western</item>
+    </string-array>
+    
+</resources>

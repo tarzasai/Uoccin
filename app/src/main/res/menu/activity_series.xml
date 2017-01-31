@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="net.ggelardi.uoccin.SeriesActivity">
+
+    <item
+        android:id="@+id/action_erase"
+        android:orderInCategory="1"
+        android:title="@string/seract_lbl_delete"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_settings"
+        android:menuCategory="system"
+        android:orderInCategory="99"
+        android:title="@string/action_settings"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_help"
+        android:menuCategory="system"
+        android:orderInCategory="100"
+        android:title="@string/action_help"
+        app:showAsAction="never"/>
+</menu>

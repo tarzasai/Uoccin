@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+    <group
+        android:id="@+id/grp1"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_series"
+            android:icon="@drawable/ic_nav_series"
+            android:title="@string/action_series" />
+        <item
+            android:id="@+id/nav_movies"
+            android:icon="@drawable/ic_nav_movie"
+            android:title="@string/action_movies" />
+    </group>
+
+    <group
+        android:id="@+id/grp2"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_tools_sync"
+            android:icon="@drawable/ic_nav_sync"
+            android:title="@string/action_sync" />
+        <item
+            android:id="@+id/nav_tools_bckp"
+            android:icon="@drawable/ic_nav_backup"
+            android:title="@string/action_backup" />
+        <item
+            android:id="@+id/nav_tools_rest"
+            android:icon="@drawable/ic_nav_restore"
+            android:title="@string/action_restore" />
+        <!--
+        <item
+            android:id="@+id/nav_tools_heal"
+            android:icon="@drawable/ic_nav_heal"
+            android:title="@string/action_heal" />
+        -->
+    </group>
+
+    <group
+        android:id="@+id/grp3"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_misc_sett"
+            android:icon="@drawable/ic_nav_settings"
+            android:title="@string/action_settings" />
+        <item
+            android:id="@+id/nav_misc_fdbk"
+            android:icon="@drawable/ic_nav_feedback"
+            android:title="@string/action_feedback" />
+    </group>
+
+</menu>

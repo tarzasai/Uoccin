@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <net.ggelardi.uoccin.comp.IntListPreference
+        android:key="pk_startupv"
+        android:defaultValue="0"
+        android:title="@string/pk_startupv_title"
+        android:entries="@array/view_defser_titles"
+        android:entryValues="@array/view_defser_ids"
+        android:dialogTitle="@string/pk_startupv_title" />
+    
+    <ListPreference
+        android:key="pk_language"
+        android:defaultValue="en"
+        android:title="@string/pk_language_title"
+        android:entries="@array/pk_language_names"
+        android:entryValues="@array/pk_language_values"
+        android:dialogTitle="@string/pk_language_title" />
+    
+    <CheckBoxPreference
+        android:key="pk_specials"
+        android:defaultValue="false"
+        android:title="@string/pk_specials_title"
+        android:summary="@string/pk_specials_summ" />
+    
+    <CheckBoxPreference
+        android:key="pk_metawifi"
+        android:defaultValue="true"
+        android:title="@string/pk_metawifi_title"
+        android:summary="@string/pk_metawifi_summ" />
+    
+    <PreferenceCategory
+        android:key="pc_gdrvauth"
+        android:title="@string/pc_gdrvauth_title" >
+        
+        <Preference
+            android:key="pk_gdrvauth"
+            android:title="@string/pk_gdrvauth_title" />
+
+        <CheckBoxPreference
+            android:key="pk_gdrvsync"
+            android:defaultValue="false"
+            android:title="@string/pk_gdrvsync_title"
+            android:summary="@string/pk_gdrvsync_summ" />
+        
+        <EditTextPreference 
+            android:key="pk_gdrvuuid"
+            android:title="@string/pk_gdrvuuid_title" />
+        
+        <CheckBoxPreference
+            android:key="pk_gdrvwifi"
+            android:defaultValue="false"
+            android:title="@string/pk_gdrvwifi_title" />
+
+        <net.ggelardi.uoccin.comp.IntListPreference
+            android:key="pk_gdrvintv"
+            android:defaultValue="30"
+            android:title="@string/pk_gdrvintv_title"
+            android:entries="@array/pk_gdrvintv_names"
+            android:entryValues="@array/pk_gdrvintv_values"
+            android:dialogTitle="@string/pk_gdrvintv_title" />
+
+        <CheckBoxPreference
+            android:key="pk_notmovwl"
+            android:defaultValue="true"
+            android:title="@string/pk_notmovwl_title" />
+
+        <CheckBoxPreference
+            android:key="pk_notmovco"
+            android:defaultValue="true"
+            android:title="@string/pk_notmovco_title" />
+
+        <CheckBoxPreference
+            android:key="pk_notserwl"
+            android:defaultValue="true"
+            android:title="@string/pk_notserwl_title" />
+
+        <CheckBoxPreference
+            android:key="pk_notserco"
+            android:defaultValue="true"
+            android:title="@string/pk_notserco_title" />
+    </PreferenceCategory>
+    
+    <PreferenceCategory
+        android:key="pc_whatever"
+        android:title="@string/pc_whatever_title" >
+
+        <CheckBoxPreference
+            android:key="pk_notifsnd"
+            android:defaultValue="true"
+            android:title="@string/pk_notifsnd_title" />
+
+        <CheckBoxPreference
+            android:key="pk_splrprot"
+            android:defaultValue="true"
+            android:title="@string/pk_splrprot_title"
+            android:summary="@string/pk_splrprot_summ" />
+        
+    </PreferenceCategory>
+
+</PreferenceScreen>

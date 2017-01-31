@@ -1,0 +1,273 @@
+<resources>
+    <string name="app_name">Uoccin</string>
+    <string name="activity_settings">Settings</string>
+    <string name="action_help">Help</string>
+    <string name="empty_text"></string>
+    <string name="dlg_btn_ok">OK</string>
+    <string name="dlg_btn_cancel">Cancel</string>
+    <string name="tagact_title">Add or remove tags</string>
+    <string name="tagact_hint">simple words separated by comma</string>
+    <string name="finact_title">Results for \"%s\"</string>
+
+    <!-- drawer stuff -->
+    <string name="action_series">TV shows</string>
+    <string name="action_movies">Movies</string>
+    <string name="action_sync">Sync now</string>
+    <string name="action_backup">Backup</string>
+    <string name="action_restore">Restore</string>
+    <string name="action_heal">Clean database</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_feedback">Send feedback</string>
+
+    <!-- main activity -->
+    <string name="maiact_title">Series lists</string>
+    <string name="maiact_act_search">Search</string>
+    <string name="maiact_drw_open">Open navigation drawer</string>
+    <string name="maiact_drw_close">Close navigation drawer</string>
+    <string name="maiact_msg_syncreq">Synchronization has been queued</string>
+    <string name="maiact_msg_dbclean">Database cleanup has been queued</string>
+    <string name="maiact_ask_backup">This will eventually overwrite the current uoccin.json file in Google Drive. Are you sure to continue?</string>
+    <string name="maiact_ask_restore">This will overwrite your current series and movies watchlist, collection and ratings on this device. Are you sure to continue?</string>
+    <string name="maiact_warn_restore">\n\nWARNING: WiFi disconnected, you should NOT run this operation on mobile network.</string>
+    <string name="maiact_find_title">Search titles</string>
+    <string name="maiact_find_hint">Search text</string>
+    <string name="maiact_find_type">Search for:</string>
+    <string name="maiact_find_series">Series</string>
+    <string name="maiact_find_movies">Movies</string>
+    <string name="maiact_page_serlist">Favorite series</string>
+    <string name="maiact_page_sernews">New series</string>
+    <string name="maiact_page_sernext">Next airing</string>
+    <string name="maiact_page_sermiss">Missing episodes</string>
+    <string name="maiact_page_sercoll">In library</string>
+    <string name="maiact_page_serseen">All series</string>
+    <string name="maiact_page_movlist">Wanted movies</string>
+    <string name="maiact_page_movcoll">In library</string>
+    <string name="maiact_page_movseen">Watched movies</string>
+    <string name="maiact_sct_drawer">Home button</string>
+    <string name="maiact_scd_drawer">Tap here to open the application main menu.</string>
+    <string name="maiact_sct_search">Search</string>
+    <string name="maiact_scd_search">Tap here to search for movies or TV shows.</string>
+    <string name="maiact_sct_tabs">Views (1)</string>
+    <string name="maiact_scd_tabs">You can tap the symbols to change the view&#8230;</string>
+    <string name="maiact_sct_pages">Views (2)</string>
+    <string name="maiact_scd_pages">&#8230;or just swipe left and right.</string>
+    <string name="maiact_sct_items">Titles</string>
+    <string name="maiact_scd_items">Tap a title in the list to open the detailed view. Long tap on a TV show to open the episode view.</string>
+
+    <!-- settings -->
+    <string name="settings_title">Uoccin settings</string>
+    <string name="pk_startupv_title">Startup view</string>
+    <string name="pk_language_title">Localization</string>
+    <string name="pk_specials_title">Do not ignore specials</string>
+    <string name="pk_specials_summ">(a \"special\" episode usually is just a recap of the previous season)</string>
+    <string name="pk_metawifi_title">Autorefresh on WiFi only</string>
+    <string name="pk_metawifi_summ">(movies, series and episodes info are periodically updated in background)</string>
+    <string name="pc_gdrvauth_title">Google Drive</string>
+    <string name="pk_gdrvauth_title">Select a Google account</string>
+    <string name="pk_gdrvsync_title">Synchronization</string>
+    <string name="pk_gdrvsync_summ">Manage your data on multiple devices (phones or desktop apps).</string>
+    <string name="pk_gdrvuuid_title">This device unique identifier</string>
+    <string name="pk_gdrvwifi_title">Only on WiFi</string>
+    <string name="pk_gdrvintv_title">Sync interval</string>
+    <string name="pk_notmovwl_title">Notify new movies in watchlist</string>
+    <string name="pk_notmovco_title">Notify new movies in library</string>
+    <string name="pk_notserwl_title">Notify new series in watchlist</string>
+    <string name="pk_notserco_title">Notify new episodes in library</string>
+    <string name="pc_whatever_title">Miscellaneous</string>
+    <string name="pk_notifsnd_title">Notifications sound</string>
+    <string name="pk_splrprot_title">Spoiler protection</string>
+    <string name="pk_splrprot_summ">Long texts might contain spoilers, cut them short.</string>
+
+    <!-- movies list fragment -->
+    <string name="lbl_movinf_dire">A film by</string>
+    <string name="lbl_movinf_cast">cast</string>
+    <string name="lbl_movinf_awrd">scores/awards</string>
+    <string name="lbl_movinf_meta">metacritic</string>
+    <string name="lbl_movinf_imdb">imdb</string>
+    <string name="lnk_movinf_acts">[see IMDB full cast &amp; crew]</string>
+
+    <!-- movie activity -->
+    <string name="movact_stat_watchlist">In watchlist</string>
+    <string name="movact_stat_collected">In library</string>
+    <string name="movact_stat_watched">Watched</string>
+    <string name="movact_fmt_director">A film by %s</string>
+    <string name="movact_fmt_country">%1$s, %2$d</string>
+    <string name="movact_fmt_runtime">%d min</string>
+    <string name="movact_fmt_metascore">%d</string>
+    <string name="movact_fmt_tomatometer">%d%%</string>
+    <string name="movact_fmt_imdbscore">%1$.1f - %2$,d votes</string>
+    <string name="movact_fmt_shortplot">&#8230;\n<i>(spoiler protection)</i></string>
+    <string name="movact_lbl_actors">cast</string>
+    <string name="movact_lbl_actors_hint">(full cast available on the IMDB movie page)</string>
+    <string name="movact_lbl_genres">genres</string>
+    <string name="movact_lbl_writers">writers</string>
+    <string name="movact_lbl_tags">tags (tap to edit)</string>
+    <string name="movact_lbl_ratings">awards &amp; ratings</string>
+    <string name="movact_lbl_awards">awards</string>
+    <string name="movact_btn_wlst1">Add to watchlist</string>
+    <string name="movact_btn_wlst0">Remove from watchlist</string>
+    <string name="movact_btn_coll1">Set as COLLECTED</string>
+    <string name="movact_btn_coll0">Set as NOT collected</string>
+    <string name="movact_btn_seen1">Set as WATCHED</string>
+    <string name="movact_btn_seen0">Set as NOT watched</string>
+    <string name="movact_btn_update">Update from OMDb API</string>
+    <string name="movact_btn_go2imdb">View on IMDb.com</string>
+    <string name="movact_msg_updating">The movie will be updated ASAP&#8230;</string>
+    <string name="movact_msg_updated">The movie has been updated.</string>
+    <string name="movact_lbl_delete">Delete movie data</string>
+    <string name="movact_ask_delete">This action will delete all data and preferences about this movie. Are you sure to proceed?</string>
+    <string name="movact_msg_delbusy">System busy, please try again in a minute.</string>
+    <string name="movact_msg_deleted">The movie has been deleted.</string>
+
+    <!-- series activity -->
+    <string name="seract_lbl_airing">Continuing</string>
+    <string name="seract_lbl_ended">Ended</string>
+    <string name="seract_lbl_actors">starring</string>
+    <string name="seract_lbl_details">details</string>
+    <string name="seract_lbl_rated">Rated:</string>
+    <string name="seract_lbl_genres">Genre:</string>
+    <string name="seract_lbl_tags">Tags:</string>
+    <string name="seract_lbl_episodes">episodes</string>
+    <string name="seract_tot_aired">Aired:</string>
+    <string name="seract_tot_watched">Watched:</string>
+    <string name="seract_tot_collected">Collected:</string>
+    <string name="seract_tot_missing">Missing:</string>
+    <string name="seract_lbl_since">First aired:</string>
+    <string name="seract_lbl_seasons">seasons</string>
+    <string name="seract_lbl_ratings">ratings</string>
+    <string name="seract_lbl_votes">TVDB: %1$,.2f (%2$d votes)</string>
+    <string name="seract_btn_wlst1">Add to watchlist</string>
+    <string name="seract_btn_wlst0">Remove from watchlist</string>
+    <string name="seract_btn_coll1">Set all episodes COLLECTED</string>
+    <string name="seract_btn_coll0">Set all episodes NOT collected</string>
+    <string name="seract_btn_seen1">Set all episodes WATCHED</string>
+    <string name="seract_btn_seen0">Set all episodes NOT watched</string>
+    <string name="seract_btn_update">Update from TheTVDB.com</string>
+    <string name="seract_btn_go2tvdb">View on TheTVDB.com</string>
+    <string name="seract_btn_go2imdb">View on IMDb.com</string>
+    <string name="seract_lbl_delete">Delete series data</string>
+    <string name="seract_msg_wlst1">Series added to the watchlist</string>
+    <string name="seract_msg_wlst0">Series removed from watchlist</string>
+    <string name="seract_ask_coll1">Are you sure to mark all episodes as COLLECTED?</string>
+    <string name="seract_msg_coll1">The episodes have been marked as COLLECTED.</string>
+    <string name="seract_ask_coll0">Are you sure to mark all episodes as NOT collected?</string>
+    <string name="seract_msg_coll0">The episodes have been marked as NOT collected.</string>
+    <string name="seract_ask_seen1">Are you sure to mark all episodes as WATCHED?</string>
+    <string name="seract_msg_seen1">The episodes have been marked as WATCHED.</string>
+    <string name="seract_ask_seen0">Are you sure to mark all episodes as NOT watched?</string>
+    <string name="seract_msg_seen0">The episodes have been marked as NOT watched.</string>
+    <string name="seract_msg_updating">The show will be updated ASAP&#8230;</string>
+    <string name="seract_msg_updated">The show has been updated.</string>
+    <string name="seract_ask_delete">This action will delete all data and preferences about this show. Are you sure to proceed?</string>
+    <string name="seract_msg_delbusy">System busy, please try again in a minute.</string>
+    <string name="seract_msg_deleted">The show has been deleted.</string>
+
+    <!-- series fragment -->
+    <string name="serfra_lbl_votes">%1$,.2f (%2$d votes)</string>
+
+    <!-- season activity -->
+    <string name="seaact_btn_coll1">Set all episodes COLLECTED</string>
+    <string name="seaact_btn_coll0">Set all episodes NOT collected</string>
+    <string name="seaact_btn_seen1">Set all episodes WATCHED</string>
+    <string name="seaact_btn_seen0">Set all episodes NOT watched</string>
+    <string name="seaact_msg_coll1">The episodes have been marked as COLLECTED.</string>
+    <string name="seaact_msg_coll0">The episodes have been marked as NOT collected.</string>
+    <string name="seaact_msg_seen1">The episodes have been marked as WATCHED.</string>
+    <string name="seaact_msg_seen0">The episodes have been marked as NOT watched.</string>
+
+    <!-- episode activity -->
+    <string name="epiact_btn_coll1">Set the episode COLLECTED</string>
+    <string name="epiact_btn_coll0">Set the episode NOT collected</string>
+    <string name="epiact_btn_seen1">Set the episode WATCHED</string>
+    <string name="epiact_btn_seen0">Set the episode NOT watched</string>
+    <string name="epiact_btn_update">Update from TheTVDB.com</string>
+    <string name="epiact_btn_go2tvdb">View on TheTVDB.com</string>
+    <string name="epiact_btn_go2imdb">View on IMDb.com</string>
+    <string name="epiact_msg_coll1">The episode has been marked as COLLECTED.</string>
+    <string name="epiact_msg_coll0">The episode has been marked as NOT collected.</string>
+    <string name="epiact_msg_seen1">The episode has been marked as WATCHED.</string>
+    <string name="epiact_msg_seen0">The episode has been marked as NOT watched.</string>
+    <string name="epiact_msg_updating">The episode will be updated ASAP&#8230;</string>
+    <string name="epiact_msg_updated">The episode has been updated.</string>
+
+    <!-- episode fragment -->
+    <string name="epifra_lbl_guests">guest star(s)</string>
+    <string name="epifra_lbl_writers">writer(s)</string>
+    <string name="epifra_lbl_director">director</string>
+
+    <!-- notifications -->
+    <string name="notif_mov_title">Movies</string>
+    <string name="notif_ser_title">Series</string>
+    <string name="notif_com_text">Incoming updates</string>
+    <string name="notif_com_sumh">The following element(s) was added:</string>
+    <string name="notif_com_sumf">Touch to launch Uoccin</string>
+    <string name="notif_com_list">Added to watchlist</string>
+    <string name="notif_com_coll">Added to library</string>
+    <string name="notif_com_miss">%1$s (unknown title)</string>
+    <string name="notif_mov_summ">Movies: incoming updates</string>
+    <string name="notif_ser_summ">Series: incoming updates</string>
+    <string name="notif_act_list">Watchlist</string>
+    <string name="notif_act_coll">Library</string>
+    <string name="notif_act_canc">Dismiss</string>
+    <string name="notif_hdr_list">Added to watchlist:</string>
+    <string name="notif_hdr_coll">Added to library:</string>
+    <string name="notif_err_gdrv">Google Drive Error</string>
+    <string name="notif_err_serv">Service Error</string>
+    <string name="notif_bak_title">Restoring data</string>
+    <string name="notif_bak_title_done">Restore done</string>
+    <string name="notif_bak_title_fail">Restore aborted</string>
+    <string name="notif_bak_starting">Preparing data&#8230;</string>
+    <string name="notif_bak_details">There are %1$d movies and %2$d series to backup</string>
+    <string name="notif_bak_success">%1$d movies and %2$d series successfully saved</string>
+    <string name="notif_res_title">Restoring data</string>
+    <string name="notif_res_title_done">Restore done</string>
+    <string name="notif_res_title_fail">Restore aborted</string>
+    <string name="notif_res_loading">Loading uoccin.json file&#8230;</string>
+    <string name="notif_res_notfound">Backup file not found</string>
+    <string name="nm_restore_isempty">Uoccin backup is empty</string>
+    <string name="nm_restore_abort">Abort</string>
+    <string name="nm_restore_aborted">Restore operation aborted by user request.</string>
+    <string name="nm_restore_details">Backup contains %1$d movies and %2$d series.</string>
+    <string name="nm_restore_running">Restored %1$d/%2$d movies and %3$d/%4$d series so far.</string>
+    <string name="nm_restore_success">%1$d movies and %2$d series successfully loaded</string>
+
+    <!-- sample text -->
+    <string name="sample_title1">A Short Title</string>
+    <string name="sample_title2">Pirates of the Caribbean: The Curse of the Black Pearl</string>
+    <string name="sample_number1">2</string>
+    <string name="sample_number2">16</string>
+    <string name="sample_number3">316</string>
+    <string name="sample_number4">2016</string>
+    <string name="sample_year">2007</string>
+    <string name="sample_date1">Oct 13, 2013</string>
+    <string name="sample_date2">13/02/2013</string>
+    <string name="sample_time1">Wed 10:00 PM</string>
+    <string name="sample_network">CBS</string>
+    <string name="sample_ser_stat">2011-2013</string>
+    <string name="sample_ser_airs">History Channel, Wed 10:00 PM</string>
+    <string name="sample_epnum">4x13</string>
+    <string name="sample_episode">4x13 - M.I.A.</string>
+    <string name="sample_plot1">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</string>
+    <string name="sample_plot2">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</string>
+    <string name="sample_guy">George Washington</string>
+    <string name="sample_people">Michael Emerson, Jim Caviezel, Kevin Chapman, Amy Acker, Sarah Shahi, Enrico Colantoni, Taraji P. Henson</string>
+    <string name="sample_genres">Action, Adventure, Drama, Mystery, Thriller</string>
+    <string name="sample_nextd">in 12 hours (Mon)</string>
+    <string name="sample_rated">TV-14</string>
+    <string name="sample_subs">eng, ita</string>
+    <string name="sample_stat">121 (43 missing)</string>
+    <string name="sample_tags">pippo, pluto, paperino, tafazzi, perdinci, drocopio</string>
+    <string name="sample_season">S03</string>
+    <string name="sample_director">A film by Joel Coen &amp; Ethan Coen</string>
+    <string name="sample_country">USA\-Canada, 2004</string>
+    <string name="sample_language">English, German</string>
+    <string name="sample_metascore">74</string>
+    <string name="sample_tvdbscore">8.7 (2,345 votes)</string>
+    <string name="sample_imdbscore">8.7 (14,542 votes)</string>
+    <string name="sample_imdbrat">8.7</string>
+    <string name="sample_imdbvot">573,918</string>
+    <string name="sample_rotten">68%</string>
+    <string name="sample_runtime">107 min</string>
+    <string name="sample_awards">Won 1 Oscar. Another 32 wins &amp; 93 nominations.</string>
+
+</resources>
