@@ -228,7 +228,7 @@
     <string name="nm_restore_abort">Abort</string>
     <string name="nm_restore_aborted">Restore operation aborted by user request.</string>
     <string name="nm_restore_details">Backup contains %1$d movies and %2$d series.</string>
-    <string name="nm_restore_running">Restored %1$d/%2$d movies and %3$d/%4$d series so far.</string>
+    <string name="nm_restore_running">%3$d/%4$d series, %1$d/%2$d movies.</string>
     <string name="nm_restore_success">%1$d movies and %2$d series successfully loaded</string>
 
     <!-- sample text -->

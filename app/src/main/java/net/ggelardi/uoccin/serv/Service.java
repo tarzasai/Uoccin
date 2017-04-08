@@ -128,15 +128,6 @@ public class Service extends IntentService {
         }
     }
 
-    private void sendToast(final String text) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
     private void notifyError(String title, String text, String action) {
         NotificationCompat.Builder ncb = new NotificationCompat.Builder(session.getContext()).setAutoCancel(true);
         ncb.setLargeIcon(BitmapFactory.decodeResource(session.getRes(), R.drawable.ic_uoccin));
@@ -723,22 +714,6 @@ public class Service extends IntentService {
                 Intent ri = new Intent(Commons.SN.ABORT_RESTOR);
                 PendingIntent pi = PendingIntent.getBroadcast(this, 0, ri, PendingIntent.FLAG_UPDATE_CURRENT);
                 nb.addAction(R.drawable.ic_action_cancel, getString(R.string.nm_restore_abort), pi);
-                // movies
-                db.delete("movie", null, null);
-                UFile.UMovie um;
-                for (String imdb_id : file.movies.keySet()) {
-                    if (session.getPrefs().getBoolean(Commons.PK.BAKABORT, false))
-                        throw new Exception(getString(R.string.nm_restore_aborted));
-                    um = file.movies.get(imdb_id);
-                    if (applyMovieDiff(imdb_id, um.watchlist, um.collected, um.watched, um.rating,
-                            um.tags != null ? TextUtils.join(",", um.tags) : null,
-                            um.subtitles != null ? TextUtils.join(",", um.subtitles) : null))
-                        movDone++;
-                    prog++;
-                    nb.setContentText(String.format(contentText, movDone, movCount, serDone, serCount))
-                            .setProgress(movCount + serCount, prog, false);
-                    nm.notify(NOTIF_BAK, nb.build());
-                }
                 // series
                 db.delete("series", null, null);
                 Series chkSeries;
@@ -786,6 +761,22 @@ public class Service extends IntentService {
                             }
                         }
                     }
+                    prog++;
+                    nb.setContentText(String.format(contentText, movDone, movCount, serDone, serCount))
+                            .setProgress(movCount + serCount, prog, false);
+                    nm.notify(NOTIF_BAK, nb.build());
+                }
+                // movies
+                db.delete("movie", null, null);
+                UFile.UMovie um;
+                for (String imdb_id : file.movies.keySet()) {
+                    if (session.getPrefs().getBoolean(Commons.PK.BAKABORT, false))
+                        throw new Exception(getString(R.string.nm_restore_aborted));
+                    um = file.movies.get(imdb_id);
+                    if (applyMovieDiff(imdb_id, um.watchlist, um.collected, um.watched, um.rating,
+                            um.tags != null ? TextUtils.join(",", um.tags) : null,
+                            um.subtitles != null ? TextUtils.join(",", um.subtitles) : null))
+                        movDone++;
                     prog++;
                     nb.setContentText(String.format(contentText, movDone, movCount, serDone, serCount))
                             .setProgress(movCount + serCount, prog, false);
