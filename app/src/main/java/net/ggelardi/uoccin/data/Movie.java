@@ -10,19 +10,19 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import net.ggelardi.uoccin.R;
-import net.ggelardi.uoccin.api.OMDB;
+import net.ggelardi.uoccin.api.TMDB;
 import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 public class Movie extends Title {
 
+    public int tmdb_id = 0;
     public String imdb_id;
     public String language;
     public String director;
@@ -30,27 +30,41 @@ public class Movie extends Title {
     public String country;
     public long released;
     public int runtime;
-    public String awards;
-    public int metascore;
-    public int tomatoMeter;
-    public double imdbRating;
-    public int imdbVotes;
+    public double tmdbRating;
+    public int tmdbVotes;
     public boolean collected = false;
     public boolean watched = false;
     public List<String> subtitles = new ArrayList<>();
     public List<String> people = new ArrayList<>();
 
-    public static void broadcast(Context context, String movie, boolean metadata) {
+    public static void broadcast(Context context, Integer movie, boolean metadata) {
         Intent intent = new Intent(Commons.UE.MOVIE).putExtra("metadata", metadata);
         if (movie != null)
             intent.putExtra("movie", movie);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
+    public Movie(Context context, int tmdb_id) {
+        super(context);
+
+        this.tmdb_id = tmdb_id;
+    }
+
     public Movie(Context context, String imdb_id) {
         super(context);
 
         this.imdb_id = imdb_id;
+
+        Cursor cur = session.getDB().query("movie", null, "imdb_id = ?", new String[]{imdb_id}, null, null, null);
+        try {
+            if (cur.moveToFirst()) {
+                this.tmdb_id = cur.getInt(cur.getColumnIndex("tmdb_id"));
+                load(cur);
+                loaded = true;
+            }
+        } finally {
+            cur.close();
+        }
     }
 
     public long age() {
@@ -58,7 +72,7 @@ public class Movie extends Title {
     }
 
     public boolean isNew() {
-        return timestamp <= 0;
+        return timestamp <= 0 || imdb_id == null || tmdb_id <= 0;
     }
 
     @Override
@@ -83,7 +97,7 @@ public class Movie extends Title {
     }
 
     public Movie load(Cursor cursor) {
-        Log.v(tag(), "Loading movie " + imdb_id);
+        Log.v(tag(), "Loading movie " + Integer.toString(tmdb_id));
         //dispatch(OnTitleListener.WORKING, null);
 
         name = cursor.getString(cursor.getColumnIndex("name"));
@@ -128,6 +142,10 @@ public class Movie extends Title {
         if (!cursor.isNull(colIdx))
             country = cursor.getString(colIdx);
 
+        colIdx = cursor.getColumnIndex("imdb_id");
+        if (!cursor.isNull(colIdx))
+            imdb_id = cursor.getString(colIdx);
+
         colIdx = cursor.getColumnIndex("released");
         if (!cursor.isNull(colIdx))
             released = cursor.getLong(colIdx);
@@ -140,25 +158,13 @@ public class Movie extends Title {
         if (!cursor.isNull(colIdx))
             rated = cursor.getString(colIdx);
 
-        colIdx = cursor.getColumnIndex("awards");
+        colIdx = cursor.getColumnIndex("tmdbRating");
         if (!cursor.isNull(colIdx))
-            awards = cursor.getString(colIdx);
+            tmdbRating = cursor.getDouble(colIdx);
 
-        colIdx = cursor.getColumnIndex("metascore");
+        colIdx = cursor.getColumnIndex("tmdbVotes");
         if (!cursor.isNull(colIdx))
-            metascore = cursor.getInt(colIdx);
-
-        colIdx = cursor.getColumnIndex("tomatoMeter");
-        if (!cursor.isNull(colIdx))
-            tomatoMeter = cursor.getInt(colIdx);
-
-        colIdx = cursor.getColumnIndex("imdbRating");
-        if (!cursor.isNull(colIdx))
-            imdbRating = cursor.getDouble(colIdx);
-
-        colIdx = cursor.getColumnIndex("imdbVotes");
-        if (!cursor.isNull(colIdx))
-            imdbVotes = cursor.getInt(colIdx);
+            tmdbVotes = cursor.getInt(colIdx);
 
         colIdx = cursor.getColumnIndex("rating");
         if (!cursor.isNull(colIdx))
@@ -169,8 +175,8 @@ public class Movie extends Title {
             subtitles = new ArrayList<>(Arrays.asList(cursor.getString(colIdx).split(",")));
 
         tags.clear();
-        Cursor ct = session.getDB().query("movtag", new String[]{"tag"},
-                "movie = ?", new String[]{imdb_id}, null, null, "tag");
+        Cursor ct = session.getDB().query("movtag", new String[]{"tag"}, "movie = ?",
+                new String[]{Integer.toString(tmdb_id)}, null, null, "tag");
         try {
             while (ct.moveToNext())
                 tags.add(ct.getString(0));
@@ -179,13 +185,16 @@ public class Movie extends Title {
         }
 
         //dispatch(OnTitleListener.READY, null);
-        Log.d(tag(), "Loaded movie " + imdb_id);
+        Log.d(tag(), "Loaded movie " + Integer.toString(tmdb_id));
 
         return this;
     }
 
     public Movie load() {
-        Cursor cur = session.getDB().query("movie", null, "imdb_id = ?", new String[]{imdb_id}, null, null, null);
+        if (tmdb_id <= 0)
+            return this;
+        Cursor cur = session.getDB().query("movie", null, "tmdb_id = ?", new String[]{Integer.toString(tmdb_id)},
+                null, null, null);
         try {
             if (cur.moveToFirst()) {
                 load(cur);
@@ -198,7 +207,7 @@ public class Movie extends Title {
     }
 
     public Movie save(boolean metadata) {
-        Log.v(tag(), "Saving movie " + imdb_id);
+        Log.v(tag(), "Saving movie " + Integer.toString(tmdb_id));
         //dispatch(OnTitleListener.WORKING, null);
 
         ContentValues cv = new ContentValues();
@@ -248,6 +257,11 @@ public class Movie extends Title {
         else
             cv.putNull("actors");
 
+        if (!TextUtils.isEmpty(imdb_id))
+            cv.put("imdb_id", imdb_id);
+        else
+            cv.putNull("imdb_id");
+
         if (!TextUtils.isEmpty(country))
             cv.put("country", country);
         else
@@ -268,30 +282,15 @@ public class Movie extends Title {
         else
             cv.putNull("rated");
 
-        if (!TextUtils.isEmpty(awards))
-            cv.put("awards", awards);
+        if (tmdbRating > 0)
+            cv.put("siteRating", tmdbRating);
         else
-            cv.putNull("awards");
+            cv.putNull("siteRating");
 
-        if (metascore > 0)
-            cv.put("metascore", metascore);
+        if (tmdbVotes > 0)
+            cv.put("siteVotes", tmdbVotes);
         else
-            cv.putNull("metascore");
-
-        if (tomatoMeter > 0)
-            cv.put("tomatoMeter", tomatoMeter);
-        else
-            cv.putNull("tomatoMeter");
-
-        if (imdbRating > 0)
-            cv.put("imdbRating", imdbRating);
-        else
-            cv.putNull("imdbRating");
-
-        if (imdbVotes > 0)
-            cv.put("imdbVotes", imdbVotes);
-        else
-            cv.putNull("imdbVotes");
+            cv.putNull("siteVotes");
 
         if (rating > 0)
             cv.put("rating", rating);
@@ -314,135 +313,95 @@ public class Movie extends Title {
 
         SQLiteDatabase db = session.getDB();
         if (exists)
-            db.update("movie", cv, "imdb_id = ?", new String[]{imdb_id});
+            db.update("movie", cv, "tmdb_id = ?", new String[]{Integer.toString(tmdb_id)});
         else {
-            cv.put("imdb_id", imdb_id);
+            cv.put("tmdb_id", tmdb_id);
             cv.put("createtime", System.currentTimeMillis());
             db.insertOrThrow("movie", null, cv);
         }
-        db.delete("movtag", "movie = ?", new String[]{imdb_id});
+        db.delete("movtag", "movie = ?", new String[]{Integer.toString(tmdb_id)});
         for (String tag : tags) {
             cv = new ContentValues();
-            cv.put("movie", imdb_id);
+            cv.put("movie", tmdb_id);
             cv.put("tag", tag.trim());
             db.insertOrThrow("movtag", null, cv);
         }
 
-        broadcast(session.getContext(), imdb_id, metadata);
+        broadcast(session.getContext(), tmdb_id, metadata);
 
-        Log.d(tag(), "Saved movie " + imdb_id);
+        Log.d(tag(), "Saved movie " + Integer.toString(tmdb_id));
 
         return this;
     }
 
-    public Movie update(OMDB.MovieData data) {
-        if (!TextUtils.isEmpty(data.Title)) {
-            name = data.Title;
+    public Movie update(TMDB.MovieData data, TMDB.TMDBPeople people) {
+        if (!TextUtils.isEmpty(data.title)) {
+            name = data.title;
         }
-        if (!TextUtils.isEmpty(data.Year)) {
+        if (!TextUtils.isEmpty(data.overview)) {
+            plot = data.overview;
+        }
+        if (!TextUtils.isEmpty(data.poster_path)) {
+            poster = "https://image.tmdb.org/t/p/w640" + data.poster_path;
+        }
+        if (data.genres != null && data.genres.length > 0) {
+            List<String> tmp = new ArrayList<>();
+            for (TMDB.MovieData.GenreData c: data.genres)
+                tmp.add(c.name);
+            genres = tmp;
+        }
+        if (!TextUtils.isEmpty(data.original_language)) {
+            language = data.original_language;
+        }
+        if (!TextUtils.isEmpty(data.release_date))
             try {
-                int r = Integer.parseInt(data.Year);
-                if (r > 0 && r != year)
-                    year = r;
-            } catch (Exception err) {
-                Log.e(tag(), data.Year, err);
-            }
-        }
-        if (!TextUtils.isEmpty(data.Plot)) {
-            plot = data.Plot;
-        }
-        if (!TextUtils.isEmpty(data.Poster)) {
-            poster = data.Poster;
-        }
-        if (!TextUtils.isEmpty(data.Genre)) {
-            genres = new ArrayList<>(Arrays.asList(data.Genre.split(", ")));
-        }
-        if (!TextUtils.isEmpty(data.Language)) {
-            language = data.Language;
-        }
-        if (!TextUtils.isEmpty(data.Director)) {
-            director = data.Director;
-        }
-        if (!TextUtils.isEmpty(data.Writer)) {
-            writers = data.Writer;
-        }
-        if (!TextUtils.isEmpty(data.Actors)) {
-            actors = data.Actors;
-        }
-        if (!TextUtils.isEmpty(data.Country)) {
-            country = data.Country;
-        }
-        if (!TextUtils.isEmpty(data.Released)) {
-            try {
-                long t = Commons.SDF.eng("dd MMM yyyy").parse(data.Released).getTime();
-                if (t > 0)
+                long t = Commons.SDF.eng("yyyy-MM-dd").parse(data.release_date).getTime();
+                if (t > 0) {
                     released = t;
+                    year = Commons.getDatePart(released, Calendar.YEAR);
+                }
             } catch (Exception err) {
-                Log.e(tag(), data.Released, err);
+                Log.e(tag(), data.release_date, err);
             }
+        if (data.runtime != null && data.runtime > 0) {
+            runtime = data.runtime;
         }
-        if (!TextUtils.isEmpty(data.Runtime)) {
-            String chk = data.Runtime;
-            if (chk.contains(" min"))
-                chk = chk.split(" ")[0];
-            try {
-                int r = NumberFormat.getInstance(Locale.ENGLISH).parse(chk).intValue();
-                if (r > 0 && r != runtime)
-                    runtime = r;
-            } catch (Exception err) {
-                Log.e(tag(), data.Runtime, err);
-            }
+        if (data.vote_average != null && data.vote_average > 0) {
+            tmdbRating = data.vote_average;
         }
-        if (!TextUtils.isEmpty(data.Rated)) {
-            rated = data.Rated;
+        if (data.vote_count != null && data.vote_count > 0) {
+            tmdbVotes = data.vote_count;
         }
-        if (!TextUtils.isEmpty(data.Awards)) {
-            awards = data.Awards;
-            if (awards != null && awards.equals("N/A"))
-                awards = null;
+        if (data.production_countries != null && data.production_countries.length > 0) {
+            List<String> tmp = new ArrayList<>();
+            for (TMDB.MovieData.CountryData c: data.production_countries)
+                tmp.add(c.iso_3166_1);
+            country = TextUtils.join("-", tmp);
         }
-        if (!TextUtils.isEmpty(data.Metascore)) {
-            try {
-                int r = NumberFormat.getInstance(Locale.ENGLISH).parse(data.Metascore).intValue();
-                if (r > 0 && r != metascore)
-                    metascore = r;
-            } catch (Exception err) {
-                Log.e(tag(), data.Metascore, err);
-            }
-        }
-        if (!TextUtils.isEmpty(data.tomatoMeter) && !data.tomatoMeter.equals("N/A")) {
-            try {
-                int r = NumberFormat.getInstance(Locale.ENGLISH).parse(data.tomatoMeter).intValue();
-                if (r > 0 && r != tomatoMeter)
-                    tomatoMeter = r;
-            } catch (Exception err) {
-                Log.e(tag(), data.tomatoMeter, err);
-            }
-        }
-        if (!TextUtils.isEmpty(data.imdbRating)) {
-            try {
-                double r = Double.parseDouble(data.imdbRating);
-                if (r > 0 && r != imdbRating)
-                    imdbRating = r;
-            } catch (Exception err) {
-                Log.e(tag(), data.imdbRating, err);
-            }
-        }
-        if (!TextUtils.isEmpty(data.imdbVotes)) {
-            try {
-                int r = NumberFormat.getInstance(Locale.ENGLISH).parse(data.imdbVotes).intValue();
-                if (r > 0 && r != imdbVotes)
-                    imdbVotes = r;
-            } catch (Exception err) {
-                Log.e(tag(), data.imdbVotes, err);
-            }
+        if (people != null) {
+            // cast
+            List<String> act = new ArrayList<>();
+            for (TMDB.TMDBPeople.PeopleData guy: people.cast)
+                if (guy.gender > 0 && guy.profile_path != null && !guy.character.contains("uncredited"))
+                    act.add(guy.name);
+            this.actors = TextUtils.join(",", act);
+            // crew
+            List<String> dir = new ArrayList<>();
+            List<String> wrt = new ArrayList<>();
+            for (TMDB.TMDBPeople.PeopleData guy: people.crew)
+                if (guy.job.equals("Director"))
+                    dir.add(guy.name);
+                else if (guy.job.equals("Writer"))
+                    wrt.add(guy.name);
+            this.director = TextUtils.join(",", dir);
+            this.writers = TextUtils.join(",", wrt);
         }
         return this;
     }
 
     public void refresh(boolean force) {
         session.getContext().startService(new Intent(session.getContext(), Service.class)
-                .setAction(Commons.SR.REFRESH_MOVIE).putExtra("imdb_id", imdb_id).putExtra("forced", force));
+                .setAction(Commons.SR.REFRESH_MOVIE).putExtra("tmdb_id", tmdb_id).putExtra("forced", force));
     }
 
     @Override

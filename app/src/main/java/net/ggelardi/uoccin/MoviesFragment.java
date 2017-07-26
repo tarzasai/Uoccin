@@ -17,7 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import net.ggelardi.uoccin.api.OMDB;
+import net.ggelardi.uoccin.api.TMDB;
 import net.ggelardi.uoccin.data.Movie;
 import net.ggelardi.uoccin.serv.Session;
 
@@ -223,16 +223,16 @@ public class MoviesFragment extends BaseFragment implements SwipeRefreshLayout.O
                         Log.d(tag(), Integer.toString(res.size()) + " results for " + query);
                     }
                     if (res.isEmpty() && scope == Scopes.SEARCH) {
-                        OMDB.OMDBMovies results = null;
+                        TMDB.TMDBMovies results = null;
                         try {
-                            results = new OMDB(getContext()).findMovie(search);
+                            results = new TMDB(getContext()).findMovie(search);
                         } catch (Exception err) {
                             Log.e(tag(), "doInBackground", err);
                             //TODO:?
                         }
                         if (results != null) {
-                            for (OMDB.MovieData md : results.Search)
-                                res.add(new Movie(getContext(), md.imdbID).load().update(md).save(true));
+                            for (TMDB.MovieData md : results.results)
+                                res.add(new Movie(getContext(), md.id).load().update(md, null).save(true));
                             Collections.sort(res, new Comparator<Movie>() {
                                 @Override
                                 public int compare(Movie m1, Movie m2) {
@@ -241,7 +241,7 @@ public class MoviesFragment extends BaseFragment implements SwipeRefreshLayout.O
                                 }
                             });
                         }
-                        Log.d(tag(), Integer.toString(results.Search.length) + " results for \"" + search + "\"");
+                        Log.d(tag(), Integer.toString(results.results.length) + " results for \"" + search + "\"");
                         lst = search;
                         lsr = res.size();
                         SharedPreferences.Editor editor = session.getPrefs().edit();
@@ -379,7 +379,7 @@ public class MoviesFragment extends BaseFragment implements SwipeRefreshLayout.O
         protected void doBind(Movie movie) {
             super.doBind(movie);
 
-            if (movie.metascore <= 0)
+            /*if (movie.metascore <= 0)
                 movrams.setVisibility(View.GONE);
             else {
                 movrams.setVisibility(View.VISIBLE);
@@ -396,7 +396,7 @@ public class MoviesFragment extends BaseFragment implements SwipeRefreshLayout.O
             else {
                 movraim.setVisibility(View.VISIBLE);
                 movraim.setText(String.format("%.1f", movie.imdbRating));
-            }
+            }*/
         }
     }
 

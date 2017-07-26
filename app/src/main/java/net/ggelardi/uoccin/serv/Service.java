@@ -14,12 +14,9 @@ import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAuthIOException;
 import com.google.api.services.drive.model.File;
@@ -29,7 +26,7 @@ import com.owlike.genson.GensonBuilder;
 import net.ggelardi.uoccin.MainActivity;
 import net.ggelardi.uoccin.R;
 import net.ggelardi.uoccin.api.GSA;
-import net.ggelardi.uoccin.api.OMDB;
+import net.ggelardi.uoccin.api.TMDB;
 import net.ggelardi.uoccin.api.TVDB;
 import net.ggelardi.uoccin.data.Episode;
 import net.ggelardi.uoccin.data.Movie;
@@ -96,7 +93,7 @@ public class Service extends IntentService {
                     break;
                 case Commons.SR.REFRESH_MOVIE:
                     extra = intent.getExtras();
-                    updateMovieInfo(extra.getString("imdb_id"), extra.getBoolean("forced", false));
+                    updateMovieInfo(extra.getInt("tmdb_id"), extra.getBoolean("forced", false));
                     break;
                 case Commons.SR.REFRESH_SERIES:
                     extra = intent.getExtras();
@@ -142,17 +139,29 @@ public class Service extends IntentService {
         nm.notify(NOTIF_ERR, ncb.build());
     }
 
-    private void updateMovieInfo(String imdb_id, boolean forceRefresh) throws Exception {
+    private void updateMovieInfo(Movie movie, boolean forceRefresh) throws Exception {
         if (!session.isConnected(!forceRefresh))
             return;
-        Movie movie = new Movie(this, imdb_id).load();
-        if (forceRefresh || movie.isNew() || movie.isOld())
-            movie.update(new OMDB(this).getMovie(imdb_id)).save(true);
+        if (forceRefresh || movie.isNew() || movie.isOld()) {
+            TMDB tmdb = new TMDB(this);
+            TMDB.MovieData tmov = tmdb.getMovie(movie.tmdb_id);
+            TMDB.TMDBPeople tcre = tmdb.getPeople(movie.tmdb_id);
+            try {
+                movie.update(tmov, tcre).save(true);
+            } catch (Exception err) {
+                Log.e(TAG, "updateMovieInfo", err);
+                throw err;
+            }
+        }
     }
 
-    private Series updateSeriesInfo(Series series, boolean forceRefresh) throws Exception {
+    private void updateMovieInfo(int tmdb_id, boolean forceRefresh) throws Exception {
+        updateMovieInfo(new Movie(this, tmdb_id).load(), forceRefresh);
+    }
+
+    private void updateSeriesInfo(Series series, boolean forceRefresh) throws Exception {
         if (!session.isConnected(!forceRefresh))
-            return series;
+            return;
         int tvdb_id = series.tvdb_id;
         if (forceRefresh || series.isNew() || series.isOld()) {
             TVDB tvdb = new TVDB(this);
@@ -225,14 +234,10 @@ public class Service extends IntentService {
                     db.endTransaction();
             }
         }
-        return series;
     }
 
-    private Series updateSeriesInfo(int tvdb_id, boolean forceRefresh) throws Exception {
-        Series series = new Series(this, tvdb_id).load(false);
-        if (!session.isConnected(!forceRefresh))
-            return series;
-        return updateSeriesInfo(series, forceRefresh);
+    private void updateSeriesInfo(int tvdb_id, boolean forceRefresh) throws Exception {
+        updateSeriesInfo(new Series(this, tvdb_id).load(false), forceRefresh);
     }
 
     private void updateEpisodeInfo(int tvdb_id, boolean forceRefresh) throws Exception {
@@ -255,16 +260,20 @@ public class Service extends IntentService {
         }
     }
 
-    private boolean applyMovieDiff(String imdb_id, Boolean watchlist, Boolean collected, Boolean watched, Integer rating,
-                                String tags, String subs) throws Exception {
+    private boolean applyMovieDiff(String imdb_id, Boolean watchlist, Boolean collected, Boolean watched,
+                                   Integer rating, String tags, String subs) throws Exception {
         Movie movie = new Movie(this, imdb_id).load();
         if (movie.isNew()) {
             if ((watchlist == null || !watchlist) && (collected == null || !collected) &&
                     (watched == null || !watched) && (rating == null || rating <= 0) &&
                     TextUtils.isEmpty(subs) && TextUtils.isEmpty(tags))
                 return false; // can ignore it
-            updateMovieInfo(imdb_id, true);
-            movie.load();
+            if (movie.tmdb_id <= 0) {
+                movie.tmdb_id = new TMDB(this).findId(movie.imdb_id);
+                if (movie.tmdb_id <= 0)
+                    return false;
+            }
+            updateMovieInfo(movie, true);
         }
         boolean updated = false;
         if (watchlist != null && watchlist != movie.watchlist) {

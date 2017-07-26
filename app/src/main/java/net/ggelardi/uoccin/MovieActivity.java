@@ -325,6 +325,7 @@ public class MovieActivity extends BaseActivity {
             txt_wrts.setText(movie.writers);
         }
         txt_tags.setText(movie.getTags());
+        /*
         if (movie.awards == null)
             box_awrs.setVisibility(View.GONE);
         else {
@@ -349,6 +350,7 @@ public class MovieActivity extends BaseActivity {
             box_raim.setVisibility(View.VISIBLE);
             txt_raim.setText(getString(R.string.movact_fmt_imdbscore, movie.imdbRating, movie.imdbVotes));
         }
+        */
         rat_myrt.setRating(movie.rating);
         session.picasso(movie.poster, true).resize(pstWidth, pstHeight).into(img_post);
         btn_wlst.setText(movie.watchlist ? R.string.movact_btn_wlst0 : R.string.movact_btn_wlst1);

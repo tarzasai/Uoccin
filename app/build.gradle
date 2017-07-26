@@ -7,8 +7,8 @@ android {
     defaultConfig {
         applicationId "net.ggelardi.uoccin"
         minSdkVersion 22
-        targetSdkVersion 24
-        versionCode 23
+        targetSdkVersion 26
+        versionCode 26
         versionName "2.0"
     }
     buildTypes {

@@ -9,7 +9,7 @@ public class Storage extends SQLiteOpenHelper {
     private static final String TAG = "Storage";
 
     public static final String NAME = "Uoccin.db";
-    public static final int VERSION = 5;
+    public static final int VERSION = 8;
 
     public Storage(Context context) {
         super(context, NAME, null, VERSION);
@@ -106,6 +106,21 @@ public class Storage extends SQLiteOpenHelper {
                         db.setForeignKeyConstraintsEnabled(true);
                     }
                     break;
+                case 8:
+                    db.beginTransaction();
+                    try {
+                        db.execSQL("DROP TABLE movtag");
+                        db.execSQL("DROP TABLE movie");
+                        db.execSQL(CREATE_TABLE_MOVIE);
+                        db.execSQL(CREATE_TABLE_MOVTAG);
+                        db.setTransactionSuccessful();
+                    } catch (Exception err) {
+                        Log.e(TAG, "onUpgrade(6)", err);
+                        throw err;
+                    } finally {
+                        db.endTransaction();
+                    }
+                    break;
             }
             upgradeTo++;
         }
@@ -120,7 +135,7 @@ public class Storage extends SQLiteOpenHelper {
     private static final String CC_NNU = " NOT NULL";
 
     private static final String CREATE_TABLE_MOVIE = "CREATE TABLE movie (" +
-            "imdb_id" + DT_STR + PK + CS +
+            "tmdb_id" + DT_STR + PK + CS +
             "name" + DT_STR + CC_NNU + CS +
             "year" + DT_INT + CS +
             "plot" + DT_STR + CS +
@@ -130,15 +145,13 @@ public class Storage extends SQLiteOpenHelper {
             "director" + DT_STR + CS +
             "writers" + DT_STR + CS + // comma delimited
             "actors" + DT_STR + CS + // comma delimited
+            "imdb_id" + DT_STR + CS +
             "country" + DT_STR + CS +
             "released" + DT_INT + CS +
             "runtime" + DT_INT + CS + // minutes
             "rated" + DT_STR + CS +
-            "awards" + DT_STR + CS +
-            "metascore" + DT_INT + CS +
-            "tomatoMeter" + DT_INT + CS +
-            "imdbRating" + DT_DBL + CS +
-            "imdbVotes" + DT_INT + CS +
+            "siteRating" + DT_DBL + CS +
+            "siteVotes" + DT_INT + CS +
             "rating" + DT_INT + CS +
             "subtitles" + DT_STR + CS +
             "watchlist" + DT_FLG + CS +
@@ -149,7 +162,7 @@ public class Storage extends SQLiteOpenHelper {
             ")";
 
     private static final String CREATE_TABLE_MOVTAG = "CREATE TABLE movtag (" +
-            "movie" + DT_STR + CC_NNU + " REFERENCES movie(imdb_id) ON DELETE CASCADE" + CS +
+            "movie" + DT_INT + CC_NNU + " REFERENCES movie(tmdb_id) ON DELETE CASCADE" + CS +
             "tag" + DT_STR + CC_NNU + CS +
             "PRIMARY KEY (movie, tag)" +
             ")";
@@ -170,7 +183,6 @@ public class Storage extends SQLiteOpenHelper {
             "airsDay" + DT_INT + CS +
             "airsTime" + DT_STR + CS +
             "runtime" + DT_INT + CS + // minutes
-            "rated" + DT_STR + CS +
             "siteRating" + DT_DBL + CS +
             "siteVotes" + DT_INT + CS +
             "rating" + DT_INT + CS +

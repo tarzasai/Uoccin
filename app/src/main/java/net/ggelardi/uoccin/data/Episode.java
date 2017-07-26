@@ -281,9 +281,6 @@ public class Episode {
             cv.put("timestamp", timestamp);
         }
 
-        if (timestamp <= 1)
-            Log.i(TAG, "save(): timestamp == " + Long.toString(timestamp) + " !!!!!!!!!!!!!");
-
         SQLiteDatabase db = session.getDB();
         boolean trans = !db.inTransaction();
         if (trans)
