@@ -50,8 +50,8 @@ public class TMDB {
                             // https://developers.themoviedb.org/3/getting-started/request-rate-limiting
                             int rl = Integer.parseInt(response.headers().get("X-RateLimit-Remaining"));
                             long rs = Long.parseLong(response.headers().get("X-RateLimit-Reset"));
-                            long wt = rl < 5 ? (rs - (System.currentTimeMillis() / 1000) + 500) :
-                                    rl < 10 ? 250 : rl < 20 ? 150 : rl < 30 ? 50 : 25;
+                            long wt = rl < 5 ? (rs - (System.currentTimeMillis() / 1000) + 750) :
+                                    rl < 10 ? 300 : rl < 20 ? 150 : rl < 30 ? 50 : 25;
                             Log.d("TMDB", String.format(Locale.getDefault(), "intercept rl: %d - wt: %d", rl, wt));
                             try {
                                 Thread.sleep(wt);
