@@ -6,7 +6,6 @@ import android.util.Log;
 import net.ggelardi.uoccin.serv.Commons;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -144,7 +143,8 @@ public class TMDB {
         public Double vote_average;
         public Integer vote_count;
         public GenreData[] genres;
-        public CountryData[] production_countries;
+        public Iso31661[] spoken_languages;
+        public Iso31661[] production_countries;
         public String status;
         public Integer runtime;
         public Boolean adult;
@@ -156,7 +156,7 @@ public class TMDB {
             public String name;
         }
 
-        public static class CountryData {
+        public static class Iso31661 {
             public String iso_3166_1;
             public String name;
         }

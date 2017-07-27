@@ -82,15 +82,6 @@
                         android:text="@string/sample_genres" />
 
                     <TextView
-                        android:id="@+id/txt_rated"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ics_action_rated"
-                        android:drawablePadding="5dp"
-                        android:text="@string/sample_rated"
-                        android:textAllCaps="true"/>
-
-                    <TextView
                         android:id="@+id/txt_runtime"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -144,12 +135,6 @@
                 android:layout_height="wrap_content"
                 android:text="@string/sample_people" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/movact_lbl_actors_hint"
-                android:textStyle="italic"/>
-
             <LinearLayout
                 android:id="@+id/box_writers"
                 android:layout_width="match_parent"
@@ -193,7 +178,7 @@
                 android:textStyle="bold" />
 
             <LinearLayout
-                android:id="@+id/box_awards"
+                android:id="@+id/box_tmdb"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
@@ -204,77 +189,10 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:layout_marginRight="5dp"
-                    android:src="@mipmap/ic_awards" />
+                    android:src="@mipmap/ic_tmdb" />
 
                 <TextView
-                    android:id="@+id/txt_awards"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sample_awards"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textStyle="normal" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/box_metascore"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_marginRight="5dp"
-                    android:src="@mipmap/ic_metascore" />
-
-                <TextView
-                    android:id="@+id/txt_ratmeta"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sample_metascore"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/box_tomatometer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_marginRight="5dp"
-                    android:src="@mipmap/ic_tomatometer" />
-
-                <TextView
-                    android:id="@+id/txt_ratrott"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sample_rotten"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/box_imdbscore"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_marginRight="5dp"
-                    android:src="@mipmap/ic_imdb" />
-
-                <TextView
-                    android:id="@+id/txt_ratimdb"
+                    android:id="@+id/txt_rattmdb"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/sample_imdbscore"

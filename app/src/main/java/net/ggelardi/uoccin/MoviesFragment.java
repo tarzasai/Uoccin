@@ -364,39 +364,24 @@ public class MoviesFragment extends BaseFragment implements SwipeRefreshLayout.O
     class MovieListHolder extends BaseMovieHolder {
 
         TextView movrams;
-        TextView movrart;
-        TextView movraim;
 
         MovieListHolder(View itemView) {
             super(itemView);
 
             movrams = (TextView) itemView.findViewById(R.id.txt_ratms);
-            movrart = (TextView) itemView.findViewById(R.id.txt_ratrt);
-            movraim = (TextView) itemView.findViewById(R.id.txt_ratim);
         }
 
         @Override
         protected void doBind(Movie movie) {
             super.doBind(movie);
 
-            /*if (movie.metascore <= 0)
+            if (movie.tmdbRating <= 0)
                 movrams.setVisibility(View.GONE);
             else {
                 movrams.setVisibility(View.VISIBLE);
-                movrams.setText(Integer.toString(movie.metascore));
+                movrams.setText(String.format(getContext().getString(R.string.serfra_lbl_votes),
+                        movie.tmdbRating, movie.tmdbVotes));
             }
-            if (movie.tomatoMeter <= 0)
-                movrart.setVisibility(View.GONE);
-            else {
-                movrart.setVisibility(View.VISIBLE);
-                movrart.setText(Integer.toString(movie.tomatoMeter) + "%");
-            }
-            if (movie.imdbRating <= 0)
-                movraim.setVisibility(View.GONE);
-            else {
-                movraim.setVisibility(View.VISIBLE);
-                movraim.setText(String.format("%.1f", movie.imdbRating));
-            }*/
         }
     }
 

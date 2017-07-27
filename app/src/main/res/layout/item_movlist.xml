@@ -67,36 +67,12 @@
                         android:id="@+id/txt_ratms"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ics_metascore"
+                        android:drawableLeft="@drawable/ics_tmdb"
                         android:drawablePadding="3dp"
                         android:ellipsize="end"
                         android:gravity="end"
                         android:lines="1"
-                        android:text="@string/sample_metascore"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:id="@+id/txt_ratrt"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ics_tomatoes"
-                        android:drawablePadding="3dp"
-                        android:ellipsize="end"
-                        android:gravity="end"
-                        android:lines="1"
-                        android:text="@string/sample_rotten"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:id="@+id/txt_ratim"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ics_imdb"
-                        android:drawablePadding="3dp"
-                        android:ellipsize="end"
-                        android:gravity="end"
-                        android:lines="1"
-                        android:text="@string/sample_imdbrat"
+                        android:text="@string/sample_tvdbscore"
                         android:textStyle="bold"/>
 
                     <TextView

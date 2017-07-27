@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.BottomSheetDialog;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
@@ -46,7 +45,6 @@ public class MovieActivity extends BaseActivity {
     private TextView txt_dire;
     private TextView txt_coun;
     private TextView txt_gens;
-    private TextView txt_ratd;
     private TextView txt_runt;
     private TextView txt_lang;
     private TextView txt_stat;
@@ -56,14 +54,8 @@ public class MovieActivity extends BaseActivity {
     private LinearLayout box_wrts;
     private TextView txt_wrts;
     private TextView txt_tags;
-    private LinearLayout box_awrs;
-    private TextView txt_awrs;
-    private LinearLayout box_rams;
-    private TextView txt_rams;
-    private LinearLayout box_rart;
-    private TextView txt_rart;
-    private LinearLayout box_raim;
-    private TextView txt_raim;
+    private LinearLayout box_exrt;
+    private TextView txt_exrt;
     private RatingBar rat_myrt;
     private BottomSheetDialog bsd_menu;
     private BottomSheetBehavior bsb_menu;
@@ -82,7 +74,6 @@ public class MovieActivity extends BaseActivity {
         txt_dire = (TextView) findViewById(R.id.txt_director);
         txt_coun = (TextView) findViewById(R.id.txt_country);
         txt_gens = (TextView) findViewById(R.id.txt_genres);
-        txt_ratd = (TextView) findViewById(R.id.txt_rated);
         txt_runt = (TextView) findViewById(R.id.txt_runtime);
         txt_lang = (TextView) findViewById(R.id.txt_langs);
         txt_stat = (TextView) findViewById(R.id.txt_status);
@@ -92,14 +83,8 @@ public class MovieActivity extends BaseActivity {
         box_wrts = (LinearLayout) findViewById(R.id.box_writers);
         txt_wrts = (TextView) findViewById(R.id.txt_writers);
         txt_tags = (TextView) findViewById(R.id.txt_tags);
-        box_awrs = (LinearLayout) findViewById(R.id.box_awards);
-        txt_awrs = (TextView) findViewById(R.id.txt_awards);
-        box_rams = (LinearLayout) findViewById(R.id.box_metascore);
-        txt_rams = (TextView) findViewById(R.id.txt_ratmeta);
-        box_rart = (LinearLayout) findViewById(R.id.box_tomatometer);
-        txt_rart = (TextView) findViewById(R.id.txt_ratrott);
-        box_raim = (LinearLayout) findViewById(R.id.box_imdbscore);
-        txt_raim = (TextView) findViewById(R.id.txt_ratimdb);
+        box_exrt = (LinearLayout) findViewById(R.id.box_tmdb);
+        txt_exrt = (TextView) findViewById(R.id.txt_rattmdb);
         rat_myrt = (RatingBar) findViewById(R.id.rat_rating);
 
         txt_tags.setOnClickListener(new View.OnClickListener() {
@@ -287,14 +272,16 @@ public class MovieActivity extends BaseActivity {
             movie.load();
         setTitle(movie.name());
         txt_dire.setText(getString(R.string.movact_fmt_director, movie.director));
-        if (movie.country == null && movie.year <= 0)
+        if (movie.year <= 0)
             txt_coun.setVisibility(View.GONE);
         else {
             txt_coun.setVisibility(View.VISIBLE);
-            txt_coun.setText(getString(R.string.movact_fmt_country, movie.country, movie.year));
+            if (movie.country == null)
+                txt_coun.setText(Integer.toString(movie.year));
+            else
+                txt_coun.setText(getString(R.string.movact_fmt_country, movie.country, movie.year));
         }
         txt_gens.setText(movie.genres());
-        txt_ratd.setText(movie.rated());
         txt_runt.setText(movie.runtime());
         txt_lang.setText(movie.language());
         txt_stat.setVisibility(View.VISIBLE);
@@ -325,32 +312,12 @@ public class MovieActivity extends BaseActivity {
             txt_wrts.setText(movie.writers);
         }
         txt_tags.setText(movie.getTags());
-        /*
-        if (movie.awards == null)
-            box_awrs.setVisibility(View.GONE);
+        if (movie.tmdbVotes <= 0)
+            box_exrt.setVisibility(View.GONE);
         else {
-            box_awrs.setVisibility(View.VISIBLE);
-            txt_awrs.setText(movie.awards);
+            box_exrt.setVisibility(View.VISIBLE);
+            txt_exrt.setText(getString(R.string.movact_fmt_imdbscore, movie.tmdbRating, movie.tmdbVotes));
         }
-        if (movie.metascore <= 0)
-            box_rams.setVisibility(View.GONE);
-        else {
-            box_rams.setVisibility(View.VISIBLE);
-            txt_rams.setText(getString(R.string.movact_fmt_metascore, movie.metascore));
-        }
-        if (movie.tomatoMeter <= 0)
-            box_rart.setVisibility(View.GONE);
-        else {
-            box_rart.setVisibility(View.VISIBLE);
-            txt_rart.setText(getString(R.string.movact_fmt_tomatometer, movie.tomatoMeter));
-        }
-        if (movie.imdbVotes <= 0)
-            box_raim.setVisibility(View.GONE);
-        else {
-            box_raim.setVisibility(View.VISIBLE);
-            txt_raim.setText(getString(R.string.movact_fmt_imdbscore, movie.imdbRating, movie.imdbVotes));
-        }
-        */
         rat_myrt.setRating(movie.rating);
         session.picasso(movie.poster, true).resize(pstWidth, pstHeight).into(img_post);
         btn_wlst.setText(movie.watchlist ? R.string.movact_btn_wlst0 : R.string.movact_btn_wlst1);

@@ -158,11 +158,11 @@ public class Movie extends Title {
         if (!cursor.isNull(colIdx))
             rated = cursor.getString(colIdx);
 
-        colIdx = cursor.getColumnIndex("tmdbRating");
+        colIdx = cursor.getColumnIndex("siteRating");
         if (!cursor.isNull(colIdx))
             tmdbRating = cursor.getDouble(colIdx);
 
-        colIdx = cursor.getColumnIndex("tmdbVotes");
+        colIdx = cursor.getColumnIndex("siteVotes");
         if (!cursor.isNull(colIdx))
             tmdbVotes = cursor.getInt(colIdx);
 
@@ -335,7 +335,9 @@ public class Movie extends Title {
     }
 
     public Movie update(TMDB.MovieData data, TMDB.TMDBPeople people) {
-        if (!TextUtils.isEmpty(data.title)) {
+        if (!TextUtils.isEmpty(data.original_title)) {
+            name = data.original_title;
+        } else if (!TextUtils.isEmpty(data.title)) {
             name = data.title;
         }
         if (!TextUtils.isEmpty(data.overview)) {
@@ -350,7 +352,12 @@ public class Movie extends Title {
                 tmp.add(c.name);
             genres = tmp;
         }
-        if (!TextUtils.isEmpty(data.original_language)) {
+        if (data.spoken_languages != null && data.spoken_languages.length > 0) {
+            List<String> tmp = new ArrayList<>();
+            for (TMDB.MovieData.Iso31661 c: data.spoken_languages)
+                tmp.add(c.name);
+            language = TextUtils.join(", ", tmp);
+        } else if (!TextUtils.isEmpty(data.original_language)) {
             language = data.original_language;
         }
         if (!TextUtils.isEmpty(data.release_date))
@@ -374,7 +381,7 @@ public class Movie extends Title {
         }
         if (data.production_countries != null && data.production_countries.length > 0) {
             List<String> tmp = new ArrayList<>();
-            for (TMDB.MovieData.CountryData c: data.production_countries)
+            for (TMDB.MovieData.Iso31661 c: data.production_countries)
                 tmp.add(c.iso_3166_1);
             country = TextUtils.join("-", tmp);
         }
@@ -393,8 +400,8 @@ public class Movie extends Title {
                     dir.add(guy.name);
                 else if (guy.job.equals("Writer"))
                     wrt.add(guy.name);
-            this.director = TextUtils.join(",", dir);
-            this.writers = TextUtils.join(",", wrt);
+            this.director = TextUtils.join(", ", dir);
+            this.writers = TextUtils.join(", ", wrt);
         }
         return this;
     }

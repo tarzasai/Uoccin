@@ -102,7 +102,7 @@
     <string name="movact_lbl_genres">genres</string>
     <string name="movact_lbl_writers">writers</string>
     <string name="movact_lbl_tags">tags (tap to edit)</string>
-    <string name="movact_lbl_ratings">awards &amp; ratings</string>
+    <string name="movact_lbl_ratings">ratings</string>
     <string name="movact_lbl_awards">awards</string>
     <string name="movact_btn_wlst1">Add to watchlist</string>
     <string name="movact_btn_wlst0">Remove from watchlist</string>
@@ -110,7 +110,7 @@
     <string name="movact_btn_coll0">Set as NOT collected</string>
     <string name="movact_btn_seen1">Set as WATCHED</string>
     <string name="movact_btn_seen0">Set as NOT watched</string>
-    <string name="movact_btn_update">Update from OMDb API</string>
+    <string name="movact_btn_update">Update from TMDb API</string>
     <string name="movact_btn_go2imdb">View on IMDb.com</string>
     <string name="movact_msg_updating">The movie will be updated ASAP&#8230;</string>
     <string name="movact_msg_updated">The movie has been updated.</string>
