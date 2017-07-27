@@ -132,8 +132,6 @@ public class Commons {
     }
 
     public static int getDatePart(long time, int part) {
-        if (time <= 0)
-            return 0;
         Calendar cal = Calendar.getInstance(Locale.getDefault());
         cal.setTimeInMillis(time);
         return cal.get(part);

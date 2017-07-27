@@ -395,11 +395,8 @@ public class Series extends Title {
         }
         if (!TextUtils.isEmpty(data.firstAired))
             try {
-                long t = Commons.SDF.eng("yyyy-MM-dd").parse(data.firstAired).getTime();
-                if (t > 0) {
-                    firstAired = t;
-                    year = Commons.getDatePart(firstAired, Calendar.YEAR);
-                }
+                firstAired = Commons.SDF.eng("yyyy-MM-dd").parse(data.firstAired).getTime();
+                year = Commons.getDatePart(firstAired, Calendar.YEAR);
             } catch (Exception err) {
                 Log.e(tag(), data.firstAired, err);
             }

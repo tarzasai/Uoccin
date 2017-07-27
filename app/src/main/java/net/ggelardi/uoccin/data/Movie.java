@@ -15,9 +15,11 @@ import net.ggelardi.uoccin.serv.Commons;
 import net.ggelardi.uoccin.serv.Service;
 import net.ggelardi.uoccin.serv.Session;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class Movie extends Title {
@@ -335,9 +337,7 @@ public class Movie extends Title {
     }
 
     public Movie update(TMDB.MovieData data, TMDB.TMDBPeople people) {
-        if (!TextUtils.isEmpty(data.original_title)) {
-            name = data.original_title;
-        } else if (!TextUtils.isEmpty(data.title)) {
+        if (!TextUtils.isEmpty(data.title)) {
             name = data.title;
         }
         if (!TextUtils.isEmpty(data.overview)) {
@@ -362,11 +362,8 @@ public class Movie extends Title {
         }
         if (!TextUtils.isEmpty(data.release_date))
             try {
-                long t = Commons.SDF.eng("yyyy-MM-dd").parse(data.release_date).getTime();
-                if (t > 0) {
-                    released = t;
-                    year = Commons.getDatePart(released, Calendar.YEAR);
-                }
+                released = Commons.SDF.eng("yyyy-MM-dd").parse(data.release_date).getTime();
+                year = Commons.getDatePart(released, Calendar.YEAR);
             } catch (Exception err) {
                 Log.e(tag(), data.release_date, err);
             }
