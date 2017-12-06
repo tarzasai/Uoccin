@@ -178,6 +178,7 @@ public class Storage extends SQLiteOpenHelper {
             "actors" + DT_STR + CS + // comma delimited
             "imdb_id" + DT_STR + CS +
             "status" + DT_STR + CS +
+            "rated" + DT_STR + CS +
             "network" + DT_STR + CS +
             "firstAired" + DT_INT + CS +
             "airsDay" + DT_INT + CS +
